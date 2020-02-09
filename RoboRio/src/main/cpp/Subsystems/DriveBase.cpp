@@ -798,13 +798,13 @@ double DriveBase::InchesToEncoder(int distance_inches) {
 
 void DriveBase::DoTuningDrive() {
     // Only log the values every so often, to avoid slowing things down
-	const int kUpdatePeriod = 25;
-    bool log_value = false;
-    m_log_counter++;
-    if (m_log_counter == kUpdatePeriod) {
-        m_log_counter = 0;
-        log_value = true;
-    }
+	// const int kUpdatePeriod = 25;
+    // bool log_value = false;
+    // m_log_counter++;
+    // if (m_log_counter == kUpdatePeriod) {
+    //     m_log_counter = 0;
+    //     log_value = true;
+    // }
 
     // Do the tuning of the left and right sides
     // DoTuningDriveSide(-RobotConfiguration::kJoystickLeftYAxis, m_left_master_speed_controller, "LEFT", log_value);
