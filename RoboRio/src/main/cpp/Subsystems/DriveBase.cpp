@@ -33,10 +33,8 @@ DriveBase::DriveBase() :
 
     m_left_master_speed_controller = NULL;
     m_left_slave_speed_controller = NULL;
-    m_left_slave2_speed_controller = NULL;
     m_right_master_speed_controller = NULL;
     m_right_slave_speed_controller = NULL;
-    m_right_slave2_speed_controller = NULL;
 
     m_forward_ultrasonic = NULL;
     m_backward_ultrasonic = NULL;
@@ -108,11 +106,9 @@ void DriveBase::Periodic() {
         frc::SmartDashboard::PutBoolean("Drive Joystick", GetDefaultCommand()->IsRunning());
 
         double left_current = m_left_master_speed_controller->GetOutputCurrent() + 
-                              m_left_slave_speed_controller->GetOutputCurrent() +
-                              m_left_slave2_speed_controller->GetOutputCurrent();
+                              m_left_slave_speed_controller->GetOutputCurrent();
         double right_current = m_right_master_speed_controller->GetOutputCurrent() + 
-                               m_right_slave_speed_controller->GetOutputCurrent() +
-                               m_right_slave2_speed_controller->GetOutputCurrent();
+                               m_right_slave_speed_controller->GetOutputCurrent();
         frc::SmartDashboard::PutNumber("Motor Left Current", left_current);
         frc::SmartDashboard::PutNumber("Motor Right Current", right_current);
 
@@ -162,12 +158,10 @@ void DriveBase::Setup() {
     m_vision_light_relay = new frc::Relay(0);
 
     // Create controllers for each of the 4 drive talons
-    m_left_master_speed_controller = new TalonSRX(RobotConfiguration::kLeftMasterTalonId);
-    m_left_slave_speed_controller = new TalonSRX(RobotConfiguration::kLeftSlaveTalonId);
-    m_left_slave2_speed_controller = new TalonSRX(RobotConfiguration::kLeftSlave2TalonId);
-    m_right_master_speed_controller = new TalonSRX(RobotConfiguration::kRightMasterTalonId);
-    m_right_slave_speed_controller = new TalonSRX(RobotConfiguration::kRightSlaveTalonId);
-    m_right_slave2_speed_controller = new TalonSRX(RobotConfiguration::kRightSlave2TalonId);
+    m_left_master_speed_controller = new TalonFX(RobotConfiguration::kLeftMasterTalonId);
+    m_left_slave_speed_controller = new TalonFX(RobotConfiguration::kLeftSlaveTalonId);
+    m_right_master_speed_controller = new TalonFX(RobotConfiguration::kRightMasterTalonId);
+    m_right_slave_speed_controller = new TalonFX(RobotConfiguration::kRightSlaveTalonId);
 //	virtual int GetFirmwareVersion();
 
     // Setup the slave Talons to follow the masters
@@ -186,7 +180,7 @@ void DriveBase::Setup() {
     // motors. Use the profile slot for running the robot.
     int error;
     
-    TalonSRXConfiguration master_drivemotor_configuration;
+    TalonFXConfiguration master_drivemotor_configuration;
 
     master_drivemotor_configuration.nominalOutputForward = RobotConfiguration::kDriveMotorNominalOutput;
     master_drivemotor_configuration.nominalOutputReverse = -RobotConfiguration::kDriveMotorNominalOutput;
@@ -196,10 +190,11 @@ void DriveBase::Setup() {
     master_drivemotor_configuration.closedloopRamp = RobotConfiguration::kDriveMotorRampRateS;
     master_drivemotor_configuration.openloopRamp = RobotConfiguration::kDriveMotorRampRateS;
 
-    master_drivemotor_configuration.continuousCurrentLimit = RobotConfiguration::kDriveMotorContinuousCurrentLimitA;
-    master_drivemotor_configuration.peakCurrentLimit = RobotConfiguration::kDriveMotorPeakCurrentLimitA;
-    master_drivemotor_configuration.peakCurrentDuration = RobotConfiguration::kDriveMotorPeakCurrentDurationMs;
-
+    master_drivemotor_configuration.supplyCurrLimit = ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration (true, 
+        RobotConfiguration::kDriveMotorContinuousCurrentLimitA,
+        RobotConfiguration::kDriveMotorPeakCurrentLimitA,
+        RobotConfiguration::kDriveMotorPeakCurrentDurationMs);
+        
     master_drivemotor_configuration.slot0.kF = RobotConfiguration::kDriveBasePidF;
     master_drivemotor_configuration.slot0.kD = RobotConfiguration::kDriveBasePidD;
     master_drivemotor_configuration.slot0.kP = RobotConfiguration::kDriveBasePidP;
@@ -209,7 +204,6 @@ void DriveBase::Setup() {
     if (error != 0) {
         std::cout << "Configuration of the left master Talon failed with code:  " << error << "\n";
     }
-    m_left_master_speed_controller->EnableCurrentLimit(true);
     m_left_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, kPidDefaultIdx, kTalonTimeoutMs);
     m_left_master_speed_controller->SetSensorPhase(true); // Not reversed
     m_left_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_13_Base_PIDF0_, 20, kTalonTimeoutMs);
@@ -219,51 +213,33 @@ void DriveBase::Setup() {
     if (error != 0) {
         std::cout << "Configuration of the left master Talon failed with code:  " << error << "\n";
     }
-    m_right_master_speed_controller->EnableCurrentLimit(true);
     m_right_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, kPidDefaultIdx, kTalonTimeoutMs);
     m_right_master_speed_controller->SetSensorPhase(true); // Not reversed
     m_right_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_13_Base_PIDF0_, 20, kTalonTimeoutMs);
     m_right_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_10_MotionMagic_, 20, kTalonTimeoutMs);
 
-    TalonSRXConfiguration slave_drivemotor_configuration;
+    TalonFXConfiguration slave_drivemotor_configuration;
 
     slave_drivemotor_configuration.closedloopRamp = RobotConfiguration::kDriveMotorRampRateS;
     slave_drivemotor_configuration.openloopRamp = RobotConfiguration::kDriveMotorRampRateS;
 
-    slave_drivemotor_configuration.continuousCurrentLimit = RobotConfiguration::kDriveMotorContinuousCurrentLimitA;
-    slave_drivemotor_configuration.peakCurrentLimit = RobotConfiguration::kDriveMotorPeakCurrentLimitA;
-    slave_drivemotor_configuration.peakCurrentDuration = RobotConfiguration::kDriveMotorPeakCurrentDurationMs;
+    slave_drivemotor_configuration.supplyCurrLimit = ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration (true, 
+        RobotConfiguration::kDriveMotorContinuousCurrentLimitA,
+        RobotConfiguration::kDriveMotorPeakCurrentLimitA,
+        RobotConfiguration::kDriveMotorPeakCurrentDurationMs);
 
     error = m_left_slave_speed_controller->ConfigAllSettings(slave_drivemotor_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the slave1 left Talon failed with code:  " << error << "\n";
     }
-    m_left_slave2_speed_controller->EnableCurrentLimit(true);
-
-    error = m_left_slave2_speed_controller->ConfigAllSettings(slave_drivemotor_configuration, RC::kTalonTimeoutMs);
-    if (error != 0) {
-        std::cout << "Configuration of the slave2 left Talon failed with code:  " << error << "\n";
-    }
-    m_left_slave2_speed_controller->EnableCurrentLimit(true);
-
-
 
     error = m_right_slave_speed_controller->ConfigAllSettings(master_drivemotor_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the slave1 right Talon failed with code:  " << error << "\n";
     }
-    m_right_slave_speed_controller->EnableCurrentLimit(true);
-
-    error = m_right_slave2_speed_controller->ConfigAllSettings(master_drivemotor_configuration, RC::kTalonTimeoutMs);
-    if (error != 0) {
-        std::cout << "Configuration of the slave2 right Talon failed with code:  " << error << "\n";
-    }
-    m_right_slave2_speed_controller->EnableCurrentLimit(true);
 
     m_left_slave_speed_controller->Set(ControlMode::Follower, RobotConfiguration::kLeftMasterTalonId);
-    m_left_slave2_speed_controller->Set(ControlMode::Follower, RobotConfiguration::kLeftMasterTalonId);
     m_right_slave_speed_controller->Set(ControlMode::Follower, RobotConfiguration::kRightMasterTalonId);
-    m_right_slave2_speed_controller->Set(ControlMode::Follower, RobotConfiguration::kRightMasterTalonId);
 
     // Velocity measurement configuration
     // TSSRM Section 7.8 (page 50)
@@ -324,14 +300,10 @@ void DriveBase::Shutdown() {
     m_left_master_speed_controller = NULL;
     delete m_left_slave_speed_controller;
     m_left_slave_speed_controller = NULL;
-    delete m_left_slave2_speed_controller;
-    m_left_slave2_speed_controller = NULL;
     delete m_right_master_speed_controller;
     m_right_master_speed_controller = NULL;
     delete m_right_slave_speed_controller;
     m_right_slave_speed_controller = NULL;
-    delete m_right_slave2_speed_controller;
-    m_right_slave2_speed_controller = NULL;
 }
 
 //==============================================================================
@@ -433,10 +405,8 @@ void DriveBase::SetBrakeMode(bool brake) {
 
 	m_left_master_speed_controller->SetNeutralMode(neutral_mode);
 	m_left_slave_speed_controller->SetNeutralMode(neutral_mode);
-	m_left_slave2_speed_controller->SetNeutralMode(neutral_mode);
 	m_right_master_speed_controller->SetNeutralMode(neutral_mode);
 	m_right_slave_speed_controller->SetNeutralMode(neutral_mode);
-	m_right_slave2_speed_controller->SetNeutralMode(neutral_mode);
 }
 
 
@@ -626,10 +596,8 @@ double DriveBase::GetMotorVoltage()
 double DriveBase::GetMotorCurrent() {
     return fabs(m_left_master_speed_controller->GetOutputCurrent()) +
            fabs(m_left_slave_speed_controller->GetOutputCurrent()) +
-           fabs(m_left_slave2_speed_controller->GetOutputCurrent()) +
            fabs(m_right_master_speed_controller->GetOutputCurrent()) +
-           fabs(m_right_slave_speed_controller->GetOutputCurrent()) +
-           fabs(m_right_slave2_speed_controller->GetOutputCurrent());
+           fabs(m_right_slave_speed_controller->GetOutputCurrent());
 }
 
 
