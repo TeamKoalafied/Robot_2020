@@ -55,11 +55,9 @@ namespace RobotConfiguration {
 // driven against each other bad things will happen.
 const int kLeftMasterTalonId  = 15;
 const int kLeftSlaveTalonId   = 14;
-const int kLeftSlave2TalonId  = 13;
 
 const int kRightMasterTalonId = 0;
 const int kRightSlaveTalonId  = 1;
-const int kRightSlave2TalonId = 2;
 
 const int kShooterMasterTalonId  = 5;
 // const int kShooterSlaveTalonId  = 6;
