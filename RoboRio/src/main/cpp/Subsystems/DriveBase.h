@@ -275,12 +275,10 @@ private:
     //==========================================================================
     // Member Variables
 
-    TalonSRX* m_left_master_speed_controller;       // Left master Talon SRX speed controller
-    TalonSRX* m_left_slave_speed_controller;        // Left slave Talon SRX speed controller
-    TalonSRX* m_left_slave2_speed_controller;       // Left second slave Talon SRX speed controller
-    TalonSRX* m_right_master_speed_controller;      // Right master Talon SRX speed controller
-    TalonSRX* m_right_slave_speed_controller;       // Right slave Talon SRX speed controller
-    TalonSRX* m_right_slave2_speed_controller;      // Right second slave Talon SRX speed controller
+    TalonFX* m_left_master_speed_controller;       // Left master Talon SRX speed controller
+    TalonFX* m_left_slave_speed_controller;     // Left second slave Talon SRX speed controller
+    TalonFX* m_right_master_speed_controller;      // Right master Talon SRX speed controller
+    TalonFX* m_right_slave_speed_controller;   // Right second slave Talon SRX speed controller
 
     frc::Joystick* m_joystick;                      // Joystick
     PigeonIMU* m_pigen_imu;                         // Pigeon IMU (inertial measurement unit)

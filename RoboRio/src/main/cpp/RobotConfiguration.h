@@ -55,11 +55,9 @@ namespace RobotConfiguration {
 // driven against each other bad things will happen.
 const int kLeftMasterTalonId  = 15;
 const int kLeftSlaveTalonId   = 14;
-const int kLeftSlave2TalonId  = 13;
 
-const int kRightMasterTalonId = 0;
-const int kRightSlaveTalonId  = 1;
-const int kRightSlave2TalonId = 2;
+const int kRightMasterTalonId = 1;
+const int kRightSlaveTalonId  = 2;
 
 const int kShooterMasterTalonId  = 5;
 // const int kShooterSlaveTalonId  = 6;
@@ -67,7 +65,7 @@ const int kIndexerTalonId = 10;
 const int kIntakeTalonId = 12;
 
 const int kWinchTalonId = 11;
-
+    
 
 // CAN id of the CTRE Pigeon IMU (direct CAN bus connection)
 const int kPigeonImuId = 0;

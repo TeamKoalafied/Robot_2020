@@ -27,9 +27,9 @@ Manipulator::Manipulator() :
     JoystickSubsystem("Manipulator", RC::kJoystickPortOperator) {
 
     // m_shooter = new Shooter;
-    m_indexer = new Indexer;
+    // m_indexer = new Indexer;
     // m_winch = new Winch;
-    // m_intake = new Intake;
+    m_intake = new Intake;
 }
 
 Manipulator::~Manipulator() {
@@ -53,9 +53,9 @@ void Manipulator::Periodic() {
 
 
     // m_shooter->Periodic(true);
-    m_indexer->Periodic(true);
+    // m_indexer->Periodic(true);
     // m_winch->Periodic(true);
-    // m_intake->Periodic(true);
+    m_intake->Periodic();
 }
 
 //==========================================================================
@@ -73,9 +73,9 @@ void Manipulator::DoJoystickControl() {
 
 
     // m_shooter->TestDriveShooter(joystick);
-    m_indexer->TestDriveIndexer(joystick);
+    // m_indexer->TestDriveIndexer(joystick);
     // m_winch->TestDriveWinch(joystick);
-    // m_intake->TestDriveIntake(joystick);
+    m_intake->TestDriveIntake(joystick);
 }
 
 void Manipulator::JoystickControlStopped() {
@@ -91,9 +91,9 @@ void Manipulator::Setup() {
     frc::SmartDashboard::PutNumber("dRPM", 4000.0);
     // Setup all the mechanisms
     // m_shooter->Setup();
-    m_indexer->Setup();
+    // m_indexer->Setup();
     // m_winch->Setup();
-     // m_intake->Setup();
+     m_intake->Setup();
 }
 
 void Manipulator::Shutdown() {
@@ -101,9 +101,9 @@ void Manipulator::Shutdown() {
 
     // Shutdown all the mechanisms
     // m_shooter->Shutdown();
-    m_indexer->Shutdown();
+    // m_indexer->Shutdown();
     // m_winch->Shutdown();
-    // m_intake->Shutdown();
+    m_intake->Shutdown();
 }
 
 //==========================================================================
