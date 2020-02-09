@@ -56,8 +56,8 @@ namespace RobotConfiguration {
 const int kLeftMasterTalonId  = 15;
 const int kLeftSlaveTalonId   = 14;
 
-const int kRightMasterTalonId = 0;
-const int kRightSlaveTalonId  = 1;
+const int kRightMasterTalonId = 1;
+const int kRightSlaveTalonId  = 2;
 
 const int kShooterMasterTalonId  = 5;
 // const int kShooterSlaveTalonId  = 6;
