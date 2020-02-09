@@ -773,15 +773,15 @@ void DriveBase::CalculateDriveStraightAdjustment(double move, double& rotate) {
 // Calculation Functions
 
 double DriveBase::VelocityRmpToNative(double velocity_rpm) {
-    return velocity_rpm * 4096.0 / (60.0 * 10.0);
+    return velocity_rpm * 2048.0 / (60.0 * 10.0);
 }
 
 double DriveBase::VelocityNativeToRmp(double velocity_native) {
-    return velocity_native * 60.0 *10.0 / 4096.0;
+    return velocity_native * 60.0 *10.0 / 2048.0;
 }
 
 double DriveBase::EncoderToInches(int encoder_count) {
-	double revolutions = encoder_count / 4096.0;
+	double revolutions = encoder_count / 2048.0;
 	double wheel_circumference_inch = RobotConfiguration::kWheelDiameterInch * 3.1415;
 	return wheel_circumference_inch * revolutions;
 }
@@ -789,7 +789,7 @@ double DriveBase::EncoderToInches(int encoder_count) {
 double DriveBase::InchesToEncoder(int distance_inches) {
 	double wheel_circumference_inch = RobotConfiguration::kWheelDiameterInch * 3.1415;
 	double revolutions = distance_inches / wheel_circumference_inch;
-	return revolutions * 4096.0;
+	return revolutions * 2048.0;
 }
 
 
