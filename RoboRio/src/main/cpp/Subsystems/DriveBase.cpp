@@ -807,8 +807,8 @@ void DriveBase::DoTuningDrive() {
     }
 
     // Do the tuning of the left and right sides
-    DoTuningDriveSide(-RobotConfiguration::kJoystickLeftYAxis, m_left_master_speed_controller, "LEFT", log_value);
-    DoTuningDriveSide(RobotConfiguration::kJoystickRightYAxis, m_right_master_speed_controller, "RIGHT", log_value);
+    // DoTuningDriveSide(-RobotConfiguration::kJoystickLeftYAxis, m_left_master_speed_controller, "LEFT", log_value);
+    // DoTuningDriveSide(RobotConfiguration::kJoystickRightYAxis, m_right_master_speed_controller, "RIGHT", log_value);
 }
 
 void DriveBase::DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller, const char* name, bool log_value) {
