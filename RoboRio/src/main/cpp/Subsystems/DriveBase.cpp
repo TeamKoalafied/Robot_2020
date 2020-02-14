@@ -316,8 +316,8 @@ void DriveBase::ResetJoystickState() {
 }
 
 void DriveBase::DoCheezyDrive() {
-//	DoTuningDrive();
-//	return;
+	DoTuningDrive();
+	return;
 
 
 
@@ -807,11 +807,11 @@ void DriveBase::DoTuningDrive() {
     // }
 
     // Do the tuning of the left and right sides
-    // DoTuningDriveSide(-RobotConfiguration::kJoystickLeftYAxis, m_left_master_speed_controller, "LEFT", log_value);
-    // DoTuningDriveSide(RobotConfiguration::kJoystickRightYAxis, m_right_master_speed_controller, "RIGHT", log_value);
+    DoTuningDriveSide(-RobotConfiguration::kJoystickLeftYAxis, m_left_master_speed_controller, "LEFT", false);
+    DoTuningDriveSide(RobotConfiguration::kJoystickRightYAxis, m_right_master_speed_controller, "RIGHT", false);
 }
 
-void DriveBase::DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller, const char* name, bool log_value) {
+void DriveBase::DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, const char* name, bool log_value) {
     // Get the speed in RPM.
     double speed_native = speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx);
     double speed_rpm = VelocityNativeToRmp(speed_native);

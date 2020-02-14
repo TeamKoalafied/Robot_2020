@@ -269,7 +269,7 @@ private:
     // speed_controller - the master speed controller for this side of the of the drive base
     // name - the name of this side of the of the drive base
     // log_value - whether to log values on this update
-    void DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller, const char* name, bool log_value);
+    void DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, const char* name, bool log_value);
 
 
     //==========================================================================
