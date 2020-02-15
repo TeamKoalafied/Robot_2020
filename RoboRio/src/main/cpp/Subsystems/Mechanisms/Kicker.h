@@ -7,6 +7,7 @@
 
 #include <ctre/Phoenix.h>
 #include <frc/Timer.h>
+#include <frc/DoubleSolenoid.h>
 #include "../../RobotConfiguration.h"
 
 namespace frc { 
@@ -38,9 +39,11 @@ public:
     void Shutdown();
 
     // Perform periodic updates for the Kicker
+
+    void Periodic();
     //
     // show_dashboard - whether to show debugging information on the dashboard
-    void Periodic();
+    void Periodic(bool periodicDashboard);
 
 
     //==========================================================================
@@ -63,6 +66,7 @@ public:
 
 private:
 
+    frc::DoubleSolenoid* m_kicker_double_solenoid;
     //==========================================================================
     // Member Variables
 

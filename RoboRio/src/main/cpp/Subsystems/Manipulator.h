@@ -13,6 +13,7 @@ class Shooter;
 class Indexer;
 class Winch;
 class Intake;
+class Kicker;
 
 // The Manipulator subsystem controls the ???.
 class Manipulator : public TSingleton<Manipulator>, public JoystickSubsystem {
@@ -71,6 +72,7 @@ private:
     Indexer* m_indexer;
     Winch* m_winch;
     Intake* m_intake;
+    Kicker* m_kicker;
 
 
     static constexpr double kTestVelocityFactor = 0.5;      // Ratio to slow down movement by when testing

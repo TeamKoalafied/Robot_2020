@@ -8,6 +8,7 @@
 #include "Mechanisms/Indexer.h"
 #include "Mechanisms/Winch.h"
 #include "Mechanisms/Intake.h"
+#include "Mechanisms/Kicker.h"
 #include "../RobotConfiguration.h"
 #include "../KoalafiedUtilities.h"
 
@@ -29,7 +30,8 @@ Manipulator::Manipulator() :
     // m_shooter = new Shooter;
     // m_indexer = new Indexer;
     // m_winch = new Winch;
-    m_intake = new Intake;
+    // m_intake = new Intake;
+    m_kicker = new Kicker;
 }
 
 Manipulator::~Manipulator() {
@@ -55,7 +57,8 @@ void Manipulator::Periodic() {
     // m_shooter->Periodic(true);
     // m_indexer->Periodic(true);
     // m_winch->Periodic(true);
-    m_intake->Periodic();
+    // m_intake->Periodic(true);
+    m_kicker->Periodic(true);
 }
 
 //==========================================================================
@@ -75,7 +78,8 @@ void Manipulator::DoJoystickControl() {
     // m_shooter->TestDriveShooter(joystick);
     // m_indexer->TestDriveIndexer(joystick);
     // m_winch->TestDriveWinch(joystick);
-    m_intake->TestDriveIntake(joystick);
+    // m_intake->TestDriveIntake(joystick);
+    m_kicker->TestDriveKicker(joystick);
 }
 
 void Manipulator::JoystickControlStopped() {
@@ -93,7 +97,8 @@ void Manipulator::Setup() {
     // m_shooter->Setup();
     // m_indexer->Setup();
     // m_winch->Setup();
-     m_intake->Setup();
+    // m_intake->Setup();
+    m_kicker->Setup();
 }
 
 void Manipulator::Shutdown() {
@@ -103,7 +108,8 @@ void Manipulator::Shutdown() {
     // m_shooter->Shutdown();
     // m_indexer->Shutdown();
     // m_winch->Shutdown();
-    m_intake->Shutdown();
+    // m_intake->Shutdown();
+    m_kicker->Shutdown();
 }
 
 //==========================================================================

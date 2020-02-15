@@ -11,6 +11,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
 #include <ctre/Phoenix.h>
+#include <frc/DoubleSolenoid.h>
 
 
 namespace RC = RobotConfiguration;
