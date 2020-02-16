@@ -233,14 +233,14 @@ private:
     // velocity_rpm - velocity in RPM to convert
     //
     // Returns the velocity in TalonRX units (encoder counts per update period)
-    double VelocityRmpToNative(double velocity_rpm);
+//    double VelocityRmpToNative(double velocity_rpm);
 
     // Convert a velocity from native TalonRX units to RMP
     //
     // velocity_native - velocity in TalonRX units (encoder counts per update period) to convert
     //
     // Returns the velocity in RPM
-    double VelocityNativeToRmp(double velocity_native);
+//    double VelocityNativeToRmp(double velocity_native);
 
     // Convert a encoder count of wheel rotation to a distance moved in inches
     //

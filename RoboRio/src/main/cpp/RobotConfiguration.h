@@ -128,7 +128,10 @@ const double kTalonTimeBaseS = 0.100;
 // Drive Base Physical Parameters
 
 // Drive base wheel diameter in inches
-const double kWheelDiameterInch = 8.0;
+const double kWheelDiameterInch = 6.0;
+
+// Drive base gear box ratio
+const double kDriveBaseGearRatio = 50.0;
 
 
 //==============================================================================

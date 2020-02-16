@@ -48,33 +48,33 @@ namespace KoalafiedUtilities {
 	// name - Name for logging to distinguish when multiple controllers are used
 	void CalculateAndLogF(TalonSRX* controller, double speed_scale, const char* name);
 
-    // Convert a velocity from RMP to native TalonSRX units for a Talon using a CTRE magnetic encoder
+    // Convert a velocity from RPM to native TalonSRX units for a Talon using a CTRE magnetic encoder
     //
     // velocity_rpm - velocity in RPM to convert
     //
     // Returns the velocity in TalonSRX units (encoder counts per update period)
-    double TalonSRXCtreVelocityRmpToNative(double velocity_rpm);
+    double TalonSRXCtreVelocityRpmToNative(double velocity_rpm);
 
-    // Convert a velocity from native TalonSRX units to RMP for a Talon using a CTRE magnetic encoder
+    // Convert a velocity from native TalonSRX units to RPM for a Talon using a CTRE magnetic encoder
     //
     // velocity_native - velocity in TalonSRX units (encoder counts per update period) to convert
     //
     // Returns the velocity in RPM
-    double TalonSRXCtreVelocityNativeToRmp(double velocity_native);
+    double TalonSRXCtreVelocityNativeToRpm(double velocity_native);
 
-    // Convert a velocity from RMP to native TalonFX units
+    // Convert a velocity from RPM to native TalonFX units
     //
     // velocity_rpm - velocity in RPM to convert
     //
     // Returns the velocity in TalonFX units (encoder counts per update period)
-    double TalonFXVelocityRmpToNative(double velocity_rpm);
+    double TalonFXVelocityRpmToNative(double velocity_rpm);
 
-    // Convert a velocity from native TalonFX units to RMP
+    // Convert a velocity from native TalonFX units to RPM
     //
     // velocity_native - velocity in TalonFX units (encoder counts per update period) to convert
     //
     // Returns the velocity in RPM
-    double TalonFXVelocityNativeToRmp(double velocity_native);
+    double TalonFXVelocityNativeToRpm(double velocity_native);
 
 }
 

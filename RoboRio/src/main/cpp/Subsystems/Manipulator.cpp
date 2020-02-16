@@ -26,8 +26,8 @@ Manipulator::Manipulator() :
     TSingleton<Manipulator>(this),
     JoystickSubsystem("Manipulator", RC::kJoystickPortOperator) {
 
-    // m_shooter = new Shooter;
-    // m_indexer = new Indexer;
+    m_shooter = new Shooter;
+    m_indexer = new Indexer;
     // m_winch = new Winch;
     m_intake = new Intake;
 }
@@ -52,8 +52,8 @@ void Manipulator::Periodic() {
     // frc::SmartDashboard::PutNumber("Shooter Speed RPM", shooter_speed_rpm);        
 
 
-    // m_shooter->Periodic(true);
-    // m_indexer->Periodic(true);
+    m_shooter->Periodic(true);
+    m_indexer->Periodic(true);
     // m_winch->Periodic(true);
     m_intake->Periodic();
 }
@@ -68,14 +68,12 @@ void Manipulator::JoystickControlStarted() {
 void Manipulator::DoJoystickControl() {
     frc::Joystick* joystick = GetJoystick();
 
-
-    // DoManualJoystickControl(joystick);
-
-
+    // IMPORTANT: Only one of thes following lines should ever be uncommented at a time
+   DoManualJoystickControl(joystick);
     // m_shooter->TestDriveShooter(joystick);
     // m_indexer->TestDriveIndexer(joystick);
     // m_winch->TestDriveWinch(joystick);
-    m_intake->TestDriveIntake(joystick);
+    // m_intake->TestDriveIntake(joystick);
 }
 
 void Manipulator::JoystickControlStopped() {
@@ -90,8 +88,8 @@ void Manipulator::Setup() {
     std::cout << "Manipulator::Setup()\n";
     frc::SmartDashboard::PutNumber("dRPM", 4000.0);
     // Setup all the mechanisms
-    // m_shooter->Setup();
-    // m_indexer->Setup();
+    m_shooter->Setup();
+    m_indexer->Setup();
     // m_winch->Setup();
      m_intake->Setup();
 }
@@ -100,8 +98,8 @@ void Manipulator::Shutdown() {
     std::cout << "Manipulator::Shutdown()\n";
 
     // Shutdown all the mechanisms
-    // m_shooter->Shutdown();
-    // m_indexer->Shutdown();
+    m_shooter->Shutdown();
+    m_indexer->Shutdown();
     // m_winch->Shutdown();
     m_intake->Shutdown();
 }
@@ -114,12 +112,22 @@ void Manipulator::Shutdown() {
 
 void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
 {
+    double indexer_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
+    double intake_drive = joystick->GetRawAxis(RC::kJoystickRightYAxis);
+    if (fabs(indexer_drive) < RC::kJoystickDeadzone) indexer_drive = 0.0;
+    if (fabs(intake_drive) < RC::kJoystickDeadzone) intake_drive = 0.0;
+
+    m_indexer->ManualDriveIndexer(indexer_drive);
+    m_intake->ManualDriveIntake(intake_drive);
+
+
+
     double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
     bool up_pressed = joystick->GetRawButton(RC::kJoystickXButton);
     
-    // double shooter_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxi>s);
-    // // std::cout << "Shooter Drive" << shooter_drive << "\n";
-    // if (fabs(shooter_drive) < RC::kJoystickDeadzone) shooter_drive = 0.0;
+    // // double shooter_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxi>s);
+    // // // std::cout << "Shooter Drive" << shooter_drive << "\n";
+    // // if (fabs(shooter_drive) < RC::kJoystickDeadzone) shooter_drive = 0.0;
 
     // double indexer_drive = joystick->GetRawAxis(RC::kJoystickRightYAxis);
     // //std::cout << "Shooter Drive" << shooter_drive << "\n";
@@ -134,7 +142,7 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
         // }
     } else {
         // Set the motor to approx 1000-1100RPM (-0.2/6000)
-        m_shooter->ManualDriveShooter(-0.2);
+        m_shooter->ManualDriveShooter(0.0);
         // m_indexer->AutoDriveDashboard(false);
     }
 }

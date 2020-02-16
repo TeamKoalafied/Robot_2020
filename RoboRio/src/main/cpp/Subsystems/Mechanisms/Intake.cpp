@@ -75,8 +75,8 @@ void Intake::Periodic()
 //==============================================================================
 // Operations
 
-void Intake::ManualDriveIntake() {
-
+void Intake::ManualDriveIntake(double percentage_output) {
+    intake_master_speed_controller->Set(ControlMode::PercentOutput, percentage_output);
 }
 
 void Intake::AutoDriveDashboard() {
