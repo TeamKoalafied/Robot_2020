@@ -60,6 +60,7 @@ public:
     void KickerOut();
     void KickerIn();
     void KickerOff();
+    void KickerOutIn();
     
     // Perform testing of the intake using the joystick. This function is only for testing the
     // pivot and may use any controls of the joystick in an ad hoc fashion.
@@ -72,7 +73,6 @@ private:
     frc::DoubleSolenoid* m_kicker_double_solenoid;
     //==========================================================================
     // Member Variables
-
 };
 
 #endif  // Kicker_H

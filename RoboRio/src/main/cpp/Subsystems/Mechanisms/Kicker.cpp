@@ -76,6 +76,12 @@ void Kicker::KickerOff(){
     m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kOff);
 }
 
+void Kicker::KickerOutIn(){
+    m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kReverse);
+    frc::Wait(0.4);
+    m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kForward);
+}
+
 
 
 void Kicker::TestDriveKicker(frc::Joystick* joystick) {
