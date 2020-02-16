@@ -204,7 +204,6 @@ void DriveBase::Setup() {
     if (error != 0) {
         std::cout << "Configuration of the left master Talon failed with code:  " << error << "\n";
     }
-    m_left_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, kPidDefaultIdx, kTalonTimeoutMs);
     m_left_master_speed_controller->SetSensorPhase(true); // Not reversed
     m_left_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_13_Base_PIDF0_, 20, kTalonTimeoutMs);
     m_left_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_10_MotionMagic_, 20, kTalonTimeoutMs);
@@ -213,7 +212,6 @@ void DriveBase::Setup() {
     if (error != 0) {
         std::cout << "Configuration of the left master Talon failed with code:  " << error << "\n";
     }
-    m_right_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, kPidDefaultIdx, kTalonTimeoutMs);
     m_right_master_speed_controller->SetSensorPhase(true); // Not reversed
     m_right_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_13_Base_PIDF0_, 20, kTalonTimeoutMs);
     m_right_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_10_MotionMagic_, 20, kTalonTimeoutMs);
@@ -837,7 +835,7 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, 
         frc::SmartDashboard::PutNumber(std::string(name) + " Target RPM", 0.0);
     	return;
     }
-
+    move = move / 2;
     // Calculate the target speed in RPM and display
 	double target_velocity_rpm = move * RobotConfiguration::kDriveBaseMaxRpm;
 	double target_velocity_native = KoalafiedUtilities::TalonFXVelocityRpmToNative(target_velocity_rpm);
