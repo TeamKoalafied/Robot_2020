@@ -29,8 +29,8 @@ Manipulator::Manipulator() :
 
     m_shooter = new Shooter;
     m_indexer = new Indexer;
-    // m_winch = new Winch;
-    // m_intake = new Intake;
+    m_winch = new Winch;
+    m_intake = new Intake;
     m_kicker = new Kicker;
 }
 
@@ -57,7 +57,7 @@ void Manipulator::Periodic() {
     m_shooter->Periodic(true);
     m_indexer->Periodic(true);
     // m_winch->Periodic(true);
-    // m_intake->Periodic(true);
+    m_intake->Periodic();
     m_kicker->Periodic(true);
 }
 
@@ -72,12 +72,12 @@ void Manipulator::DoJoystickControl() {
     frc::Joystick* joystick = GetJoystick();
 
     // IMPORTANT: Only one of thes following lines should ever be uncommented at a time
-   DoManualJoystickControl(joystick);
+    DoManualJoystickControl(joystick);
     // m_shooter->TestDriveShooter(joystick);
     // m_indexer->TestDriveIndexer(joystick);
     // m_winch->TestDriveWinch(joystick);
     // m_intake->TestDriveIntake(joystick);
-    m_kicker->TestDriveKicker(joystick);
+    // m_kicker->TestDriveKicker(joystick);
 }
 
 void Manipulator::JoystickControlStopped() {
@@ -94,8 +94,8 @@ void Manipulator::Setup() {
     // Setup all the mechanisms
     m_shooter->Setup();
     m_indexer->Setup();
-    // m_winch->Setup();
-    // m_intake->Setup();
+    m_winch->Setup();
+    m_intake->Setup();
     m_kicker->Setup();
 }
 
@@ -105,8 +105,8 @@ void Manipulator::Shutdown() {
     // Shutdown all the mechanisms
     m_shooter->Shutdown();
     m_indexer->Shutdown();
-    // m_winch->Shutdown();
-    // m_intake->Shutdown();
+    m_winch->Shutdown();
+    m_intake->Shutdown();
     m_kicker->Shutdown();
 }
 
@@ -131,6 +131,13 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
     double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
     bool up_pressed = joystick->GetRawButton(RC::kJoystickXButton);
     
+    if (joystick->GetRawButton(RC::kJoystickBButton)){
+        m_kicker->KickerIn();
+    } else if (joystick->GetRawButton(RC::kJoystickAButton)){
+        m_kicker->KickerOut();
+    } else {
+        m_kicker->KickerOff();
+    }
     // // double shooter_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxi>s);
     // // // std::cout << "Shooter Drive" << shooter_drive << "\n";
     // // if (fabs(shooter_drive) < RC::kJoystickDeadzone) shooter_drive = 0.0;

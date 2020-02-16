@@ -54,9 +54,12 @@ public:
     //
     // percentage_output - Percentage output to drive at. Positive is rotate to the
     //      front and negative is to the back.
-    void ManualDriveKicker();
+    void ManualDriveKicker(frc::Joystick* joystick);
 
     void AutoDriveDashboard();
+    void KickerOut();
+    void KickerIn();
+    void KickerOff();
     
     // Perform testing of the intake using the joystick. This function is only for testing the
     // pivot and may use any controls of the joystick in an ad hoc fashion.

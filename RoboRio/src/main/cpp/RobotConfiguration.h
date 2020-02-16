@@ -156,8 +156,8 @@ const double kDriveMotorNominalOutput = 0.1;
 const double kDriveBaseMaxRpm = 5000.0;
 
 // Drive base close loop velocity control PID parameters
-const double kDriveBasePidF = 0.3;
-const double kDriveBasePidP = 0.05;
+const double kDriveBasePidF = 0.047;
+const double kDriveBasePidP = 0.1077;
 const double kDriveBasePidI = 0.0;
 const double kDriveBasePidD = 0.0;
 

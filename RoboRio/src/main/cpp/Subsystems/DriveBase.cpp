@@ -200,6 +200,9 @@ void DriveBase::Setup() {
     master_drivemotor_configuration.slot0.kP = RobotConfiguration::kDriveBasePidP;
     master_drivemotor_configuration.slot0.kI = RobotConfiguration::kDriveBasePidI;
 
+    master_drivemotor_configuration.slot1.kF = (0.047);
+    master_drivemotor_configuration.slot1.kP = (0.1077);
+
     error = m_left_master_speed_controller->ConfigAllSettings(master_drivemotor_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the left master Talon failed with code:  " << error << "\n";
@@ -314,8 +317,8 @@ void DriveBase::ResetJoystickState() {
 }
 
 void DriveBase::DoCheezyDrive() {
-	DoTuningDrive();
-	return;
+	// DoTuningDrive();
+	// return;
 
 
 
@@ -324,13 +327,13 @@ void DriveBase::DoCheezyDrive() {
     double move = 0.0;
     double rotate = 0.0;
     GetMovementFromJoystick(move, rotate);
-    CalculateDriveStraightAdjustment(move, rotate);
+    // CalculateDriveStraightAdjustment(move, rotate);
 
     // Get the robot drive to do arcade driving with our rotate and move values
     ArcadeDrive(move, rotate);
 
 //   TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
-    DrivePathFollower::DoJoystickTestControl(m_joystick);
+    // DrivePathFollower::DoJoystickTestControl(m_joystick);
 }
 
 void DriveBase::StartDrivingStraight(double heading) {
@@ -657,9 +660,9 @@ void DriveBase::ArcadeDrive(double move_value, double rotate_value) {
 //	rotate_value *= lift_scale_factor;
 
     // For demos slow the robot done for safety
-    const double DEMO_SAFETY_FACTOR = 0.5;
-    move_value *= DEMO_SAFETY_FACTOR;
-    rotate_value *= DEMO_SAFETY_FACTOR;
+    // const double DEMO_SAFETY_FACTOR = 0;
+    // move_value *= DEMO_SAFETY_FACTOR;
+    // rotate_value *= DEMO_SAFETY_FACTOR;
 
 	// local variables to hold the computed PWM values for the motors
 	double left_motor_output;
@@ -889,8 +892,8 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, 
         frc::SmartDashboard::PutNumber(std::string(name) + "CL Speed RPM",motor_output);
         frc::SmartDashboard::PutNumber(std::string(name) + "CL Target Velocity Native",motor_output);
         frc::SmartDashboard::PutNumber(std::string(name) + "CL Target Velocity RPM",motor_output);
-        frc::SmartDashboard::PutNumber(std::string(name) + "CL Error Native",motor_output);
-        frc::SmartDashboard::PutNumber(std::string(name) + "CL Error RPM",motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Error Native",closed_loop_error_native);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Error RPM",closed_loop_error_rpm);
 } else {
         // Run in open loop and calculate a value for F
 

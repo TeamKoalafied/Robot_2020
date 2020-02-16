@@ -36,7 +36,7 @@ Kicker::~Kicker() {
 void Kicker::Setup() {
     std::cout << "Kicker::Setup()\n";
 
-    frc::DoubleSolenoid m_kicker_double_solenoid {17, 18};
+    m_kicker_double_solenoid = new frc::DoubleSolenoid(0,1);
 }
 
 void Kicker::Shutdown() {
@@ -51,13 +51,32 @@ void Kicker::Periodic(bool periodicDashboard)
 //==============================================================================
 // Operations
 
-void Kicker::ManualDriveKicker() {
-
+void Kicker::ManualDriveKicker(frc::Joystick* joystick) {
+    if(joystick->GetRawButton(RC::kJoystickAButton)){
+        m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kForward);
+    } else if (joystick->GetRawButton(RC::kJoystickBButton)){
+        m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kReverse);
+    } else {
+        m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kOff);
+    }
 }
 
 void Kicker::AutoDriveDashboard() {
 
 }
+
+void Kicker::KickerIn(){
+    m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kForward);
+}
+
+void Kicker::KickerOut(){
+    m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kReverse);
+}
+void Kicker::KickerOff(){
+    m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kOff);
+}
+
+
 
 void Kicker::TestDriveKicker(frc::Joystick* joystick) {
     if(joystick->GetRawButton(RC::kJoystickAButton)){
