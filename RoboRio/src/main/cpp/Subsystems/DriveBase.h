@@ -233,14 +233,14 @@ private:
     // velocity_rpm - velocity in RPM to convert
     //
     // Returns the velocity in TalonRX units (encoder counts per update period)
-    double VelocityRmpToNative(double velocity_rpm);
+//    double VelocityRmpToNative(double velocity_rpm);
 
     // Convert a velocity from native TalonRX units to RMP
     //
     // velocity_native - velocity in TalonRX units (encoder counts per update period) to convert
     //
     // Returns the velocity in RPM
-    double VelocityNativeToRmp(double velocity_native);
+//    double VelocityNativeToRmp(double velocity_native);
 
     // Convert a encoder count of wheel rotation to a distance moved in inches
     //
@@ -269,7 +269,7 @@ private:
     // speed_controller - the master speed controller for this side of the of the drive base
     // name - the name of this side of the of the drive base
     // log_value - whether to log values on this update
-    void DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller, const char* name, bool log_value);
+    void DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, const char* name, bool log_value);
 
 
     //==========================================================================

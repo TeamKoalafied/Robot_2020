@@ -128,7 +128,10 @@ const double kTalonTimeBaseS = 0.100;
 // Drive Base Physical Parameters
 
 // Drive base wheel diameter in inches
-const double kWheelDiameterInch = 8.0;
+const double kWheelDiameterInch = 6.0;
+
+// Drive base gear box ratio
+const double kDriveBaseGearRatio = ((60.0/10.0)*(42.0/24.0));
 
 
 //==============================================================================
@@ -150,7 +153,7 @@ const double kDriveMotorRampRateS = 0.8;
 const double kDriveMotorNominalOutput = 0.1;
 
 // Maximum drive base speed in RPM. Measured by the encoders, that is on the wheel axis.
-const double kDriveBaseMaxRpm = 450.0;
+const double kDriveBaseMaxRpm = 5000.0;
 
 // Drive base close loop velocity control PID parameters
 const double kDriveBasePidF = 0.3;

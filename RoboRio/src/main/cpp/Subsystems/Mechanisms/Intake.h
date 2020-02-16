@@ -51,7 +51,7 @@ public:
     //
     // percentage_output - Percentage output to drive at. Positive is rotate to the
     //      front and negative is to the back.
-    void ManualDriveIntake();
+    void ManualDriveIntake(double percentage_output);
 
     void AutoDriveDashboard();
     

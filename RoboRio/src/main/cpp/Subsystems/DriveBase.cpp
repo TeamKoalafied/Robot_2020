@@ -204,7 +204,6 @@ void DriveBase::Setup() {
     if (error != 0) {
         std::cout << "Configuration of the left master Talon failed with code:  " << error << "\n";
     }
-    m_left_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, kPidDefaultIdx, kTalonTimeoutMs);
     m_left_master_speed_controller->SetSensorPhase(true); // Not reversed
     m_left_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_13_Base_PIDF0_, 20, kTalonTimeoutMs);
     m_left_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_10_MotionMagic_, 20, kTalonTimeoutMs);
@@ -213,7 +212,6 @@ void DriveBase::Setup() {
     if (error != 0) {
         std::cout << "Configuration of the left master Talon failed with code:  " << error << "\n";
     }
-    m_right_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, kPidDefaultIdx, kTalonTimeoutMs);
     m_right_master_speed_controller->SetSensorPhase(true); // Not reversed
     m_right_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_13_Base_PIDF0_, 20, kTalonTimeoutMs);
     m_right_master_speed_controller->SetStatusFramePeriod(StatusFrame::Status_10_MotionMagic_, 20, kTalonTimeoutMs);
@@ -316,8 +314,8 @@ void DriveBase::ResetJoystickState() {
 }
 
 void DriveBase::DoCheezyDrive() {
-//	DoTuningDrive();
-//	return;
+	DoTuningDrive();
+	return;
 
 
 
@@ -370,7 +368,7 @@ void DriveBase::DriveDistance(double distance_inch, double velocity_feet_per_sec
 	if (velocity_proportional > 1.0) velocity_proportional = 1.0;
 	if (velocity_proportional < -1.0) velocity_proportional = -1.0;
 
-	double motor_velocity_native = VelocityRmpToNative(velocity_proportional * RobotConfiguration::kDriveBaseMaxRpm);
+	double motor_velocity_native = KoalafiedUtilities::TalonFXVelocityRpmToNative(velocity_proportional * RobotConfiguration::kDriveBaseMaxRpm);
 	motor_velocity_native = fabs(motor_velocity_native);
 
 	m_left_master_speed_controller->ConfigMotionCruiseVelocity(motor_velocity_native, kTalonTimeoutMs);
@@ -470,8 +468,8 @@ void DriveBase::GetWheelDistancesM(double& left_distance_m, double& right_distan
 
 double DriveBase::GetVelocityFeetPerSecond()
 {
-    double left_speed_rpm = VelocityNativeToRmp(m_left_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));
-    double right_speed_rpm = VelocityNativeToRmp(m_right_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));
+    double left_speed_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(m_left_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));
+    double right_speed_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(m_right_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));
     double velocity_rpm = (left_speed_rpm - right_speed_rpm)/2.0;
 
 	double wheel_circumference_inch = RobotConfiguration::kWheelDiameterInch * 3.1415;
@@ -686,8 +684,8 @@ void DriveBase::ArcadeDrive(double move_value, double rotate_value) {
 	}
 
 	// Scale the output from percentage to RPM and then convert to native units
-	double left_motor_velocity_native = VelocityRmpToNative(left_motor_output * RobotConfiguration::kDriveBaseMaxRpm);
-	double right_motor_velocity_native = VelocityRmpToNative(right_motor_output * RobotConfiguration::kDriveBaseMaxRpm);
+	double left_motor_velocity_native = KoalafiedUtilities::TalonFXVelocityRpmToNative(left_motor_output * RobotConfiguration::kDriveBaseMaxRpm);
+	double right_motor_velocity_native = KoalafiedUtilities::TalonFXVelocityRpmToNative(right_motor_output * RobotConfiguration::kDriveBaseMaxRpm);
 
 	// If either motor is moving switch off brake mode
 	if (left_motor_velocity_native != 0.0 || right_motor_velocity_native != 0.0) {
@@ -772,24 +770,26 @@ void DriveBase::CalculateDriveStraightAdjustment(double move, double& rotate) {
 //==========================================================================
 // Calculation Functions
 
-double DriveBase::VelocityRmpToNative(double velocity_rpm) {
-    return velocity_rpm * 2048.0 / (60.0 * 10.0);
-}
+// double DriveBase::VelocityRmpToNative(double velocity_rpm) {
+//     return velocity_rpm * 2048.0 / (60.0 * 10.0);
+// }
 
-double DriveBase::VelocityNativeToRmp(double velocity_native) {
-    return velocity_native * 60.0 *10.0 / 2048.0;
-}
+// double DriveBase::VelocityNativeToRmp(double velocity_native) {
+//     return velocity_native * 60.0 *10.0 / 2048.0;
+// }
 
 double DriveBase::EncoderToInches(int encoder_count) {
-	double revolutions = encoder_count / 2048.0;
-	double wheel_circumference_inch = RobotConfiguration::kWheelDiameterInch * 3.1415;
-	return wheel_circumference_inch * revolutions;
+    double motor_revolutions = encoder_count / RC::kTalonFXEnocderCounts;
+    double wheel_revolutions = motor_revolutions / RC::kDriveBaseGearRatio;
+	double wheel_circumference_inch = RobotConfiguration::kWheelDiameterInch * M_PI;
+	return wheel_circumference_inch * wheel_revolutions;
 }
 
 double DriveBase::InchesToEncoder(int distance_inches) {
-	double wheel_circumference_inch = RobotConfiguration::kWheelDiameterInch * 3.1415;
-	double revolutions = distance_inches / wheel_circumference_inch;
-	return revolutions * 2048.0;
+	double wheel_circumference_inch = RobotConfiguration::kWheelDiameterInch * M_PI;
+	double wheel_revolutions = distance_inches / wheel_circumference_inch;
+    double motor_revolutions = wheel_revolutions * RC::kDriveBaseGearRatio;
+	return motor_revolutions * RC::kTalonFXEnocderCounts;
 }
 
 
@@ -807,18 +807,18 @@ void DriveBase::DoTuningDrive() {
     // }
 
     // Do the tuning of the left and right sides
-    // DoTuningDriveSide(-RobotConfiguration::kJoystickLeftYAxis, m_left_master_speed_controller, "LEFT", log_value);
-    // DoTuningDriveSide(RobotConfiguration::kJoystickRightYAxis, m_right_master_speed_controller, "RIGHT", log_value);
+    DoTuningDriveSide(-RobotConfiguration::kJoystickLeftYAxis, m_left_master_speed_controller, "LEFT", false);
+    DoTuningDriveSide(RobotConfiguration::kJoystickRightYAxis, m_right_master_speed_controller, "RIGHT", false);
 }
 
-void DriveBase::DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller, const char* name, bool log_value) {
+void DriveBase::DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, const char* name, bool log_value) {
     // Get the speed in RPM.
     double speed_native = speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx);
-    double speed_rpm = VelocityNativeToRmp(speed_native);
+    double speed_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(speed_native);
 
     // Get the close loop error and convert to RPM
     double closed_loop_error_native = speed_controller->GetClosedLoopError(kPidDefaultIdx);
-    double closed_loop_error_rpm = VelocityNativeToRmp(closed_loop_error_native);
+    double closed_loop_error_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(closed_loop_error_native);
 
     // Display the current motor speed and close loop error at all times
     frc::SmartDashboard::PutNumber(std::string(name) + " Velocity RPM", speed_rpm);
@@ -835,10 +835,10 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller,
         frc::SmartDashboard::PutNumber(std::string(name) + " Target RPM", 0.0);
     	return;
     }
-
+    move = move / 2;
     // Calculate the target speed in RPM and display
 	double target_velocity_rpm = move * RobotConfiguration::kDriveBaseMaxRpm;
-	double target_velocity_native = VelocityRmpToNative(target_velocity_rpm);
+	double target_velocity_native = KoalafiedUtilities::TalonFXVelocityRpmToNative(target_velocity_rpm);
     frc::SmartDashboard::PutNumber(std::string(name) + " Target RPM", target_velocity_rpm);
 
     // If the right trigger is pressed at all, do closed loop testing
@@ -850,15 +850,20 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller,
         speed_controller->Set(ControlMode::Velocity, target_velocity_native);
 
         // Set the controller to use the gains from the second profile slot. These
-        // values will be set via the RoboRIO web interface during tuning.
+        // values will be set via the CTRE Tuner during tuning.
         speed_controller->SelectProfileSlot(kTuneProfileSlotIdx, kPidDefaultIdx);
-        if (log_value) {
-            printf("%s: F %f  P %f  I %f  D %f\n", name,
-            		speed_controller->ConfigGetParameter(eProfileParamSlot_F, kTuneProfileSlotIdx, kTalonTimeoutMs),
-					speed_controller->ConfigGetParameter(eProfileParamSlot_P, kTuneProfileSlotIdx, kTalonTimeoutMs),
-                    speed_controller->ConfigGetParameter(eProfileParamSlot_I, kTuneProfileSlotIdx, kTalonTimeoutMs),
-					speed_controller->ConfigGetParameter(eProfileParamSlot_D, kTuneProfileSlotIdx, kTalonTimeoutMs));
-        }
+        // if (log_value) {
+        //     printf("%s: F %f  P %f  I %f  D %f\n", name,
+        //     		speed_controller->ConfigGetParameter(eProfileParamSlot_F, kTuneProfileSlotIdx, kTalonTimeoutMs),
+		// 			speed_controller->ConfigGetParameter(eProfileParamSlot_P, kTuneProfileSlotIdx, kTalonTimeoutMs),
+        //             speed_controller->ConfigGetParameter(eProfileParamSlot_I, kTuneProfileSlotIdx, kTalonTimeoutMs),
+		// 			speed_controller->ConfigGetParameter(eProfileParamSlot_D, kTuneProfileSlotIdx, kTalonTimeoutMs));
+
+        // }
+        frc::SmartDashboard::PutNumber(std::string(name) + "F", speed_controller->ConfigGetParameter(eProfileParamSlot_F, kTuneProfileSlotIdx, kTalonTimeoutMs));
+        frc::SmartDashboard::PutNumber(std::string(name) + "P", speed_controller->ConfigGetParameter(eProfileParamSlot_P, kTuneProfileSlotIdx, kTalonTimeoutMs));
+        frc::SmartDashboard::PutNumber(std::string(name) + "I", speed_controller->ConfigGetParameter(eProfileParamSlot_I, kTuneProfileSlotIdx, kTalonTimeoutMs));
+        frc::SmartDashboard::PutNumber(std::string(name) + "D", speed_controller->ConfigGetParameter(eProfileParamSlot_D, kTuneProfileSlotIdx, kTalonTimeoutMs));
 
         // Calculate the motor output voltage as a fraction
         double motor_output = speed_controller->GetMotorOutputVoltage()/
@@ -866,19 +871,27 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller,
 
         // Get the speed in RPM.
         double speed_native = speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx);
-        double speed_rpm = VelocityNativeToRmp(speed_native);
+        double speed_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(speed_native);
 
         // Get the close loop error and convert to RPM
         double closed_loop_error_native = speed_controller->GetClosedLoopError(kPidDefaultIdx);
-        double closed_loop_error_rpm = VelocityNativeToRmp(closed_loop_error_native);
+        double closed_loop_error_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(closed_loop_error_native);
 
         // Output the values if required
-        if (log_value) {
-            printf("%s: Output %f  Speed %f (%f rpm) Target %f (%f rpm) Error %f (%f)\n",
-            		name, motor_output, speed_native, speed_rpm, target_velocity_native, target_velocity_rpm,
-					closed_loop_error_native, closed_loop_error_rpm);
-        }
-    } else {
+        // if (log_value) {
+        //     printf("%s: Output %f  Speed %f (%f rpm) Target %f (%f rpm) Error %f (%f)\n",
+        //     		name, motor_output, speed_native, speed_rpm, target_velocity_native, target_velocity_rpm,
+		// 	 		closed_loop_error_native, closed_loop_error_rpm);
+
+        // }
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Output",motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Speed Native",motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Speed RPM",motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Target Velocity Native",motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Target Velocity RPM",motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Error Native",motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Error RPM",motor_output);
+} else {
         // Run in open loop and calculate a value for F
 
         // Set the motor voltage directly from our movement value
@@ -891,14 +904,17 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonSRX* speed_controller,
         // Get the speed in RPM and convert to the native units of encode counts
         // per 100ms time period (see TSSRM page 88).
         double speed_native = speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx);
-        double speed_rpm = VelocityNativeToRmp(speed_native);
+        double speed_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(speed_native);
 
         // Calculate a feed forward gain (F) for this speed
         double F = motor_output * 1023.0/speed_native;
 
         // Output the values if required
-        if (log_value) {
-            printf("%s: Output %f  Speed %f  F %f\n", name, motor_output, speed_rpm, F);
-        }
+        //if (log_value) {
+        //    printf("%s: Output %f  Speed %f  F %f\n", name, motor_output, speed_rpm, F);
+        //}
+        frc::SmartDashboard::PutNumber(std::string(name) + "OL F", F);
+        frc::SmartDashboard::PutNumber(std::string(name) + "OL Output", motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "OL Rpm", speed_rpm);
     }
 }

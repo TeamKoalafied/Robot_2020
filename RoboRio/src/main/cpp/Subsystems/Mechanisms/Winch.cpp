@@ -103,7 +103,7 @@ void Winch::Periodic(bool show_dashboard)
         frc::SmartDashboard::PutNumber("Winch Current", m_winch_master_speed_controller->GetOutputCurrent());        
         frc::SmartDashboard::PutNumber("Winch Output", m_winch_master_speed_controller->GetMotorOutputPercent());         
         double winch_speed_native = m_winch_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
-        double winch_speed_rpm =   KoalafiedUtilities::TalonSRXCtreVelocityNativeToRmp(winch_speed_native);
+        double winch_speed_rpm =   KoalafiedUtilities::TalonSRXCtreVelocityNativeToRpm(winch_speed_native);
         frc::SmartDashboard::PutNumber("Winch Speed RPM", winch_speed_rpm);
         frc::SmartDashboard::PutNumber("Winch Position Inch", GetWinchPositionInch());
         frc::SmartDashboard::PutNumber("Winch Encoder Position",m_winch_master_speed_controller->GetSelectedSensorPosition());

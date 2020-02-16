@@ -55,18 +55,18 @@ void KoalafiedUtilities::CalculateAndLogF(TalonSRX* controller, double speed_sca
 	std::cout << name << ": Output " << motor_output << "  Speed " << speed << "  F " << F << "\n";
 }
 
-double KoalafiedUtilities::TalonSRXCtreVelocityRmpToNative(double velocity_rpm) {
+double KoalafiedUtilities::TalonSRXCtreVelocityRpmToNative(double velocity_rpm) {
     return (velocity_rpm / 60.0) * RC::kCtreEnocderCounts * RC::kTalonTimeBaseS;
 }
 
-double KoalafiedUtilities::TalonSRXCtreVelocityNativeToRmp(double velocity_native) {
+double KoalafiedUtilities::TalonSRXCtreVelocityNativeToRpm(double velocity_native) {
     return (velocity_native /  (RC::kCtreEnocderCounts * RC::kTalonTimeBaseS)) * 60.0;
 }
 
-double KoalafiedUtilities::TalonFXVelocityRmpToNative(double velocity_rpm) {
+double KoalafiedUtilities::TalonFXVelocityRpmToNative(double velocity_rpm) {
     return (velocity_rpm / 60.0) * RC::kTalonFXEnocderCounts * RC::kTalonTimeBaseS;
 }
 
-double KoalafiedUtilities::TalonFXVelocityNativeToRmp(double velocity_native) {
+double KoalafiedUtilities::TalonFXVelocityNativeToRpm(double velocity_native) {
     return (velocity_native / (RC::kTalonFXEnocderCounts * RC::kTalonTimeBaseS)) * 60.0;
 }
