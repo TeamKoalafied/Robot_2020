@@ -11,7 +11,6 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
 #include <ctre/Phoenix.h>
-#include <frc/Solenoid.h>
 
 
 namespace RC = RobotConfiguration;
@@ -35,9 +34,6 @@ Intake::~Intake() {
 
 void Intake::Setup() {
     std::cout << "Intake::Setup()\n";
-    
-    m_intake_solenoid = new frc::Solenoid(RC::kIntakeSolenoidId);
-    
     intake_master_speed_controller = new TalonSRX(RobotConfiguration::kIntakeTalonId);
 
     TalonSRXConfiguration intake_configuration;
@@ -88,13 +84,9 @@ void Intake::AutoDriveDashboard() {
 }
 
 void Intake::TestDriveIntake(frc::Joystick* joystick) {
-    double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
+     double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
 
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
 
     intake_master_speed_controller->Set(ControlMode::PercentOutput, joystick_value);
-}
-
-void Intake::OperateSolenoid(bool position) {
-    m_intake_solenoid->Set(position);
 }
