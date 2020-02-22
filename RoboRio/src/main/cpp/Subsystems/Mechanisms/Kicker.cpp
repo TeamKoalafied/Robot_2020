@@ -36,7 +36,7 @@ Kicker::~Kicker() {
 void Kicker::Setup() {
     std::cout << "Kicker::Setup()\n";
 
-    m_kicker_double_solenoid = new frc::DoubleSolenoid(0,1);
+    m_kicker_double_solenoid = new frc::DoubleSolenoid(RC::kKickerSolenoidId,1);
 }
 
 void Kicker::Shutdown() {
@@ -85,9 +85,9 @@ void Kicker::KickerOutIn(){
 
 
 void Kicker::TestDriveKicker(frc::Joystick* joystick) {
-    if(joystick->GetRawButton(RC::kJoystickAButton)){
+    if(joystick->GetRawButton(RC::kJoystickAButton)) {
         m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kForward);
-    } else if (joystick->GetRawButton(RC::kJoystickBButton)){
+    } else if (joystick->GetRawButton(RC::kJoystickBButton)) {
         m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kReverse);
     } else {
         m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kOff);

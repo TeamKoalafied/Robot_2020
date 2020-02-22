@@ -77,7 +77,9 @@ const int kPneumaticsControlModuleId = 0;
 //==============================================================================
 // Pneumatics Configuration
 
+const int kKickerSolenoidId = 0;
 
+const int kIntakeSolenoidId = 2;
 
 //==============================================================================
 // Digital I/O Configuration

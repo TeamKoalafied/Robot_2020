@@ -141,6 +141,15 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
     } else {
         m_kicker->KickerOff();
     }
+
+    if (joystick->GetRawButton(RC::kJoystickRTrigButton)) {
+        m_intake->OperateSolenoid(true);
+    } else if (joystick->GetRawButton(RC::kJoystickLTrigButton)) {
+        m_intake->OperateSolenoid(false;
+    } else {
+        m_intake->OperateSolenoid(true);
+    }
+
     // // double shooter_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxi>s);
     // // // std::cout << "Shooter Drive" << shooter_drive << "\n";
     // // if (fabs(shooter_drive) < RC::kJoystickDeadzone) shooter_drive = 0.0;
