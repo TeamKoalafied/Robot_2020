@@ -8,6 +8,7 @@
 #include <ctre/Phoenix.h>
 #include <frc/Timer.h>
 #include "../../RobotConfiguration.h"
+#include <frc/Solenoid.h>
 
 namespace frc { 
     class Joystick;
@@ -61,12 +62,15 @@ public:
     // joystick - Joystick to use
     void TestDriveIntake(frc::Joystick* joystick);
 
+    void OperateSolenoid(bool position);
+
 private:
 
     //==========================================================================
     // Member Variables
 
       TalonSRX* intake_master_speed_controller;
+      frc::Solenoid* intake_solenoid;
 };
 
 #endif  // Intake_H
