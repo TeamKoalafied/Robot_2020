@@ -131,10 +131,7 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
     double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
     bool up_pressed = joystick->GetRawButton(RC::kJoystickXButton);
     
-
-    if(joystick->GetRawButton(RC::kJoystickYButton)){
-        m_kicker->KickerOutIn();
-    } else if (joystick->GetRawButton(RC::kJoystickBButton)){
+    if (joystick->GetRawButton(RC::kJoystickBButton)){
         m_kicker->KickerIn();
     } else if (joystick->GetRawButton(RC::kJoystickAButton)){
         m_kicker->KickerOut();
