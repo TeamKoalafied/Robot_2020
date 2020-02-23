@@ -1,0 +1,57 @@
+//==============================================================================
+// Lidar.h
+//==============================================================================
+
+#ifndef Lidar_H
+#define Lidar_H
+
+#include <frc/Timer.h>
+#include <frc/I2C.h>
+
+namespace frc { 
+    class Joystick;
+}
+
+// The Lidar mechanism is part of the Manipulator subsystem. It controls the
+// 
+// 
+class Lidar  {
+public:
+    //==========================================================================
+    // Construction
+
+    // Constructor
+    Lidar();
+
+    // Destructor
+    virtual ~Lidar();
+
+
+    //==========================================================================
+    // Mechanism Lifetime - Setup, Shutdown and Periodic
+
+    // Setup the Lidar for operation
+    void Setup();
+
+    // Shutdown the Lidar
+    void Shutdown();
+
+    // Perform periodic updates for the Lidar
+    //
+    // show_dashboard - whether to show debugging information on the dashboard
+    void Periodic(bool show_dashboard);
+
+    bool IsBusy();
+
+    void AcquireDistance(frc::Timer*);
+
+private:
+    enum Address {ADDRESS_DEFAULT=0x62}; // default I2C bus address for the LIDAR Lite v2
+	enum Register {COMMAND=0x00, STATUS=0x01, DISTANCE_1_2=0x8f};
+	enum Command {ACQUIRE_DC_CORRECT=0x04};
+	enum NumberOfRegistersToRead {READ_1_REGISTER=0x01, READ_2_REGISTERS=0x02};
+	enum NumberOfRegistersToWrite {WRITE_1_REGISTER=0x01};
+	frc::I2C* I2CBus;
+};
+
+#endif  // Lidar_H
