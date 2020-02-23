@@ -9,6 +9,9 @@
 #include "Mechanisms/Winch.h"
 #include "Mechanisms/Intake.h"
 #include "Mechanisms/Kicker.h"
+
+#include "Mechanisms/DistanceSensor.h"
+
 #include "../RobotConfiguration.h"
 #include "../KoalafiedUtilities.h"
 
@@ -32,6 +35,8 @@ Manipulator::Manipulator() :
     m_winch = new Winch;
     m_intake = new Intake;
     m_kicker = new Kicker;
+
+    m_distanceSensor = new DistanceSensor;
 }
 
 Manipulator::~Manipulator() {
@@ -59,6 +64,8 @@ void Manipulator::Periodic() {
     // m_winch->Periodic(true);
     m_intake->Periodic();
     m_kicker->Periodic(true);
+
+    m_distanceSensor->Periodic(true);
 }
 
 //==========================================================================
@@ -97,6 +104,8 @@ void Manipulator::Setup() {
     m_winch->Setup();
     m_intake->Setup();
     m_kicker->Setup();
+
+    m_distanceSensor->Setup();
 }
 
 void Manipulator::Shutdown() {
@@ -108,6 +117,8 @@ void Manipulator::Shutdown() {
     m_winch->Shutdown();
     m_intake->Shutdown();
     m_kicker->Shutdown();
+
+    m_distanceSensor->Shutdown();
 }
 
 //==========================================================================
