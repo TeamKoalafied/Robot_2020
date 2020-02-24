@@ -49,17 +49,17 @@ public:
     //==========================================================================
     // Operations
 
-    // Manually drive the intake at a given percentage of motor output. The intake will not
-    // drive past its end limits.
-    //
-    // percentage_output - Percentage output to drive at. Positive is rotate to the
-    //      front and negative is to the back.
-    void ManualDriveKicker(frc::Joystick* joystick);
+    // Set the kicker to the stop position (i.e. blocking the end of the indexer)
+    void SetStop();
 
-    void AutoDriveDashboard();
-    void KickerOut();
-    void KickerIn();
-    void KickerOff();
+    // Set the kicker to the shoot position (i.e. pushing the ball into the shooter)
+    void SetShoot();
+
+    // Set the kicker off (i.e. not driving the cylinder in either direction)
+    void SetOff();
+
+    // Kick the ball into the shooter.
+    void KickBall();
     
     // Perform testing of the intake using the joystick. This function is only for testing the
     // pivot and may use any controls of the joystick in an ad hoc fashion.
@@ -69,10 +69,14 @@ public:
 
 private:
 
-    frc::DoubleSolenoid* m_kicker_double_solenoid;
     //==========================================================================
     // Member Variables
 
+    // Solenoid that controls the kicker position
+    frc::DoubleSolenoid* m_kicker_double_solenoid;
+
+    // Timer used to actuate the kicker for the correct length of time to shoot the ball
+    frc::Timer m_kick_timer;
 };
 
 #endif  // Kicker_H

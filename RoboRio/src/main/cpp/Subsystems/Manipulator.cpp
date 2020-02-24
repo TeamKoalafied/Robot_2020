@@ -131,19 +131,19 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
     double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
     bool up_pressed = joystick->GetRawButton(RC::kJoystickXButton);
     
-    if (joystick->GetRawButton(RC::kJoystickBButton)){
-        m_kicker->KickerIn();
-    } else if (joystick->GetRawButton(RC::kJoystickAButton)){
-        m_kicker->KickerOut();
-    } else {
-        m_kicker->KickerOff();
-    }
+    // if (joystick->GetRawButton(RC::kJoystickBButton)){
+    //     m_kicker->KickerIn();
+    // } else if (joystick->GetRawButton(RC::kJoystickAButton)){
+    //     m_kicker->KickerOut();
+    // } else {
+    //     m_kicker->KickerOff();
+    // }
 
-    if (joystick->GetRawButton(RC::kJoystickRTrigButton)){
-        m_intake->OperateSolenoid(true);
-    } else if (joystick->GetRawButton(RC::kJoystickLTrigButton)){
-        m_intake->OperateSolenoid(false);
-    }
+    // if (joystick->GetRawButton(RC::kJoystickRTrigButton)){
+    //     m_intake->OperateSolenoid(true);
+    // } else if (joystick->GetRawButton(RC::kJoystickLTrigButton)){
+    //     m_intake->OperateSolenoid(false);
+    // }
     // // double shooter_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxi>s);
     // // // std::cout << "Shooter Drive" << shooter_drive << "\n";
     // // if (fabs(shooter_drive) < RC::kJoystickDeadzone) shooter_drive = 0.0;
