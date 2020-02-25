@@ -99,7 +99,7 @@ void Intake::Stop() {
 }
 
 void Intake::ManualDriveIntake(double percentage_output) {
-    m_intake_speed_controller->Set(ControlMode::PercentOutput, percentage_output);
+    m_intake_speed_controller->Set(ControlMode::PercentOutput, percentage_output*-1);
 }
 
 void Intake::TestDriveIntake(frc::Joystick* joystick) {
