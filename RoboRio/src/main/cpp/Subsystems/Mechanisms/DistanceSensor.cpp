@@ -35,9 +35,6 @@ void DistanceSensor::Setup() {
                                                 rev::Rev2mDistanceSensor::DistanceUnit::kInches};
     RevSensor->SetAutomaticMode(true);
     RevSensor->SetEnabled(true);
-    
-    
-    
 }
 
 void DistanceSensor::Shutdown() {
