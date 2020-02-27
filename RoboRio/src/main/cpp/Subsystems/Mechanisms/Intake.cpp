@@ -23,6 +23,8 @@ namespace RC = RobotConfiguration;
 // Construction
 
 Intake::Intake()  {
+    m_intake_speed_controller = NULL;
+    m_intake_solenoid = NULL;
 }
 
 Intake::~Intake() {

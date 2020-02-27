@@ -39,11 +39,7 @@ public:
     void Shutdown();
 
     // Perform periodic updates for the Kicker
-
     void Periodic();
-    //
-    // show_dashboard - whether to show debugging information on the dashboard
-    void Periodic(bool periodicDashboard);
 
 
     //==========================================================================

@@ -22,6 +22,7 @@ namespace RC = RobotConfiguration;
 // Construction
 
 Indexer::Indexer()  {
+    m_indexer_speed_controller = NULL;
 }
 
 Indexer::~Indexer() {
@@ -36,49 +37,45 @@ void Indexer::Setup() {
     std::cout << "Indexer::Setup()\n";
     
     // Create and configure the indexer Talon
-    m_indexer_master_speed_controller = new TalonSRX(RobotConfiguration::kIndexerTalonId);
-
+    m_indexer_speed_controller = new TalonSRX(RobotConfiguration::kIndexerTalonId);
     TalonSRXConfiguration indexer_configuration;
+
+    // Current limit
     indexer_configuration.continuousCurrentLimit = RobotConfiguration::kShooterMotorContinuousCurrentLimit;
     indexer_configuration.peakCurrentLimit = RobotConfiguration::kShooterMotorPeakCurrentLimit;
     indexer_configuration.peakCurrentDuration = RobotConfiguration::kShooterMotorPeakCurrentDurationMs;
-
-    int error = m_indexer_master_speed_controller->ConfigAllSettings(indexer_configuration, RC::kTalonTimeoutMs);
+    
+    // Feedback sensor
+    indexer_configuration.primaryPID.selectedFeedbackSensor = FeedbackDevice::CTRE_MagEncoder_Absolute;
+ 
+    // Do all configuration and log if it fails
+    int error = m_indexer_speed_controller->ConfigAllSettings(indexer_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the indexer Talon failed with code:  " << error << "\n";
     }
     
-    m_indexer_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, RC::kTalonPidIdx, RC::kTalonTimeoutMs);
-    m_indexer_master_speed_controller->SetSensorPhase(true); // Not reversed
-    m_indexer_master_speed_controller->EnableCurrentLimit(true);
-	m_indexer_master_speed_controller->SetNeutralMode(NeutralMode::Coast);
+    // Perform non-configuration setup
+    m_indexer_speed_controller->SetSensorPhase(true); // Not reversed
+    m_indexer_speed_controller->EnableCurrentLimit(true);
+	m_indexer_speed_controller->SetNeutralMode(NeutralMode::Coast);
 }
 
 void Indexer::Shutdown() {
     std::cout << "Indexer::Shutdown()\n";
 }
 
-void Indexer::Periodic(bool show_dashboard)
+void Indexer::Periodic()
 {
-    if (show_dashboard) {
-        frc::SmartDashboard::PutNumber("Indexer Current", m_indexer_master_speed_controller->GetOutputCurrent());        
-        frc::SmartDashboard::PutNumber("Indexer Output", m_indexer_master_speed_controller->GetMotorOutputPercent());         
-    }
+    frc::SmartDashboard::PutNumber("Indexer Current", m_indexer_speed_controller->GetOutputCurrent());        
+    frc::SmartDashboard::PutNumber("Indexer Output", m_indexer_speed_controller->GetMotorOutputPercent());         
 }
+
 
 //==============================================================================
 // Operations
 
 void Indexer::ManualDriveIndexer(double percentage_speed) {
-    m_indexer_master_speed_controller->Set(ControlMode::PercentOutput, percentage_speed);
-}
-
-void Indexer::AutoDriveDashboard(bool feed_desire) {
-    if (feed_desire){
-        m_indexer_master_speed_controller->Set(ControlMode::PercentOutput, -1);
-    } else {
-        m_indexer_master_speed_controller->Set(ControlMode::PercentOutput, 0);
-    }
+    m_indexer_speed_controller->Set(ControlMode::PercentOutput, percentage_speed);
 }
 
 void Indexer::TestDriveIndexer(frc::Joystick* joystick) {
@@ -89,5 +86,5 @@ void Indexer::TestDriveIndexer(frc::Joystick* joystick) {
     bool close_loop = joystick->GetRawButton(RobotConfiguration::kJoystickLTrigButton);
 
     const double MAX_RPM = 200.0; // TODO need to work this out properly
-    KoalafiedUtilities::TuneDriveTalonSRX(m_indexer_master_speed_controller, "Indexer", joystick_value, MAX_RPM, close_loop);
+    KoalafiedUtilities::TuneDriveTalonSRX(m_indexer_speed_controller, "Indexer", joystick_value, MAX_RPM, close_loop);
 }

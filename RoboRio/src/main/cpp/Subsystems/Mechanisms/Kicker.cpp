@@ -43,7 +43,7 @@ void Kicker::Shutdown() {
     std::cout << "Kicker::Shutdown()\n";
 }
 
-void Kicker::Periodic(bool periodicDashboard) {      
+void Kicker::Periodic() {      
 
 }
 

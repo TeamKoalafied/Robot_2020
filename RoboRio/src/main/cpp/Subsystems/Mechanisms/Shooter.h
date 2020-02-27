@@ -37,10 +37,8 @@ public:
     void Shutdown();
 
     // Perform periodic updates for the Shooter
-    //
-    // show_dashboard - whether to show debugging information on the dashboard
-    double shooter_speed_rpm;
-    void Periodic(bool show_dashboard);
+//    double shooter_speed_rpm;
+    void Periodic();
 
 
 

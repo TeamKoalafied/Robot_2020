@@ -43,22 +43,11 @@ Manipulator::~Manipulator() {
 // frc::Subsystem Function Overrides
 
 void Manipulator::Periodic() {
-    // frc::SmartDashboard::PutNumber("Shooter Current", m_shooter_master_speed_controller->GetOutputCurrent());        
-    // frc::SmartDashboard::PutNumber("Shooter Slave Current", m_shooter_slave_speed_controller->GetOutputCurrent());        
-    // frc::SmartDashboard::PutNumber("Shooter Output", m_shooter_master_speed_controller->GetMotorOutputPercent());        
-    // frc::SmartDashboard::PutNumber("Shooter Slave Output", m_shooter_slave_speed_controller->GetMotorOutputPercent());        
-
-    // double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx);
-    // double shooter_speed_rpm =  shooter_speed_native * 60.0 *10.0 / 4096.0;
-
-    // frc::SmartDashboard::PutNumber("Shooter Speed RPM", shooter_speed_rpm);        
-
-
-    m_shooter->Periodic(true);
-    m_indexer->Periodic(true);
-    // m_winch->Periodic(true);
+    m_shooter->Periodic();
+    m_indexer->Periodic();
+    m_winch->Periodic();
     m_intake->Periodic();
-    m_kicker->Periodic(true);
+    m_kicker->Periodic();
 }
 
 //==========================================================================

@@ -13,9 +13,11 @@ namespace frc {
     class Joystick;
 }
 
-// The Indexer mechanism is part of the Manipulator subsystem. It controls the
-// 
-// 
+// The Indexer mechanism is part of the Manipulator subsystem. It feeds and stores
+// the balls from the intake and delivers them to the shooter, via the kicker. The
+// indexer consists of the following actuators and sensors:
+//
+//  - Indexer motor controlled by a Talon SRX with magnetic encoder
 class Indexer  {
 public:
     //==========================================================================
@@ -38,9 +40,7 @@ public:
     void Shutdown();
 
     // Perform periodic updates for the Indexer
-    //
-    // show_dashboard - whether to show debugging information on the dashboard
-    void Periodic(bool show_dashboard);
+    void Periodic();
 
 
     //==========================================================================
@@ -48,12 +48,9 @@ public:
 
     // Manually drive the indexer at a given percentage of motor output
     //
-    // percentage_output - Percentage output to drive at. Positive is rotate to the
-    //      front and negative is to the back.
+    // percentage_output - Percentage output to drive at. Positive pulls the balls inwards.
     void ManualDriveIndexer(double percentage_output);
 
-    void AutoDriveDashboard(bool feed_desire);
-    
     // Perform testing of the indexer using the joystick. This function is only for testing the
     // indexer and may use any controls of the joystick in an ad hoc fashion.
     //
@@ -65,7 +62,7 @@ private:
     //==========================================================================
     // Member Variables
 
-    TalonSRX* m_indexer_master_speed_controller;   // Motor controller for the indexer
+    TalonSRX* m_indexer_speed_controller;   // Motor controller for the indexer
 };
 
 #endif  // Indexer_H

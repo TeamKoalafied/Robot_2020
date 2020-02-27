@@ -12,7 +12,11 @@ namespace frc {
 }
 
 // The Winch mechanism is part of the Manipulator subsystem. It controls the winch
-// for pulling the robot up when climbing.
+// for pulling the robot up when climbing. The winch consists of the following
+// actuators and sensors:
+//
+//  - Winch motor controlled by a Talon SRX with magnetic encoder and a limit
+//    switch at the bottom
 class Winch  {
 public:
     //==========================================================================
@@ -35,9 +39,7 @@ public:
     void Shutdown();
 
     // Perform periodic updates for the Winch
-    //
-    // show_dashboard - whether to show debugging information on the dashboard
-    void Periodic(bool show_dashboard);
+    void Periodic();
 
 
     //==========================================================================
@@ -67,7 +69,7 @@ private:
     //==========================================================================
     // Member Variables
 
-    TalonSRX* m_winch_master_speed_controller;
+    TalonSRX* m_winch_speed_controller; // Motor controller for the winch
 };
 
 #endif  // Winch_H

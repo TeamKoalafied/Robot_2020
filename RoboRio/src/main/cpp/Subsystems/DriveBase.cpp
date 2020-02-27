@@ -839,6 +839,7 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, 
     	return;
     }
     move = move / 2;
+    
     // Calculate the target speed in RPM and display
 	double target_velocity_rpm = move * RobotConfiguration::kDriveBaseMaxRpm;
 	double target_velocity_native = KoalafiedUtilities::TalonFXVelocityRpmToNative(target_velocity_rpm);

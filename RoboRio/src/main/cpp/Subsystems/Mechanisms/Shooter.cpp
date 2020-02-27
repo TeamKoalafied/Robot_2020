@@ -124,17 +124,14 @@ void Shooter::Shutdown() {
     std::cout << "Shooter::Shutdown()\n";
 }
 
-void Shooter::Periodic(bool show_dashboard)
-{
-    if (show_dashboard) {
-        frc::SmartDashboard::PutNumber("Shooter Current", m_shooter_master_speed_controller->GetOutputCurrent());            
-        frc::SmartDashboard::PutNumber("Shooter Output", m_shooter_master_speed_controller->GetMotorOutputPercent());              
+void Shooter::Periodic() {
+    frc::SmartDashboard::PutNumber("Shooter Current", m_shooter_master_speed_controller->GetOutputCurrent());            
+    frc::SmartDashboard::PutNumber("Shooter Output", m_shooter_master_speed_controller->GetMotorOutputPercent());              
 
-        double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
-        double shooter_speed_rpm =  shooter_speed_native * 60.0 *10.0 / 2048.0;
+    double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
+    double shooter_speed_rpm =  shooter_speed_native * 60.0 *10.0 / 2048.0;
 
-        frc::SmartDashboard::PutNumber("Shooter Speed RPM", shooter_speed_rpm);
-    }
+    frc::SmartDashboard::PutNumber("Shooter Speed RPM", shooter_speed_rpm);
 }
 
 
