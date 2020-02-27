@@ -35,34 +35,32 @@ Intake::~Intake() {
 
 void Intake::Setup() {
     std::cout << "Intake::Setup()\n";
+
+    // Create and configure the intake roller Talon
     m_intake_speed_controller = new TalonSRX(RobotConfiguration::kIntakeTalonId);
-
-    m_intake_solenoid = new frc::Solenoid(2);
-
     TalonSRXConfiguration intake_configuration;
 
-    intake_configuration.nominalOutputReverse = -0.0f;
-    intake_configuration.nominalOutputForward = 0.0f;
-
-    intake_configuration.peakOutputReverse = -1.0f;
-    intake_configuration.peakOutputForward = +1.0f;
-    
+    // Current limit
     intake_configuration.continuousCurrentLimit = RobotConfiguration::kShooterMotorContinuousCurrentLimit;
     intake_configuration.peakCurrentLimit = RobotConfiguration::kShooterMotorPeakCurrentLimit;
     intake_configuration.peakCurrentDuration = RobotConfiguration::kShooterMotorPeakCurrentDurationMs;
 
-    intake_configuration.forwardSoftLimitEnable = false;
-    intake_configuration.reverseSoftLimitEnable = false;
-
+    // Feedback sensor
+    intake_configuration.primaryPID.selectedFeedbackSensor = FeedbackDevice::CTRE_MagEncoder_Absolute;
+ 
+    // Do all configuration and log if it fails
     int error = m_intake_speed_controller->ConfigAllSettings(intake_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the intake Talon failed with code:  " << error << "\n";
     }
     
-    m_intake_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, RC::kTalonPidIdx, RC::kTalonTimeoutMs);
+    // Perform non-configuration setup
     m_intake_speed_controller->SetSensorPhase(true); // Not reversed
     m_intake_speed_controller->EnableCurrentLimit(true);
 	m_intake_speed_controller->SetNeutralMode(NeutralMode::Coast);
+
+    // Initialise the intake solenoid
+    m_intake_solenoid = new frc::Solenoid(2);
 }
 
 void Intake::Shutdown() {

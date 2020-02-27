@@ -46,8 +46,7 @@ public:
     //==========================================================================
     // Operations
 
-    // Manually drive the intake at a given percentage of motor output. The intake will not
-    // drive past its end limits.
+    // Manually drive the indexer at a given percentage of motor output
     //
     // percentage_output - Percentage output to drive at. Positive is rotate to the
     //      front and negative is to the back.
@@ -55,8 +54,8 @@ public:
 
     void AutoDriveDashboard(bool feed_desire);
     
-    // Perform testing of the intake using the joystick. This function is only for testing the
-    // pivot and may use any controls of the joystick in an ad hoc fashion.
+    // Perform testing of the indexer using the joystick. This function is only for testing the
+    // indexer and may use any controls of the joystick in an ad hoc fashion.
     //
     // joystick - Joystick to use
     void TestDriveIndexer(frc::Joystick* joystick);
@@ -66,7 +65,7 @@ private:
     //==========================================================================
     // Member Variables
 
-    TalonSRX* indexer_master_speed_controller;
+    TalonSRX* m_indexer_master_speed_controller;   // Motor controller for the indexer
 };
 
 #endif  // Indexer_H

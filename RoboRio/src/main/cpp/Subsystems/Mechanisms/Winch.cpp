@@ -68,8 +68,6 @@ void Winch::Setup() {
 	double max_extension_revolutions = RC::kWinchMaximumExtensionInch/winch_circumference_inch;
     winch_configuration.forwardSoftLimitThreshold = 0;
     winch_configuration.reverseSoftLimitThreshold = -max_extension_revolutions * RC::kCtreEnocderCounts;
-    //winch_configuration.forwardSoftLimitEnable = false;
-    //winch_configuration.reverseSoftLimitEnable = false;
     std::cout << "reverseSoftLimitThreshold = " << winch_configuration.reverseSoftLimitThreshold << "\n";
 
     winch_configuration.forwardSoftLimitEnable = true;
@@ -77,7 +75,7 @@ void Winch::Setup() {
 
     // Limit switches
 
-
+    // Do all configuration and log if it fails
     int error = m_winch_master_speed_controller->ConfigAllSettings(winch_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the winch Talon failed with code:  " << error << "\n";
@@ -85,12 +83,12 @@ void Winch::Setup() {
 
 
     // Perform non-configuration setup
-
     m_winch_master_speed_controller->SetSensorPhase(false); // Not reversed
     m_winch_master_speed_controller->EnableCurrentLimit(true);
 	m_winch_master_speed_controller->SetNeutralMode(NeutralMode::Brake);
-    m_winch_master_speed_controller->SetSelectedSensorPosition(0,RC::kTalonPidIdx);
-    
+
+    // Zero the encoder so that zero is the full retracted start position
+    m_winch_master_speed_controller->SetSelectedSensorPosition(0, RC::kTalonPidIdx);
 }
 
 void Winch::Shutdown() {

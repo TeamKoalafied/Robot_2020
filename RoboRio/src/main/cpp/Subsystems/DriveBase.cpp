@@ -888,10 +888,10 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, 
 
         // }
         frc::SmartDashboard::PutNumber(std::string(name) + "CL Output",motor_output);
-        frc::SmartDashboard::PutNumber(std::string(name) + "CL Speed Native",motor_output);
-        frc::SmartDashboard::PutNumber(std::string(name) + "CL Speed RPM",motor_output);
-        frc::SmartDashboard::PutNumber(std::string(name) + "CL Target Velocity Native",motor_output);
-        frc::SmartDashboard::PutNumber(std::string(name) + "CL Target Velocity RPM",motor_output);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Speed Native", speed_native);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Speed RPM", speed_rpm);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Target Velocity Native", target_velocity_native);
+        frc::SmartDashboard::PutNumber(std::string(name) + "CL Target Velocity RPM", target_velocity_rpm);
         frc::SmartDashboard::PutNumber(std::string(name) + "CL Error Native",closed_loop_error_native);
         frc::SmartDashboard::PutNumber(std::string(name) + "CL Error RPM",closed_loop_error_rpm);
 } else {

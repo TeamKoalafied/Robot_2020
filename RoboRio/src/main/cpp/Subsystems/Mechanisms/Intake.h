@@ -81,8 +81,8 @@ private:
     //==========================================================================
     // Member Variables
 
-      TalonSRX* m_intake_speed_controller;
-      frc::Solenoid* m_intake_solenoid;
+      TalonSRX* m_intake_speed_controller;  // Motor controller for the intake roller
+      frc::Solenoid* m_intake_solenoid;     // Single solenoid for extending and retracting the intake
 };
 
 #endif  // Intake_H
