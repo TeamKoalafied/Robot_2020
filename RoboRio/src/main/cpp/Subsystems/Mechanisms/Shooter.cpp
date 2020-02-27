@@ -154,7 +154,7 @@ void Shooter::AutoDriveDashboard(double dRPM) {
 }
 
 bool Shooter::ShooterAtSpeed(double dRPM) {
-   double adjustedRPM = (m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx) * 60.0 * 10.0 / 2048.0) * 1.075;
+   double adjustedRPM = (m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx) * 60.0 * 10.0 / 2048.0) * -0.925;
     if (adjustedRPM < dRPM){
         return true;
     } else {
