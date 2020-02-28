@@ -121,7 +121,7 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
     // Shoot, then kick
     if (joystick->GetRawButton(RC::kJoystickBButton)) {
         m_shooter->AutoDriveDashboard(dRPM);
-        if (m_shooter->ShooterAtSpeed()){
+        if (m_shooter->ShooterAtSpeed(dRPM)){
             m_kicker->SetShoot();
         }
     } else {
