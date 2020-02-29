@@ -22,6 +22,7 @@ namespace RC = RobotConfiguration;
 // Construction
 
 Indexer::Indexer()  {
+    m_indexer_speed_controller = NULL;
 }
 
 Indexer::~Indexer() {
@@ -35,100 +36,57 @@ Indexer::~Indexer() {
 void Indexer::Setup() {
     std::cout << "Indexer::Setup()\n";
     
-    // Create controllers for each of the 4 drive talons
-    indexer_master_speed_controller = new TalonSRX(RobotConfiguration::kIndexerTalonId);
-
+    // Create and configure the indexer Talon
+    m_indexer_speed_controller = new TalonSRX(RobotConfiguration::kIndexerTalonId);
     TalonSRXConfiguration indexer_configuration;
 
-    indexer_configuration.nominalOutputReverse = -0.0f;
-    indexer_configuration.nominalOutputForward = 0.0f;
-
-    indexer_configuration.peakOutputReverse = -1.0f;
-    indexer_configuration.peakOutputForward = +1.0f;
-    
+    // Current limit
     indexer_configuration.continuousCurrentLimit = RobotConfiguration::kShooterMotorContinuousCurrentLimit;
     indexer_configuration.peakCurrentLimit = RobotConfiguration::kShooterMotorPeakCurrentLimit;
     indexer_configuration.peakCurrentDuration = RobotConfiguration::kShooterMotorPeakCurrentDurationMs;
-
-    indexer_configuration.forwardSoftLimitEnable = false;
-    indexer_configuration.reverseSoftLimitEnable = false;
-
-    int error = indexer_master_speed_controller->ConfigAllSettings(indexer_configuration, RC::kTalonTimeoutMs);
+    
+    // Feedback sensor
+    indexer_configuration.primaryPID.selectedFeedbackSensor = FeedbackDevice::CTRE_MagEncoder_Absolute;
+    
+    indexer_configuration.slot0.kF = 0.14;
+    indexer_configuration.slot0.kP = 0.3;
+    // Do all configuration and log if it fails
+    int error = m_indexer_speed_controller->ConfigAllSettings(indexer_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the indexer Talon failed with code:  " << error << "\n";
     }
     
-    indexer_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, RC::kTalonPidIdx, RC::kTalonTimeoutMs);
-    indexer_master_speed_controller->SetSensorPhase(true); // Not reversed
-    indexer_master_speed_controller->EnableCurrentLimit(true);
-	indexer_master_speed_controller->SetNeutralMode(NeutralMode::Coast);
-    
-    // Log whether the encoders are connected
-    //    printf("Left magnetic encode present: %s ",
-    //           (m_left_master_speed_controller->IsSensorPresent(TalonSRX::CtreMagEncoder_Absolute) ? "true" : "false"));
-    //    printf("Right magnetic encode present: %s ",
-    //           (m_right_master_speed_controller->IsSensorPresent(TalonSRX::CtreMagEncoder_Absolute) ? "true" : "false"));
-
-    // Set the encoders to be the feedback devices for closed loop control on the master motors
-    // TSSRM Section 7 (page 43)
-
-    
-
-    
-    // Set the peak and nominal voltage outputs for the master motors. This is for closed loop only.
-    // The peak outputs are the maximum, but the nominal (same in both directions) is tuned to be
-    // about the minimum value that will overcome the drive train friction.
-    // TSSRM Section 10.5 (page 66)
-
-    // Set the ramp rate for open and close loop modes. TODO Is this necessary for slaves?
-    // TSSRM Section 6 (page 41)
-    // indexer_master_speed_controller->ConfigOpenloopRamp(RobotConfiguration::kDriveMotorRampRateS, kTalonTimeoutMs);
-    // indexer_master_speed_controller->ConfigClosedloopRamp(RobotConfiguration::kDriveMotorRampRateS, kTalonTimeoutMs);
-    // m_shooter_slave_speed_controller->ConfigOpenloopRamp(RobotConfiguration::kDriveMotorRampRateS, kTalonTimeoutMs);
-    // m_shooter_slave_speed_controller->ConfigClosedloopRamp(RobotConfiguration::kDriveMotorRampRateS, kTalonTimeoutMs);
-
-    // Voltage compensation TODO Is this required?
-    // TSSRM Section 9.2 (page 60)
-    //  virtual ctre::phoenix::ErrorCode ConfigVoltageCompSaturation(double voltage, int timeoutMs);
-    //	virtual ctre::phoenix::ErrorCode ConfigVoltageMeasurementFilter(int filterWindowSamples, int timeoutMs);
-    //	virtual void EnableVoltageCompensation(bool enable);
-
-    // Set the continuous and peak current limits, for all motors. The is for all control modes (i.e. open/closed loop)
-    // TSSRM Section 9.3 (page 62)
-    
+    // Perform non-configuration setup
+    m_indexer_speed_controller->SetSensorPhase(false); // Not reversed
+    m_indexer_speed_controller->EnableCurrentLimit(true);
+	m_indexer_speed_controller->SetNeutralMode(NeutralMode::Coast);
 }
 
 void Indexer::Shutdown() {
     std::cout << "Indexer::Shutdown()\n";
 }
 
-void Indexer::Periodic(bool show_dashboard)
+void Indexer::Periodic()
 {
-    if (show_dashboard) {
-        frc::SmartDashboard::PutNumber("Indexer Current", indexer_master_speed_controller->GetOutputCurrent());        
-        frc::SmartDashboard::PutNumber("Indexer Output", indexer_master_speed_controller->GetMotorOutputPercent());         
-    }
+    frc::SmartDashboard::PutNumber("Indexer Current", m_indexer_speed_controller->GetOutputCurrent());        
+    frc::SmartDashboard::PutNumber("Indexer Output", m_indexer_speed_controller->GetMotorOutputPercent());         
 }
+
 
 //==============================================================================
 // Operations
 
 void Indexer::ManualDriveIndexer(double percentage_speed) {
-    indexer_master_speed_controller->Set(ControlMode::PercentOutput, percentage_speed);
-}
-
-void Indexer::AutoDriveDashboard(bool feed_desire) {
-    if (feed_desire){
-        indexer_master_speed_controller->Set(ControlMode::PercentOutput, -1);
-    } else {
-        indexer_master_speed_controller->Set(ControlMode::PercentOutput, 0);
-    }
+    m_indexer_speed_controller->Set(ControlMode::PercentOutput, percentage_speed);
 }
 
 void Indexer::TestDriveIndexer(frc::Joystick* joystick) {
+    // Do tune driving of the indexer. Using the right Y for the drive and trigger
+    // close loop with the left trigger button.
     double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
-
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
+    bool close_loop = joystick->GetRawButton(RobotConfiguration::kJoystickLTrigButton);
 
-    indexer_master_speed_controller->Set(ControlMode::PercentOutput, joystick_value);
+    const double MAX_RPM = 1050.0; // TODO need to work this out properly
+    KoalafiedUtilities::TuneDriveTalonSRX(m_indexer_speed_controller, "Indexer", joystick_value, MAX_RPM, close_loop);
 }

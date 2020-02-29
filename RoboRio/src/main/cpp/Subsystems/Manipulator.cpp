@@ -43,22 +43,11 @@ Manipulator::~Manipulator() {
 // frc::Subsystem Function Overrides
 
 void Manipulator::Periodic() {
-    // frc::SmartDashboard::PutNumber("Shooter Current", m_shooter_master_speed_controller->GetOutputCurrent());        
-    // frc::SmartDashboard::PutNumber("Shooter Slave Current", m_shooter_slave_speed_controller->GetOutputCurrent());        
-    // frc::SmartDashboard::PutNumber("Shooter Output", m_shooter_master_speed_controller->GetMotorOutputPercent());        
-    // frc::SmartDashboard::PutNumber("Shooter Slave Output", m_shooter_slave_speed_controller->GetMotorOutputPercent());        
-
-    // double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx);
-    // double shooter_speed_rpm =  shooter_speed_native * 60.0 *10.0 / 4096.0;
-
-    // frc::SmartDashboard::PutNumber("Shooter Speed RPM", shooter_speed_rpm);        
-
-
-    m_shooter->Periodic(true);
-    m_indexer->Periodic(true);
-    // m_winch->Periodic(true);
+    m_shooter->Periodic();
+    m_indexer->Periodic();
+    m_winch->Periodic();
     m_intake->Periodic();
-    m_kicker->Periodic(true);
+    m_kicker->Periodic();
 }
 
 //==========================================================================
@@ -73,6 +62,9 @@ void Manipulator::DoJoystickControl() {
 
     // IMPORTANT: Only one of thes following lines should ever be uncommented at a time
     DoManualJoystickControl(joystick);
+
+
+    
     // m_shooter->TestDriveShooter(joystick);
     // m_indexer->TestDriveIndexer(joystick);
     // m_winch->TestDriveWinch(joystick);
@@ -118,32 +110,81 @@ void Manipulator::Shutdown() {
 
 void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
 {
-    double indexer_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
-    double intake_drive = joystick->GetRawAxis(RC::kJoystickRightYAxis);
-    if (fabs(indexer_drive) < RC::kJoystickDeadzone) indexer_drive = 0.0;
-    if (fabs(intake_drive) < RC::kJoystickDeadzone) intake_drive = 0.0;
-
-    m_indexer->ManualDriveIndexer(indexer_drive);
-    m_intake->ManualDriveIntake(intake_drive);
-
-
-
     double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
-    bool up_pressed = joystick->GetRawButton(RC::kJoystickXButton);
-    
-    if (joystick->GetRawButton(RC::kJoystickBButton)){
-        m_kicker->KickerIn();
-    } else if (joystick->GetRawButton(RC::kJoystickAButton)){
-        m_kicker->KickerOut();
+
+    // Run indexer and intake together
+    if (joystick->GetRawButton(RC::kJoystickAButton)) {
+        m_kicker->SetShoot();
+        m_intake->Extend();
+        m_indexer->ManualDriveIndexer(0.5);
+        m_intake->Run();
+        
     } else {
-        m_kicker->KickerOff();
+        m_intake->Retract();
+        m_intake->Stop();
+        
+        double indexer_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
+        if (fabs(indexer_drive) < RC::kJoystickDeadzone) indexer_drive = 0.0;
+        m_indexer->ManualDriveIndexer(indexer_drive*0.8);
+
+        if (joystick->GetRawButton(RC::kJoystickRTrigButton)) {
+            m_intake->Extend();
+            m_intake->Run();
+        }
     }
 
-    if (joystick->GetRawButton(RC::kJoystickRTrigButton)){
-        m_intake->OperateSolenoid(true);
-    } else if (joystick->GetRawButton(RC::kJoystickLTrigButton)){
-        m_intake->OperateSolenoid(false);
+    // Shoot, then kick
+    if (joystick->GetRawButton(RC::kJoystickBButton)) {
+        m_shooter->AutoDriveDashboard(dRPM);
+        // if (m_shooter->ShooterAtSpeed(dRPM)){
+        //     m_kicker->SetStop();
+        // }
+    } else {
+        m_shooter->ManualDriveShooter(0);
     }
+
+    // if (joystick->GetPOV(0)==RC::kJoystickPovDown){
+    //     m_intake->Extend();
+    // } else {
+    //     m_intake->Retract();
+    // }
+
+    if (joystick->GetRawButton(RC::kJoystickYButton)) {
+        m_kicker->SetStop();
+    }
+    if (joystick->GetRawButton(RC::kJoystickXButton)) {
+        m_kicker->SetShoot();
+    }
+
+    // if (joystick->GetRawButton(RC::kJoystickXButton)) {
+    //     m_shooter->AutoDriveDashboard(dRPM);
+    //     std::cout << "shooting in manipulator\n";
+    //     // if (m_shooter->ShooterAtSpeed(dRPM)) {
+    //     //     // m_indexer->AutoDriveDashboard(true);
+    //     // } else {
+    //     //     // m_indexer->AutoDriveDashboard(false);
+    //     // }
+    // } else {
+    //     // Set the motor to approx 1000-1100RPM (-0.2/6000)
+    //     m_shooter->ManualDriveShooter(0.0);
+    //     // m_indexer->AutoDriveDashboard(false);
+    // }
+
+    //double indexer_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
+    // double intake_drive = joystick->GetRawAxis(RC::kJoystickRightYAxis);
+   // if (fabs(indexer_drive) < RC::kJoystickDeadzone) indexer_drive = 0.0;
+    // if (fabs(intake_drive) < RC::kJoystickDeadzone) intake_drive = 0.0;
+
+    //m_indexer->ManualDriveIndexer(indexer_drive);
+    // m_intake->ManualDriveIntake(intake_drive);
+
+    
+
+    // if (joystick->GetRawButton(RC::kJoystickRTrigButton)){
+    //     m_intake->OperateSolenoid(true);
+    // } else if (joystick->GetRawButton(RC::kJoystickLTrigButton)){
+    //     m_intake->OperateSolenoid(false);
+    // }
     // // double shooter_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxi>s);
     // // // std::cout << "Shooter Drive" << shooter_drive << "\n";
     // // if (fabs(shooter_drive) < RC::kJoystickDeadzone) shooter_drive = 0.0;
@@ -151,19 +192,7 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
     // double indexer_drive = joystick->GetRawAxis(RC::kJoystickRightYAxis);
     // //std::cout << "Shooter Drive" << shooter_drive << "\n";
     // if (fabs(indexer_drive) < RC::kJoystickDeadzone) indexer_drive = 0.0;
-    if (up_pressed) {
-        m_shooter->AutoDriveDashboard(dRPM);
-        std::cout << "shooting in manipulator\n";
-        // if (m_shooter->ShooterAtSpeed(dRPM)) {
-        //     // m_indexer->AutoDriveDashboard(true);
-        // } else {
-        //     // m_indexer->AutoDriveDashboard(false);
-        // }
-    } else {
-        // Set the motor to approx 1000-1100RPM (-0.2/6000)
-        m_shooter->ManualDriveShooter(0.0);
-        // m_indexer->AutoDriveDashboard(false);
-    }
+    
 }
     
     

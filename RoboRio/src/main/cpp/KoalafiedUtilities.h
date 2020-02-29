@@ -38,7 +38,7 @@ namespace KoalafiedUtilities {
 
 
     //==========================================================================
-	// Talon SRX Utilities
+	// Talon SRX & Talon FX Utilities
 
 	// Calculate a log F, the feed forward gain for a Talon SRX controller
 	//
@@ -47,6 +47,15 @@ namespace KoalafiedUtilities {
 	//     meaning of 'speed' depends on the application.
 	// name - Name for logging to distinguish when multiple controllers are used
 	void CalculateAndLogF(TalonSRX* controller, double speed_scale, const char* name);
+
+
+	// Calculate a log F, the feed forward gain for a Talon SRX controller
+	//
+	// controller - Talon SRX controller to log the F gain for
+	// scale - Scaling factor to convert encoder counts to 'speed' for logging. The
+	//     meaning of 'speed' depends on the application.
+	// name - Name for logging to distinguish when multiple controllers are used
+	void TuneDriveTalonSRX(TalonSRX* controller, const char* name, double drive, double max_rpm, bool close_loop);
 
     // Convert a velocity from RPM to native TalonSRX units for a Talon using a CTRE magnetic encoder
     //

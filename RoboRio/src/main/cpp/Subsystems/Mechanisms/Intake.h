@@ -14,8 +14,12 @@ namespace frc {
     class Joystick;
 }
 
-// The Intake mechanism is part of the Manipulator subsystem. It controls the
-// 
+// The Intake mechanism is part of the Manipulator subsystem. It grabs the balls
+// from the floor and pulls them into the robot. The intake consists of the following
+// actuators and sensors:
+//
+//  - Roller motor controlled by a Talon SRX with magnetic encoder
+//  - Deploy pneumatic cylinder controlled by a single solenoid
 // 
 class Intake  {
 public:
@@ -26,7 +30,7 @@ public:
     Intake();
 
     // Destructor
-    virtual ~Intake();
+    ~Intake();
 
 
     //==========================================================================
@@ -39,38 +43,46 @@ public:
     void Shutdown();
 
     // Perform periodic updates for the Intake
-    //
-    // show_dashboard - whether to show debugging information on the dashboard
     void Periodic();
 
 
     //==========================================================================
     // Operations
 
-    // Manually drive the intake at a given percentage of motor output. The intake will not
-    // drive past its end limits.
+    // Deploy the intake out from the robot frame ready to grab balls
+    void Extend();
+
+    // Retract the intake into the robot frame
+    void Retract();
+
+    // Run the intake for grabbing balls
+    void Run();
+
+    // Run the intake in the reverse directions. Used for clearing jammed balls.
+    void RunReverse();
+
+    // Stop running the intake
+    void Stop();
+
+    // Manually drive the intake at a given percentage of motor output
     //
     // percentage_output - Percentage output to drive at. Positive is rotate to the
     //      front and negative is to the back.
     void ManualDriveIntake(double percentage_output);
 
-    void AutoDriveDashboard();
-    
     // Perform testing of the intake using the joystick. This function is only for testing the
     // pivot and may use any controls of the joystick in an ad hoc fashion.
     //
     // joystick - Joystick to use
     void TestDriveIntake(frc::Joystick* joystick);
 
-    void OperateSolenoid(bool position);
-
 private:
 
     //==========================================================================
     // Member Variables
 
-      TalonSRX* intake_master_speed_controller;
-      frc::Solenoid* intake_solenoid;
+      TalonSRX* m_intake_speed_controller;  // Motor controller for the intake roller
+      frc::Solenoid* m_intake_solenoid;     // Single solenoid for extending and retracting the intake
 };
 
 #endif  // Intake_H

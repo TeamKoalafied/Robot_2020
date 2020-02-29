@@ -23,6 +23,8 @@ namespace RC = RobotConfiguration;
 // Construction
 
 Intake::Intake()  {
+    m_intake_speed_controller = NULL;
+    m_intake_solenoid = NULL;
 }
 
 Intake::~Intake() {
@@ -35,65 +37,90 @@ Intake::~Intake() {
 
 void Intake::Setup() {
     std::cout << "Intake::Setup()\n";
-    intake_master_speed_controller = new TalonSRX(RobotConfiguration::kIntakeTalonId);
 
-    intake_solenoid = new frc::Solenoid(2);
-
+    // Create and configure the intake roller Talon
+    m_intake_speed_controller = new TalonSRX(RobotConfiguration::kIntakeTalonId);
     TalonSRXConfiguration intake_configuration;
 
-    intake_configuration.nominalOutputReverse = -0.0f;
-    intake_configuration.nominalOutputForward = 0.0f;
-
-    intake_configuration.peakOutputReverse = -1.0f;
-    intake_configuration.peakOutputForward = +1.0f;
-    
+    // Current limit
     intake_configuration.continuousCurrentLimit = RobotConfiguration::kShooterMotorContinuousCurrentLimit;
     intake_configuration.peakCurrentLimit = RobotConfiguration::kShooterMotorPeakCurrentLimit;
     intake_configuration.peakCurrentDuration = RobotConfiguration::kShooterMotorPeakCurrentDurationMs;
 
-    intake_configuration.forwardSoftLimitEnable = false;
-    intake_configuration.reverseSoftLimitEnable = false;
-
-    int error = intake_master_speed_controller->ConfigAllSettings(intake_configuration, RC::kTalonTimeoutMs);
+    intake_configuration.slot0.kF = 0.12;
+    intake_configuration.slot0.kP = 0.25;
+    // Feedback sensor
+    intake_configuration.primaryPID.selectedFeedbackSensor = FeedbackDevice::CTRE_MagEncoder_Absolute;
+ 
+    // Do all configuration and log if it fails
+    int error = m_intake_speed_controller->ConfigAllSettings(intake_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the intake Talon failed with code:  " << error << "\n";
     }
     
-    intake_master_speed_controller->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Absolute, RC::kTalonPidIdx, RC::kTalonTimeoutMs);
-    intake_master_speed_controller->SetSensorPhase(true); // Not reversed
-    intake_master_speed_controller->EnableCurrentLimit(true);
-	intake_master_speed_controller->SetNeutralMode(NeutralMode::Coast);
+    // Perform non-configuration setup
+    m_intake_speed_controller->SetSensorPhase(true); // Not reversed
+    m_intake_speed_controller->EnableCurrentLimit(true);
+	m_intake_speed_controller->SetNeutralMode(NeutralMode::Coast);
+
+    // Initialise the intake solenoid
+    m_intake_solenoid = new frc::Solenoid(2);
 }
 
 void Intake::Shutdown() {
     std::cout << "Intake::Shutdown()\n";
 }
 
-void Intake::Periodic()
-{      
-    frc::SmartDashboard::PutNumber("Intake Current", intake_master_speed_controller->GetOutputCurrent());        
-    frc::SmartDashboard::PutNumber("Intake Output", intake_master_speed_controller->GetMotorOutputPercent());         
+void Intake::Periodic() {      
+    frc::SmartDashboard::PutNumber("Intake Current", m_intake_speed_controller->GetOutputCurrent());        
+    frc::SmartDashboard::PutNumber("Intake Output", m_intake_speed_controller->GetMotorOutputPercent());         
 }
 
 //==============================================================================
 // Operations
 
-void Intake::ManualDriveIntake(double percentage_output) {
-    intake_master_speed_controller->Set(ControlMode::PercentOutput, percentage_output);
+
+void Intake::Extend() {
+    m_intake_solenoid->Set(true);
 }
 
-void Intake::AutoDriveDashboard() {
+void Intake::Retract() {
+    m_intake_solenoid->Set(false);
+}
 
+void Intake::Run() {
+    // double target_velocity_rpm = max_rpm * drive;
+	double target_velocity_native = KoalafiedUtilities::TalonSRXCtreVelocityRpmToNative(-1050);
+    m_intake_speed_controller->Set(ControlMode::Velocity, target_velocity_native);
+}
+
+void Intake::RunReverse() {
+    // double target_velocity_rpm = max_rpm * drive;
+	double target_velocity_native = KoalafiedUtilities::TalonSRXCtreVelocityRpmToNative(600);
+    m_intake_speed_controller->Set(ControlMode::Velocity, target_velocity_native);
+}
+
+void Intake::Stop() {
+    ManualDriveIntake(0.0);
+}
+
+void Intake::ManualDriveIntake(double percentage_output) {
+    m_intake_speed_controller->Set(ControlMode::PercentOutput, percentage_output*-1);
 }
 
 void Intake::TestDriveIntake(frc::Joystick* joystick) {
-     double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
-
+    // Do tune driving of the intake roller. Using the right Y for the drive and trigger
+    // close loop with the left trigger button.
+    double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
+    
+    if (joystick->GetRawButton(RC::kJoystickAButton)) {
+        Extend();
+    } else {
+        Retract();
+    }
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
+    bool close_loop = joystick->GetRawButton(RobotConfiguration::kJoystickLTrigButton);
 
-    intake_master_speed_controller->Set(ControlMode::PercentOutput, joystick_value);
-}
-
-void Intake::OperateSolenoid(bool position) {
-    intake_solenoid->Set(position);
+    const double MAX_RPM = 1200.0; // TODO need to work this out properly
+    KoalafiedUtilities::TuneDriveTalonSRX(m_intake_speed_controller, "Intake", joystick_value, MAX_RPM, close_loop);
 }
