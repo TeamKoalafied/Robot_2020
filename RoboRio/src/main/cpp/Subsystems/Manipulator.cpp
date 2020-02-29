@@ -114,7 +114,7 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
 
     // Run indexer and intake together
     if (joystick->GetRawButton(RC::kJoystickAButton)) {
-        m_kicker->SetStop();
+        m_kicker->SetShoot();
         m_intake->Extend();
         m_indexer->ManualDriveIndexer(0.5);
         m_intake->Run();
