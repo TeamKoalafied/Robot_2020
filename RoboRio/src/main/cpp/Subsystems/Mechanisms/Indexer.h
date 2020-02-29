@@ -63,6 +63,8 @@ private:
     // Member Variables
 
     TalonSRX* m_indexer_speed_controller;   // Motor controller for the indexer
+
+    void Indexer::SetupMotionMagic(double velocity_factor)
 };
 
 #endif  // Indexer_H

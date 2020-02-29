@@ -60,6 +60,7 @@ void Indexer::Setup() {
     m_indexer_speed_controller->SetSensorPhase(false); // Not reversed
     m_indexer_speed_controller->EnableCurrentLimit(true);
 	m_indexer_speed_controller->SetNeutralMode(NeutralMode::Coast);
+    m_indexer_speed_controller->SetSelectedSensorPosition(0,RC::kTalonPidIdx);
 }
 
 void Indexer::Shutdown() {
@@ -89,4 +90,19 @@ void Indexer::TestDriveIndexer(frc::Joystick* joystick) {
 
     const double MAX_RPM = 1050.0; // TODO need to work this out properly
     KoalafiedUtilities::TuneDriveTalonSRX(m_indexer_speed_controller, "Indexer", joystick_value, MAX_RPM, close_loop);
+}
+
+void Indexer::SetupMotionMagic(double velocity_factor) {
+    if (velocity_factor <= 0.1) velocity_factor = 0.1;
+	if (velocity_factor > 1.0) velocity_factor = 1.0;
+
+    const double kIndexerFullRotationTimeS = 0.2;
+    double velocityPerRotation = velocity_factor * 4096.0 * kIndexerFullRotationTimeS;
+    double velocityNative = velocityPerRotation * 0.100/rotationPerEncoder;
+
+    const double kMaxAccelerationTimeS = 0.1;
+    double accelerationNative = velocityNative/kMaxAccelerationTimeS;
+
+    indexer_master_speed_controller->ConfigMotionCruiseVelocity(velocityNative, RC::kTalonTimeoutMs);
+    indexer_master_speed_controller->ConfigMotionAcceleration(accelerationNative, RC::kTalonTimeoutMs);
 }
