@@ -62,6 +62,9 @@ void Manipulator::DoJoystickControl() {
 
     // IMPORTANT: Only one of thes following lines should ever be uncommented at a time
     DoManualJoystickControl(joystick);
+
+
+    
     // m_shooter->TestDriveShooter(joystick);
     // m_indexer->TestDriveIndexer(joystick);
     // m_winch->TestDriveWinch(joystick);
@@ -111,10 +114,14 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
 
     // Run indexer and intake together
     if (joystick->GetRawButton(RC::kJoystickAButton)) {
+        m_intake->Extend();
         m_indexer->ManualDriveIndexer(0.5);
         m_intake->Run();
+        
     } else {
+        m_intake->Retract();
         m_intake->Stop();
+        
         m_indexer->ManualDriveIndexer(0);
     }
 
@@ -127,6 +134,12 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
     } else {
         m_shooter->ManualDriveShooter(0);
     }
+
+    // if (joystick->GetPOV(0)==RC::kJoystickPovDown){
+    //     m_intake->Extend();
+    // } else {
+    //     m_intake->Retract();
+    // }
 
     if (joystick->GetRawButton(RC::kJoystickYButton)) {
         m_kicker->SetStop();
