@@ -147,6 +147,7 @@ void DriveBase::Periodic() {
 
 void DriveBase::Setup() {
     m_joystick = new frc::Joystick(0);
+    m_haptic_controller = new HapticController(m_joystick);
     m_pigen_imu = new PigeonIMU(RobotConfiguration::kPigeonImuId);
     m_pigen_imu->SetFusedHeading(0.0,kTalonTimeoutMs);
 
@@ -334,6 +335,32 @@ void DriveBase::DoCheezyDrive() {
 
 //   TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
     // DrivePathFollower::DoJoystickTestControl(m_joystick);
+
+    static int previous_pov_angle = 0;
+	int pov_angle = m_joystick->GetPOV(0);
+    if (pov_angle != previous_pov_angle) {
+        previous_pov_angle = pov_angle;
+        switch (pov_angle) {
+            case RC::kJoystickPovUp: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 1.0);
+                break;
+            }
+            case RC::kJoystickPovLeft: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 0.5);
+                break;
+            }
+            case RC::kJoystickPovDown: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 0.25);
+                break;
+            }
+            case RC::kJoystickPovRight: {
+                static double PATTERN[10] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
+                m_haptic_controller->DoFeedback(PATTERN, 10);
+                break;
+            }
+        }
+    }
+
 }
 
 void DriveBase::StartDrivingStraight(double heading) {

@@ -78,6 +78,11 @@ void Indexer::ManualDriveIndexer(double percentage_speed) {
     m_indexer_speed_controller->Set(ControlMode::PercentOutput, percentage_speed);
 }
 
+bool Indexer::HasHighCurrent() {
+    return m_indexer_speed_controller->GetOutputCurrent() > 15.0;
+}
+
+
 void Indexer::TestDriveIndexer(frc::Joystick* joystick) {
     // Do tune driving of the indexer. Using the right Y for the drive and trigger
     // close loop with the left trigger button.

@@ -6,6 +6,7 @@
 #define SRC_DRIVEBASE_H_
 
 #include "../TSingleton.h"
+#include "../HapticController.h"
 #include "../Commands/RobotPath/IPathDriveBase.h"
 #include <frc/commands/Subsystem.h>
 
@@ -309,6 +310,7 @@ private:
 
     frc::Relay* m_vision_light_relay;
 
+    HapticController* m_haptic_controller;
 
     //==========================================================================
     // Contants
