@@ -123,7 +123,14 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
         m_intake->Retract();
         m_intake->Stop();
         
-        m_indexer->ManualDriveIndexer(0);
+        double indexer_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
+        if (fabs(indexer_drive) < RC::kJoystickDeadzone) indexer_drive = 0.0;
+        m_indexer->ManualDriveIndexer(indexer_drive*0.8);
+
+        if (joystick->GetRawButton(RC::kJoystickRTrigButton)) {
+            m_intake->Extend();
+            m_intake->Run();
+        }
     }
 
     // Shoot, then kick
@@ -163,12 +170,12 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick)
     //     // m_indexer->AutoDriveDashboard(false);
     // }
 
-    // double indexer_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
+    //double indexer_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
     // double intake_drive = joystick->GetRawAxis(RC::kJoystickRightYAxis);
-    // if (fabs(indexer_drive) < RC::kJoystickDeadzone) indexer_drive = 0.0;
+   // if (fabs(indexer_drive) < RC::kJoystickDeadzone) indexer_drive = 0.0;
     // if (fabs(intake_drive) < RC::kJoystickDeadzone) intake_drive = 0.0;
 
-    // m_indexer->ManualDriveIndexer(indexer_drive);
+    //m_indexer->ManualDriveIndexer(indexer_drive);
     // m_intake->ManualDriveIntake(intake_drive);
 
     
