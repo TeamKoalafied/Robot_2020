@@ -16,6 +16,8 @@ class Winch;
 class Intake;
 class Kicker;
 
+class DistanceSensor;
+
 // The Manipulator subsystem controls the ???.
 class Manipulator : public TSingleton<Manipulator>, public JoystickSubsystem {
 public:
@@ -122,6 +124,7 @@ private:
     Kicker* m_kicker;
 
     State m_state;
+    DistanceSensor* m_distanceSensor;
 
     
     frc::Timer m_shoot_timer;         // Timer used to time events during shooting
