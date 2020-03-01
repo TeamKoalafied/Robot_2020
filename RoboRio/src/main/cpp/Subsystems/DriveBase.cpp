@@ -81,7 +81,7 @@ void DriveBase::Periodic() {
 	// Record the heading from the pigeon in a circular buffer
 	double heading = GetPigeonHeading();
 	m_heading_buffer[m_heading_buffer_index++] = heading;
-	if (m_heading_buffer_index > TOTAL_HEADINGS) m_heading_buffer_index = 0;
+	if (m_heading_buffer_index >= TOTAL_HEADINGS) m_heading_buffer_index = 0;
 
 	// Record the velocity into a circular buffer
 	double velocity = GetVelocityFeetPerSecond();
@@ -89,7 +89,7 @@ void DriveBase::Periodic() {
 	m_velocity_buffer[m_velocity_buffer_index++] = velocity;
 	if (m_velocity_buffer_index > TOTAL_VELOCITIES) m_velocity_buffer_index = 0;
 
-    bool display_dashboard = false;
+    bool display_dashboard = true;
     if (display_dashboard) {
         // Display the left and right motor powers
         frc::SmartDashboard::PutNumber("LeftMotor", m_left_master_speed_controller->GetMotorOutputPercent());
@@ -127,6 +127,8 @@ void DriveBase::Periodic() {
     // Update the dead reconning position
     int left_encoder = m_left_master_speed_controller->GetSelectedSensorPosition(0);
     int right_encoder = -m_right_master_speed_controller->GetSelectedSensorPosition(0);
+    frc::SmartDashboard::PutNumber("left encoder", left_encoder);
+    frc::SmartDashboard::PutNumber("right encoder", right_encoder);
     double left_distance_inch = EncoderToInches(left_encoder - m_position_last_left_encoder);
     double right_distance_inch = EncoderToInches(right_encoder - m_position_last_right_encoder);
     m_position_last_left_encoder = left_encoder;
@@ -147,6 +149,7 @@ void DriveBase::Periodic() {
 
 void DriveBase::Setup() {
     m_joystick = new frc::Joystick(0);
+    m_haptic_controller = new HapticController(m_joystick);
     m_pigen_imu = new PigeonIMU(RobotConfiguration::kPigeonImuId);
     m_pigen_imu->SetFusedHeading(0.0,kTalonTimeoutMs);
 
@@ -327,13 +330,46 @@ void DriveBase::DoCheezyDrive() {
     double move = 0.0;
     double rotate = 0.0;
     GetMovementFromJoystick(move, rotate);
-    // CalculateDriveStraightAdjustment(move, rotate);
+    CalculateDriveStraightAdjustment(move, rotate);
 
     // Get the robot drive to do arcade driving with our rotate and move values
     ArcadeDrive(move, rotate);
 
 //   TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
-    // DrivePathFollower::DoJoystickTestControl(m_joystick);
+    DrivePathFollower::DoJoystickTestControl(m_joystick);
+
+	// If the 'B' button is pressed reset the drive base dead reckoning position
+    // if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {
+	// 	std::cout << "Reseting dead reckoning position\n";
+	// 	DriveBase& drive_base = DriveBase::GetInstance();
+	// 	drive_base.ResetPosition();
+	// }
+
+    static int previous_pov_angle = 0;
+	int pov_angle = m_joystick->GetPOV(0);
+    if (pov_angle != previous_pov_angle) {
+        previous_pov_angle = pov_angle;
+        switch (pov_angle) {
+            case RC::kJoystickPovUp: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 1.0);
+                break;
+            }
+            case RC::kJoystickPovLeft: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 0.5);
+                break;
+            }
+            case RC::kJoystickPovDown: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 0.25);
+                break;
+            }
+            case RC::kJoystickPovRight: {
+                static double PATTERN[10] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
+                m_haptic_controller->DoFeedback(PATTERN, 10);
+                break;
+            }
+        }
+    }
+
 }
 
 void DriveBase::StartDrivingStraight(double heading) {
@@ -781,7 +817,7 @@ void DriveBase::CalculateDriveStraightAdjustment(double move, double& rotate) {
 //     return velocity_native * 60.0 *10.0 / 2048.0;
 // }
 
-double DriveBase::EncoderToInches(int encoder_count) {
+double DriveBase::EncoderToInches(double encoder_count) {
     double motor_revolutions = encoder_count / RC::kTalonFXEnocderCounts;
     double wheel_revolutions = motor_revolutions / RC::kDriveBaseGearRatio;
 	double wheel_circumference_inch = RobotConfiguration::kWheelDiameterInch * M_PI;

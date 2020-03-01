@@ -6,6 +6,7 @@
 #define SRC_DRIVEBASE_H_
 
 #include "../TSingleton.h"
+#include "../HapticController.h"
 #include "../Commands/RobotPath/IPathDriveBase.h"
 #include <frc/commands/Subsystem.h>
 
@@ -247,7 +248,7 @@ private:
     // encoder_count - encoder count from the drive base encoders (on axel shaft)
     //
     // Returns the distance in inches
-    double EncoderToInches(int encoder_count);
+    double EncoderToInches(double encoder_count);
 
     // Convert a distance moved in inches to an encoder count
     //
@@ -309,6 +310,7 @@ private:
 
     frc::Relay* m_vision_light_relay;
 
+    HapticController* m_haptic_controller;
 
     //==========================================================================
     // Contants

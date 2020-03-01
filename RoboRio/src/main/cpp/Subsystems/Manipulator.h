@@ -8,12 +8,15 @@
 #include "../TSingleton.h"
 #include "JoystickSubsystem.h"
 #include <ctre/Phoenix.h>
+#include <frc/Timer.h>
 
 class Shooter;
 class Indexer;
 class Winch;
 class Intake;
 class Kicker;
+
+class DistanceSensor;
 
 // The Manipulator subsystem controls the ???.
 class Manipulator : public TSingleton<Manipulator>, public JoystickSubsystem {
@@ -57,6 +60,26 @@ public:
 
 private:
     //==========================================================================
+    // Private Nested Types
+
+    // Overall operational state ot the manipulator
+    enum State {
+        Idle,
+        Intaking,
+        Shooting,
+        Climbing
+    };
+
+    // State of the current shooting operation
+    enum ShootingState {
+        BallInKicker,
+        DrivingBallsUp,
+        SettlingBallsBack,
+        KickingBall
+    };
+
+
+    //==========================================================================
     // Joystick Control
 
     // Do manual control of the manipulator with the joystick.
@@ -64,7 +87,33 @@ private:
     // joystick - joystick to use
     void DoManualJoystickControl(frc::Joystick* joystick);
 
- 
+    //==========================================================================
+    // State Management
+
+    void ChangeState(State new_state);
+
+    //==========================================================================
+    // Intaking State
+
+    void EnterIntakingState();
+    void LeaveIntakingState();
+    void UpdateIntakingState();
+
+    //==========================================================================
+    // Shooting State
+
+    void EnterShootingState();
+    void LeaveShootingState();
+    void UpdateShootingState();
+
+    //==========================================================================
+    // Climbing State
+
+    void EnterClimbingState();
+    void LeaveClimbingState();
+    void UpdateClimbingState();
+
+
     //==========================================================================
     // Member Variables
 
@@ -74,6 +123,12 @@ private:
     Intake* m_intake;
     Kicker* m_kicker;
 
+    State m_state;
+    DistanceSensor* m_distanceSensor;
+
+    
+    frc::Timer m_shoot_timer;         // Timer used to time events during shooting
+    ShootingState m_shooting_state;
 
     static constexpr double kTestVelocityFactor = 0.5;      // Ratio to slow down movement by when testing
     

@@ -51,6 +51,10 @@ public:
     // percentage_output - Percentage output to drive at. Positive pulls the balls inwards.
     void ManualDriveIndexer(double percentage_output);
 
+    void VelocityDriveIndexer(double percentage_speed);
+
+    bool HasHighCurrent();
+
     // Perform testing of the indexer using the joystick. This function is only for testing the
     // indexer and may use any controls of the joystick in an ad hoc fashion.
     //
