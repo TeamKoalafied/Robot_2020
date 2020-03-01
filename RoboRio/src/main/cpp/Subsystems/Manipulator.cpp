@@ -77,6 +77,9 @@ void Manipulator::DoJoystickControl() {
 
     // IMPORTANT: Only one of thes following lines should ever be uncommented at a time
     DoManualJoystickControl(joystick);
+
+
+    
     // m_shooter->TestDriveShooter(joystick);
     // m_indexer->TestDriveIndexer(joystick);
     // m_winch->TestDriveWinch(joystick);
@@ -126,6 +129,7 @@ void Manipulator::Shutdown() {
 
 void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
 
+
     bool shoot_button = joystick->GetRawButton(RC::kJoystickYButton);
     bool intake_button = joystick->GetRawButton(RC::kJoystickAButton);
 
@@ -170,7 +174,7 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
         double rightYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickRightYAxis);
         if (fabs(rightYAxisJoystickValue) < RC::kJoystickDeadzone) rightYAxisJoystickValue = 0.0;
         m_shooter->ManualDriveShooter(rightYAxisJoystickValue);
-
+      
         double leftYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
         if (fabs(leftYAxisJoystickValue) < RC::kJoystickDeadzone) leftYAxisJoystickValue = 0.0;
         m_indexer->VelocityDriveIndexer(leftYAxisJoystickValue * 0.4);
@@ -203,6 +207,7 @@ void Manipulator::ChangeState(State new_state) {
     // Record the new state as active
     m_state = new_state;
 
+
     // Enter the new state
     switch (m_state) {
         case State::Intaking: EnterIntakingState(); break;
@@ -218,7 +223,6 @@ void Manipulator::ChangeState(State new_state) {
         case State::Idle: frc::SmartDashboard::PutString("m_state", "Idle"); break;
     }
 }
-
 
 //==========================================================================
 // Intaking State
