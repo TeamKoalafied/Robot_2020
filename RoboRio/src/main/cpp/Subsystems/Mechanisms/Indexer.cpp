@@ -48,8 +48,8 @@ void Indexer::Setup() {
     // Feedback sensor
     indexer_configuration.primaryPID.selectedFeedbackSensor = FeedbackDevice::CTRE_MagEncoder_Absolute;
     
-    indexer_configuration.slot0.kF = 0.14;
-    indexer_configuration.slot0.kP = 0.3;
+    indexer_configuration.slot0.kF = 0.3;
+    indexer_configuration.slot0.kP = 0.05;
     // Do all configuration and log if it fails
     int error = m_indexer_speed_controller->ConfigAllSettings(indexer_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {

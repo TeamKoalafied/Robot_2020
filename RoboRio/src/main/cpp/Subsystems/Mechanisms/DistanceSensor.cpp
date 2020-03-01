@@ -42,7 +42,19 @@ void DistanceSensor::Shutdown() {
 }
 
 void DistanceSensor::Periodic(bool show_dashboard)
-{
+{   
+    // if (!RevSensor->IsRangeValid()) {
+    //     std::cout << "splippity boop" << std::endl;
+
+    //     delete RevSensor;
+    //     RevSensor = new rev::Rev2mDistanceSensor{rev::Rev2mDistanceSensor::Port::kOnboard, 
+    //                                             rev::Rev2mDistanceSensor::DistanceUnit::kInches};
+    //     std::cout << "boppity splip" << std::endl;
+    //     RevSensor->SetAutomaticMode(true);
+    //     RevSensor->SetEnabled(true);
+    // }
+
+    
     if (show_dashboard) {
         bool isValid = RevSensor->IsRangeValid();
 
