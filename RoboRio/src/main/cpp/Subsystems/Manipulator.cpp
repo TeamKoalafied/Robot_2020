@@ -230,7 +230,15 @@ void Manipulator::LeaveIntakingState() {
 }
 
 void Manipulator::UpdateIntakingState() {
+    const double kBallDistance = 7;
     // If we sense the ball run the indexer for a short time
+    if (m_distanceSensor->GetDistance() < kBallDistance) {
+        // m_indexer->VelocityDriveIndexer(0.4);
+
+        m_indexer->ManualDriveIndexer(0.5);
+    }  else {
+        m_indexer->ManualDriveIndexer(0);
+    }
 }
 
 
@@ -243,7 +251,7 @@ void Manipulator::EnterShootingState() {
     // maybe at other times too.
 
     m_shooting_state = ShootingState::DrivingBallsUp;
-    m_indexer->VelocityDriveIndexer(0.5);
+    m_indexer->VelocityDriveIndexer(0.4);
     m_shoot_timer.Start();
     m_shoot_timer.Reset();
 }

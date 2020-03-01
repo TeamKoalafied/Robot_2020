@@ -57,3 +57,7 @@ void DistanceSensor::Periodic(bool show_dashboard)
         }
     }
 }
+
+double DistanceSensor::GetDistance() {
+    return RevSensor->GetRange();
+}
