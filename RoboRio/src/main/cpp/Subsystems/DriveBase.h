@@ -248,7 +248,7 @@ private:
     // encoder_count - encoder count from the drive base encoders (on axel shaft)
     //
     // Returns the distance in inches
-    double EncoderToInches(int encoder_count);
+    double EncoderToInches(double encoder_count);
 
     // Convert a distance moved in inches to an encoder count
     //
