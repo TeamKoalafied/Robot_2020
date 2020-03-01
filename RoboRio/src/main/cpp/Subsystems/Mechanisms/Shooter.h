@@ -68,6 +68,7 @@ private:
     // Member Variables
 
     TalonFX* m_shooter_master_speed_controller;
+    TalonFX* m_shooter_slave_speed_controller;
 };
 
 #endif  // Shooter_H

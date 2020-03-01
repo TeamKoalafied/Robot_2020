@@ -167,6 +167,10 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
             m_shooter->ManualDriveShooter(0);
         }
 
+        double rightYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickRightYAxis);
+        if (fabs(rightYAxisJoystickValue) < RC::kJoystickDeadzone) rightYAxisJoystickValue = 0.0;
+        m_shooter->ManualDriveShooter(rightYAxisJoystickValue);
+
         double leftYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
         if (fabs(leftYAxisJoystickValue) < RC::kJoystickDeadzone) leftYAxisJoystickValue = 0.0;
         m_indexer->VelocityDriveIndexer(leftYAxisJoystickValue * 0.4);

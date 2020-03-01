@@ -60,7 +60,7 @@ const int kRightMasterTalonId = 1;
 const int kRightSlaveTalonId  = 2;
 
 const int kShooterMasterTalonId  = 5;
-// const int kShooterSlaveTalonId  = 6;
+const int kShooterSlaveTalonId  = 6;
 const int kIndexerTalonId = 10;
 const int kIntakeTalonId = 12;
 
@@ -193,6 +193,9 @@ const int kShooterMotorContinuousCurrentLimit = 40;
 
 // Peak current limit duration for the shooter motors in milliseconds
 const int kShooterMotorPeakCurrentDurationMs = 500;
+
+// Gear ratio, baby
+const double kShooterMotorGearRatio = 1.5;
 
 
 //==============================================================================
