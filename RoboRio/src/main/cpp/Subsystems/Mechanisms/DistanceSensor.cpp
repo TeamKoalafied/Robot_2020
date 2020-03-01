@@ -22,7 +22,7 @@ DistanceSensor::DistanceSensor()  {
 }
 
 DistanceSensor::~DistanceSensor() {
-    // Shutdown();
+    Shutdown();
 }
 
 
@@ -39,9 +39,6 @@ void DistanceSensor::Setup() {
 
 void DistanceSensor::Shutdown() {
     std::cout << "DistanceSensor::Shutdown()\n";
-
-    RevSensor->SetAutomaticMode(false);
-    RevSensor->SetEnabled(false);
 }
 
 void DistanceSensor::Periodic(bool show_dashboard)

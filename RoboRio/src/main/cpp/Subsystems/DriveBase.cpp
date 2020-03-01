@@ -89,7 +89,7 @@ void DriveBase::Periodic() {
 	m_velocity_buffer[m_velocity_buffer_index++] = velocity;
 	if (m_velocity_buffer_index > TOTAL_VELOCITIES) m_velocity_buffer_index = 0;
 
-    bool display_dashboard = false;
+    bool display_dashboard = true;
     if (display_dashboard) {
         // Display the left and right motor powers
         frc::SmartDashboard::PutNumber("LeftMotor", m_left_master_speed_controller->GetMotorOutputPercent());

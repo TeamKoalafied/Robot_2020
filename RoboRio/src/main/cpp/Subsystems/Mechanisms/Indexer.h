@@ -51,6 +51,7 @@ public:
     // percentage_output - Percentage output to drive at. Positive pulls the balls inwards.
     void ManualDriveIndexer(double percentage_output);
 
+    void VelocityDriveIndexer(double percentage_speed);
 
     bool HasHighCurrent();
 

@@ -55,14 +55,14 @@ void Manipulator::Periodic() {
     m_winch->Periodic();
     m_intake->Periodic();
     m_kicker->Periodic();
-
+    m_distanceSensor->Periodic(true);
     switch (m_state) {
         case State::Intaking: UpdateIntakingState(); break;
         case State::Shooting: UpdateShootingState(); break;
         case State::Climbing: UpdateClimbingState(); break;
         case State::Idle: break;
     }    
-    m_distanceSensor->Periodic(true);
+    
 }
 
 //==========================================================================
@@ -149,7 +149,7 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
         double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
 
         // Run indexer and intake together
-        if (joystick->GetRawButton(RC::kJoystickAButton)) {
+        if (joystick->GetPOV(0) == RC::kJoystickPovLeft) {
             m_indexer->ManualDriveIndexer(0.5);
             m_intake->Run();
         } else {
@@ -160,14 +160,18 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
         // Shoot, then kick
         if (joystick->GetRawButton(RC::kJoystickBButton)) {
             m_shooter->AutoDriveDashboard(dRPM);
-            if (frc::SmartDashboard::GetNumber("Shooter Speed RPM", 0)*1.075 > dRPM){
+            if (frc::SmartDashboard::GetNumber("Shooter Speed RPM", 0)*1.075 < dRPM){
                 m_kicker->SetShoot();
             }
         } else {
             m_shooter->ManualDriveShooter(0);
         }
 
-        if (joystick->GetRawButton(RC::kJoystickYButton)) {
+        double leftYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
+        if (fabs(leftYAxisJoystickValue) < RC::kJoystickDeadzone) leftYAxisJoystickValue = 0.0;
+        m_indexer->VelocityDriveIndexer(leftYAxisJoystickValue * 0.4);
+
+        if (joystick->GetPOV(0) == RC::kJoystickPovRight) {
             m_kicker->SetStop();
         }
         if (joystick->GetRawButton(RC::kJoystickXButton)) {
@@ -202,6 +206,13 @@ void Manipulator::ChangeState(State new_state) {
         case State::Climbing: EnterClimbingState(); break;
         case State::Idle: break;
     }
+
+    switch (m_state) {
+        case State::Intaking: frc::SmartDashboard::PutString("m_state", "Intaking"); break;
+        case State::Shooting: frc::SmartDashboard::PutString("m_state", "Shooting"); break;
+        case State::Climbing: frc::SmartDashboard::PutString("m_state", "Climbing"); break;
+        case State::Idle: frc::SmartDashboard::PutString("m_state", "Idle"); break;
+    }
 }
 
 
@@ -232,14 +243,14 @@ void Manipulator::EnterShootingState() {
     // maybe at other times too.
 
     m_shooting_state = ShootingState::DrivingBallsUp;
-    m_indexer->ManualDriveIndexer(0.5);
+    m_indexer->VelocityDriveIndexer(0.5);
     m_shoot_timer.Start();
     m_shoot_timer.Reset();
 }
 
 void Manipulator::LeaveShootingState() {
     m_shooter->ManualDriveShooter(0);
-
+    m_kicker->SetStop();
 }
 
 void Manipulator::UpdateShootingState() {
@@ -274,21 +285,25 @@ void Manipulator::UpdateShootingState() {
                 m_indexer->ManualDriveIndexer(0.0);
                 m_shooting_state = ShootingState::BallInKicker;
             }
+            break;
         case ShootingState::SettlingBallsBack:
             // After 100ms of driving back we are ready to shoot
             if (m_shoot_timer.Get() > 0.1) {
                 m_indexer->ManualDriveIndexer(0.0);
                 m_shooting_state = ShootingState::BallInKicker;
             }
+            break;
         case ShootingState::KickingBall:
             // After 200ms return the kicker and start moving the next ball up
             if (m_shoot_timer.Get() > 0.2) {
                 m_kicker->SetStop();
 
                 m_shooting_state = ShootingState::DrivingBallsUp;
-                m_indexer->ManualDriveIndexer(0.5);
+                // m_indexer->ManualDriveIndexer(0.5);
+                m_indexer->VelocityDriveIndexer(0.5);
                 m_shoot_timer.Reset();
             }
+            break;
     }
 
 

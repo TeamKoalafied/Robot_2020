@@ -33,7 +33,7 @@
             "version": "0.3.0",
             "libName": "libDistanceSensor",
             "headerClassifier": "headers",
-            "sharedLibrary": true,
+            "sharedLibrary": false,
             "skipInvalidPlatforms": true,
             "binaryPlatforms": [
                 "linuxathena"

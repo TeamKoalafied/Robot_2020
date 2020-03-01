@@ -143,7 +143,7 @@ void Shooter::ManualDriveShooter(double percentage_speed) {
 }
 
 void Shooter::AutoDriveDashboard(double dRPM) {
-    std::cout << "in auto drive dash" << std::endl;
+    // std::cout << "in auto drive dash" << std::endl;
     m_shooter_master_speed_controller->Set(ControlMode::Velocity, (dRPM * 2048.0 / (60.0 * 10.0)));
 
     double closed_loop_error_native = m_shooter_master_speed_controller->GetClosedLoopError(RC::kTalonPidIdx);
@@ -151,12 +151,11 @@ void Shooter::AutoDriveDashboard(double dRPM) {
 }
 
 bool Shooter::ShooterAtSpeed(double dRPM) {
-   double adjustedRPM = (m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx) * 60.0 * 10.0 / 2048.0) * -0.925;
-    if (adjustedRPM < dRPM){
-        return true;
-    } else {
-        return false;
-    }
+    double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
+    double shooter_speed_rpm =  KoalafiedUtilities::TalonFXVelocityNativeToRpm(shooter_speed_native);
+
+    double diffpercent = fabs(dRPM-shooter_speed_rpm) * 100 /dRPM;
+    return (diffpercent < 5);
 }
 
 void Shooter::TestDriveShooter(frc::Joystick* joystick) {  
