@@ -75,7 +75,8 @@ private:
         BallInKicker,
         DrivingBallsUp,
         SettlingBallsBack,
-        KickingBall
+        KickingBall,
+        KickerReturn
     };
 
 

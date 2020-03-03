@@ -238,7 +238,7 @@ void Manipulator::LeaveIntakingState() {
 }
 
 void Manipulator::UpdateIntakingState() {
-    const double kBallDistance = 7;
+    const double kBallDistance = 6.75;
     // If we sense the ball run the indexer for a short time
     if (m_distanceSensor->GetDistance() < kBallDistance) {
         m_indexer->VelocityDriveIndexer(0.1);
@@ -259,7 +259,7 @@ void Manipulator::EnterShootingState() {
     // maybe at other times too.
 
     m_shooting_state = ShootingState::DrivingBallsUp;
-    m_indexer->VelocityDriveIndexer(0.4);
+    m_indexer->VelocityDriveIndexer(0.15);
     m_shoot_timer.Start();
     m_shoot_timer.Reset();
 }
@@ -290,8 +290,8 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::DrivingBallsUp:
             // If the indexer current is high then the balls have reach the end so drive backwards
             // slightly to give a gap.
-            if (m_indexer->HasHighCurrent()) {
-                m_indexer->ManualDriveIndexer(-0.5);
+            if (m_distanceSensor->GetDistance2() <= 3.5 && m_distanceSensor->GetDistance2() >= 0) {
+                m_indexer->VelocityDriveIndexer(0.15);
                 m_shooting_state = ShootingState::SettlingBallsBack;
                 m_shoot_timer.Reset();
             }
@@ -310,13 +310,20 @@ void Manipulator::UpdateShootingState() {
             }
             break;
         case ShootingState::KickingBall:
-            // After 200ms return the kicker and start moving the next ball up
+            // After 200ms return the kicker
             if (m_shoot_timer.Get() > 0.2) {
                 m_kicker->SetStop();
 
+                m_shooting_state = ShootingState::KickerReturn;
+                m_shoot_timer.Reset();
+            }
+            break;
+        case ShootingState::KickerReturn:
+        // After 200ms start moving the next ball up
+            if (m_shoot_timer.Get() > 0.2) {
                 m_shooting_state = ShootingState::DrivingBallsUp;
                 // m_indexer->ManualDriveIndexer(0.5);
-                m_indexer->VelocityDriveIndexer(0.5);
+                m_indexer->VelocityDriveIndexer(0.15);
                 m_shoot_timer.Reset();
             }
             break;

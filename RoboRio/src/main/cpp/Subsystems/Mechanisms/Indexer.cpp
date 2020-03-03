@@ -59,7 +59,7 @@ void Indexer::Setup() {
     // Perform non-configuration setup
     m_indexer_speed_controller->SetSensorPhase(false); // Not reversed
     m_indexer_speed_controller->EnableCurrentLimit(true);
-	m_indexer_speed_controller->SetNeutralMode(NeutralMode::Coast);
+	m_indexer_speed_controller->SetNeutralMode(NeutralMode::Brake);
 }
 
 void Indexer::Shutdown() {

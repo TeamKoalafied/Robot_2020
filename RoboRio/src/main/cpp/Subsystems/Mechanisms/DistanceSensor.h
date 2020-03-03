@@ -43,6 +43,7 @@ public:
     void Periodic(bool show_dashboard);
 
     double GetDistance();
+    double GetDistance2();
 
 private:
 
@@ -50,6 +51,7 @@ private:
     // Member Variables
 
     rev::Rev2mDistanceSensor *RevSensor;
+    rev::Rev2mDistanceSensor *RevSensor2;
 };
 
 #endif  // DistanceSensor_H
