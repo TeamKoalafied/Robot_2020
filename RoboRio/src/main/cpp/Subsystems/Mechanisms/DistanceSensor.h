@@ -42,8 +42,8 @@ public:
     // show_dashboard - whether to show debugging information on the dashboard
     void Periodic(bool show_dashboard);
 
-    double GetDistance();
-    double GetDistance2();
+    double GetIntakeDistance();
+    double GetShooterDistance();
 
 private:
 

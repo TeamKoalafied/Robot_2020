@@ -179,10 +179,10 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
         if (fabs(leftYAxisJoystickValue) < RC::kJoystickDeadzone) leftYAxisJoystickValue = 0.0;
         m_indexer->VelocityDriveIndexer(leftYAxisJoystickValue * 0.4);
 
-        if (joystick->GetPOV(0) == RC::kJoystickPovRight) {
+        if (joystick->GetPOV(0) == RC::kJoystickPovDown) {
             m_kicker->SetStop();
         }
-        if (joystick->GetRawButton(RC::kJoystickXButton)) {
+        if (joystick->GetPOV(0) == RC::kJoystickPovUp) {
             m_kicker->SetShoot();
         }
     }
@@ -238,10 +238,10 @@ void Manipulator::LeaveIntakingState() {
 }
 
 void Manipulator::UpdateIntakingState() {
-    const double kBallDistance = 6.75;
+    const double kBallDistance = 6;
     // If we sense the ball run the indexer for a short time
-    if (m_distanceSensor->GetDistance() < kBallDistance) {
-        m_indexer->VelocityDriveIndexer(0.1);
+    if (m_distanceSensor->GetIntakeDistance() < kBallDistance) {
+        m_indexer->VelocityDriveIndexer(0.09);
 
         // m_indexer->ManualDriveIndexer(0.5);
     }  else {
@@ -290,7 +290,7 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::DrivingBallsUp:
             // If the indexer current is high then the balls have reach the end so drive backwards
             // slightly to give a gap.
-            if (m_distanceSensor->GetDistance2() <= 3.5 && m_distanceSensor->GetDistance2() >= 0) {
+            if (m_distanceSensor->GetShooterDistance() <= 3.5 && m_distanceSensor->GetShooterDistance() >= 0) {
                 m_indexer->VelocityDriveIndexer(0.15);
                 m_shooting_state = ShootingState::SettlingBallsBack;
                 m_shoot_timer.Reset();
@@ -305,7 +305,7 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::SettlingBallsBack:
             // After 100ms of driving back we are ready to shoot
             if (m_shoot_timer.Get() > 0.1) {
-                m_indexer->ManualDriveIndexer(0.0);
+                m_indexer->VelocityDriveIndexer(-0.065);
                 m_shooting_state = ShootingState::BallInKicker;
             }
             break;

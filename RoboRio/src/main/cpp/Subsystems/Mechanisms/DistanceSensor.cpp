@@ -84,10 +84,10 @@ void DistanceSensor::Periodic(bool show_dashboard)
     }
 }
 
-double DistanceSensor::GetDistance() {
+double DistanceSensor::GetIntakeDistance() {
     return RevSensor->GetRange();
 }
 
-double DistanceSensor::GetDistance2() {
+double DistanceSensor::GetShooterDistance() {
     return RevSensor2->GetRange();
 }
