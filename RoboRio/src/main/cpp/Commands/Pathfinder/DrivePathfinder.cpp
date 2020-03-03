@@ -6,7 +6,7 @@
 #include "PathController.h"
 #include "JaciPathfinderController.h"
 #include "KoalafiedPathfinderController.h"
-#include "../MechanismController2019.h"
+#include "../MechanismController2020.h"
 #include "../../Subsystems/DriveBase.h"
 #include "../../Subsystems/Manipulator.h"
 
@@ -133,12 +133,10 @@ void DrivePathfinder::DoJoystickTestControl(frc::Joystick* joystick)
 	int trajectory_length = 0;
 	const char* name = NULL;
 
-	static MechanismAction DROP_ARM[] = {
-		 { "DropArm",    MechanismAction::TimeSpecification::Start, 1.0, 0 },
-		 { "OpenClaw",   MechanismAction::TimeSpecification::Start, 1.0, 0 },
-		 { "RollerGrab", MechanismAction::TimeSpecification::Start, 2.0, 0 },
-		 { "CloseClaw",  MechanismAction::TimeSpecification::Start, 3.0, 0 },
-		 { "LiftArm",    MechanismAction::TimeSpecification::Start, 3.0, 0 },
+	static MechanismAction INTAKE_BALL[] = {
+		 { "ExtendIntake", MechanismAction::TimeSpecification::Start, 1.0, 0 },
+		 { "RunIndexForward", MechanismAction::TimeSpecification::Start, 1.0, 0 },
+		 { "RetractIntake", MechanismAction::TimeSpecification::Start, 2.0, 0 },
 	};
 
 	int pov_angle = joystick->GetPOV(0);
@@ -174,7 +172,7 @@ void DrivePathfinder::DoJoystickTestControl(frc::Joystick* joystick)
 				                                                           trajectory_length, name, own_trajectory);
 		//ms_test_command = new DrivePathfinder(new KoalafiedPathfinderController(left_trajectory, right_trajectory,
 
-		controller->SetMechanismActions(new MechanismController2019, mechanism_actions, mechanism_actions_count);
+		controller->SetMechanismActions(new MechanismController2020, mechanism_actions, mechanism_actions_count);
 
 		ms_test_command = new DrivePathfinder(controller);
 		ms_test_command->Start();

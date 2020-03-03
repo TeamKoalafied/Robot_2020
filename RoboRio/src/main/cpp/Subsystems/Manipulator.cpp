@@ -123,6 +123,33 @@ void Manipulator::Shutdown() {
 
 //==========================================================================
 // Mechanism Access
+void Manipulator::ExtendIntake() {
+    m_intake->Extend();
+}
+
+void Manipulator::RetractIntake() {
+    m_intake->Retract();
+}
+
+void Manipulator::RunIndexForward() {
+    m_indexer->VelocityDriveIndexer(0.09);
+}
+
+void Manipulator::RunIndexBack() {
+    m_indexer->VelocityDriveIndexer(-0.065);
+}
+
+void Manipulator::Shoot() {
+    double required_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+    m_shooter->AutoDriveDashboard(required_rpm);
+
+    while (!(m_shooter->ShooterAtSpeed(required_rpm))) {
+        continue;    
+    }
+
+    m_kicker->SetShoot();
+    m_shoot_timer.Reset();
+}
 
 //==========================================================================
 // Joystick Control
@@ -273,15 +300,15 @@ void Manipulator::UpdateShootingState() {
 
     // If we need to turn to the target do that
 
-    // Calculate the rmp required for the current distance to target
-    double required_rmp = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
-    m_shooter->AutoDriveDashboard(required_rmp);
+    // Calculate the rpm required for the current distance to target
+    double required_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+    m_shooter->AutoDriveDashboard(required_rpm);
 
 
     switch (m_shooting_state) {
         case ShootingState::BallInKicker:
             // If we are on target, up to speed and there is a ball in the kicker then kick it!
-            if (m_shooter->ShooterAtSpeed(required_rmp)) {
+            if (m_shooter->ShooterAtSpeed(required_rpm)) {
                 m_kicker->SetShoot();
                 m_shooting_state = ShootingState::KickingBall;
                 m_shoot_timer.Reset();

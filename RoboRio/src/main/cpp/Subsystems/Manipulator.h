@@ -56,7 +56,11 @@ public:
 
     //==========================================================================
     // Mechanism Access
-
+    void ExtendIntake();
+    void RetractIntake();
+    void RunIndexForward();
+    void RunIndexBack();
+    void Shoot();
 
 private:
     //==========================================================================
