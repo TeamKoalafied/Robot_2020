@@ -1,8 +1,8 @@
 //==============================================================================
-// MechanismController2019.cpp
+// MechanismController2020.cpp
 //==============================================================================
 
-#include "MechanismController2019.h"
+#include "MechanismController2020.h"
 
 #include "../Subsystems/Manipulator.h"
 #include <iostream>
@@ -11,7 +11,7 @@
 //==========================================================================
 // Overrides from IMechanismController
 
-void MechanismController2019::DoAction(const std::string& action) {
+void MechanismController2020::DoAction(const std::string& action) {
     // Manipulator& manipulator = Manipulator::GetInstance();
 	// if (action == "LiftArm") elevator.LiftArm();
 	// else if (action == "DropArm") elevator.DropArm();
@@ -36,5 +36,17 @@ void MechanismController2019::DoAction(const std::string& action) {
 	// else {
 	// 	std::cout << "ERROR: Unrecognised mechanism command " << action << "\n";
 	// }
+
+    Manipulator& manipulator = Manipulator::GetInstance();
+
+	if (action == "ExtendIntake") manipulator.ExtendIntake();
+    else if (action == "RetractIntake") manipulator.RetractIntake();
+	else if (action == "RunIndexForward") manipulator.RunIndexForward();
+	else if (action == "RunIndexBack") manipulator.RunIndexBack();
+	else if (action == "Shoot") manipulator.Shoot();
+    else {
+         std::cout << "ERROR: Unrecognised mechanism command " << action << "\n";
+    }
+
 }
 

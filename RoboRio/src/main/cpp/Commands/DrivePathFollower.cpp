@@ -4,7 +4,7 @@
 
 #include "DrivePathFollower.h"
 
-#include "MechanismController2019.h"
+#include "MechanismController2020.h"
 #include "../RobotConfiguration.h"
 #include "../Subsystems/DriveBase.h"
 #include "../Subsystems/Manipulator.h"
@@ -114,13 +114,13 @@ void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 			break;
 		}
 		case RC::kJoystickPovLeft: {
-			std::cout << "Starting DrivePathFollower - Cube1\n";
-			robot_path = CreateCube1Path(max_velocity, max_acceleration);;
+			std::cout << "Starting DrivePathFollower - Ball1\n";
+			robot_path = CreateBall1Path(max_velocity, max_acceleration);;
 			break;
 		}
 		case RC::kJoystickPovDown: {
-			std::cout << "Starting DrivePathFollower - Cube2\n";
-			robot_path = CreateCube2Path(max_velocity, max_acceleration);
+			std::cout << "Starting DrivePathFollower - Ball2\n";
+			robot_path = CreateBall2Path(max_velocity, max_acceleration);
 			break;
 		}
 		case RC::kJoystickPovRight: {
@@ -166,7 +166,7 @@ PathFollower* DrivePathFollower::CreatePathPointsFollower(RobotPath* robot_path)
 
 
 	DriveBase& drive_base = DriveBase::GetInstance();
-	PathPointsFollower* path_follower = new PathPointsFollower(robot_path, &drive_base, new MechanismController2019, true);
+	PathPointsFollower* path_follower = new PathPointsFollower(robot_path, &drive_base, new MechanismController2020, true);
 	path_follower->GetFollowerParameters().m_kp = p_gain;
 	path_follower->GetFollowerParameters().m_ki = i_gain;
 	path_follower->GetFollowerParameters().m_kd = d_gain;
@@ -193,7 +193,7 @@ PathFollower* DrivePathFollower::CreatePathfinderFollower(RobotPath* robot_path)
 
 	DriveBase& drive_base = DriveBase::GetInstance();
 
-	return new PathfinderFollower(robot_path, &drive_base, new MechanismController2019, true, encode_config);
+	return new PathfinderFollower(robot_path, &drive_base, new MechanismController2020, true, encode_config);
 }
 
 RobotPath* DrivePathFollower::CreateVisionPathFromDashBoard(double max_velocity, double max_acceleration) {
@@ -238,23 +238,37 @@ RobotPath* DrivePathFollower::CreateVisionPathFromDashBoard(double max_velocity,
 	return robot_path;
 }
 
-static MechanismAction GRAB_CUBE[] = {
-		{ "DropArm",    MechanismAction::TimeSpecification::End, -2.5, 0 },
-		{ "OpenClaw",   MechanismAction::TimeSpecification::End, -2.0, 0 },
-		{ "RollerGrab", MechanismAction::TimeSpecification::End, -1.0, 0 },
-		{ "CloseClaw",  MechanismAction::TimeSpecification::End, -0.5, 0 },
-		{ "LiftArm",    MechanismAction::TimeSpecification::End,  0.0, 0 },
+// static MechanismAction GRAB_CUBE[] = {
+//		{ "DropArm",    MechanismAction::TimeSpecification::End, -2.5, 0 },
+//		{ "OpenClaw",   MechanismAction::TimeSpecification::End, -2.0, 0 },
+//		{ "RollerGrab", MechanismAction::TimeSpecification::End, -1.0, 0 },
+//		{ "CloseClaw",  MechanismAction::TimeSpecification::End, -0.5, 0 },
+//		{ "LiftArm",    MechanismAction::TimeSpecification::End,  0.0, 0 },
+//};
+//static MechanismAction PLACE_CUBE[] = {
+//		{ "DropArm",     MechanismAction::TimeSpecification::End, -1.5, 0 },
+//		{ "OpenClaw",    MechanismAction::TimeSpecification::End,  0.0, 0 },
+//		{ "RollerPlace", MechanismAction::TimeSpecification::End,  0.0, 0 },
+//};
+//static MechanismAction RESET[] = {
+//		{ "CloseClaw",   MechanismAction::TimeSpecification::Start, 1.0, 0 },
+//		{ "LiftArm",     MechanismAction::TimeSpecification::Start, 1.0, 0 },
+//};	
+
+static MechanismAction INTAKE_BALL[] = {
+		 { "ExtendIntake", MechanismAction::TimeSpecification::Start, 1.0, 0 },
+		 { "RunIndexForward", MechanismAction::TimeSpecification::Start, 1.0, 0 },
+		 { "RetractIntake", MechanismAction::TimeSpecification::Start, 2.0, 0 },
 };
-static MechanismAction PLACE_CUBE[] = {
-		{ "DropArm",     MechanismAction::TimeSpecification::End, -1.5, 0 },
-		{ "OpenClaw",    MechanismAction::TimeSpecification::End,  0.0, 0 },
-		{ "RollerPlace", MechanismAction::TimeSpecification::End,  0.0, 0 },
+
+static MechanismAction SHOOT_BALL[] = {
+		{ "Shoot",     MechanismAction::TimeSpecification::End, -1.5, 0 },
 };
 
 static MechanismAction RESET[] = {
-		{ "CloseClaw",   MechanismAction::TimeSpecification::Start, 1.0, 0 },
-		{ "LiftArm",     MechanismAction::TimeSpecification::Start, 1.0, 0 },
-};	
+		{ "RetractIntake", MechanismAction::TimeSpecification::Start, 2.0, 0 },
+};
+
 
 RobotPath* DrivePathFollower::CreateStraightPath(double max_velocity, double max_acceleration) {
 	RobotPath* robot_path = new RobotPath();
@@ -272,15 +286,15 @@ RobotPath* DrivePathFollower::CreateStraightPath(double max_velocity, double max
 	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
 	path_segment->m_path_definition.push_back(path);
 	path_segment->m_reverse = false;
-	path_segment->m_mechanism_actions.assign(GRAB_CUBE, GRAB_CUBE +  sizeof(GRAB_CUBE)/sizeof(GRAB_CUBE[0]));
+	path_segment->m_mechanism_actions.assign(INTAKE_BALL, INTAKE_BALL +  sizeof(INTAKE_BALL)/sizeof(INTAKE_BALL[0]));
 	robot_path->m_path_segments.push_back(path_segment);
 
 	return robot_path;
 }
 
-RobotPath* DrivePathFollower::CreateCube1Path(double max_velocity, double max_acceleration) {
+RobotPath* DrivePathFollower::CreateBall1Path(double max_velocity, double max_acceleration) {
 	RobotPath* robot_path = new RobotPath();
-	robot_path->m_name = "Cube1";
+	robot_path->m_name = "Ball1";
 
 	const double TL = 1.5;
 	Bezier3 path1;
@@ -301,10 +315,10 @@ RobotPath* DrivePathFollower::CreateCube1Path(double max_velocity, double max_ac
 
 
 	PathSegment* path_segment1 = new PathSegment();
-	path_segment1->m_name = "GrabCube";
+	path_segment1->m_name = "GrabBall";
 	path_segment1->m_motion_profile.Setup(max_velocity, max_acceleration);
 	path_segment1->m_path_definition.push_back(path1);
-	path_segment1->m_mechanism_actions.assign(GRAB_CUBE, GRAB_CUBE +  sizeof(GRAB_CUBE)/sizeof(GRAB_CUBE[0]));
+	path_segment1->m_mechanism_actions.assign(INTAKE_BALL, INTAKE_BALL +  sizeof(INTAKE_BALL)/sizeof(INTAKE_BALL[0]));
 	robot_path->m_path_segments.push_back(path_segment1);
 
 	PathSegment* path_segment2 = new PathSegment();
@@ -315,18 +329,18 @@ RobotPath* DrivePathFollower::CreateCube1Path(double max_velocity, double max_ac
 	robot_path->m_path_segments.push_back(path_segment2);
 
 	PathSegment* path_segment3 = new PathSegment();
-	path_segment3->m_name = "PlaceCube";
+	path_segment3->m_name = "ShootBall";
 	path_segment3->m_motion_profile.Setup(max_velocity, max_acceleration);
 	path_segment3->m_path_definition.push_back(path3);
-	path_segment3->m_mechanism_actions.assign(PLACE_CUBE, PLACE_CUBE +  sizeof(PLACE_CUBE)/sizeof(PLACE_CUBE[0]));
+	path_segment3->m_mechanism_actions.assign(SHOOT_BALL, SHOOT_BALL +  sizeof(SHOOT_BALL)/sizeof(SHOOT_BALL[0]));
 	robot_path->m_path_segments.push_back(path_segment3);
 
 	return robot_path;
 }
 
-RobotPath* DrivePathFollower::CreateCube2Path(double max_velocity, double max_acceleration) {
+RobotPath* DrivePathFollower::CreateBall2Path(double max_velocity, double max_acceleration) {
 	RobotPath* robot_path = new RobotPath();
-	robot_path->m_name = "Cube2";
+	robot_path->m_name = "Ball2";
 
 	Bezier3 path1;
 	path1.m_point1.x =  0.0;
@@ -367,7 +381,7 @@ RobotPath* DrivePathFollower::CreateCube2Path(double max_velocity, double max_ac
 
 
 	PathSegment* path_segment1 = new PathSegment();
-	path_segment1->m_name = "Cube2_1";
+	path_segment1->m_name = "Ball2_1";
 	path_segment1->m_motion_profile.Setup(max_velocity, max_acceleration);
 	path_segment1->m_reverse = true;
 	path_segment1->m_path_definition.push_back(path1);
@@ -375,24 +389,24 @@ RobotPath* DrivePathFollower::CreateCube2Path(double max_velocity, double max_ac
 	robot_path->m_path_segments.push_back(path_segment1);
 
 	PathSegment* path_segment2 = new PathSegment();
-	path_segment2->m_name = "Cube2_2";
+	path_segment2->m_name = "Ball2_2";
 	path_segment2->m_motion_profile.Setup(max_velocity, max_acceleration);
 	path_segment2->m_path_definition.push_back(path2);
-	path_segment2->m_mechanism_actions.assign(GRAB_CUBE, GRAB_CUBE +  sizeof(GRAB_CUBE)/sizeof(GRAB_CUBE[0]));
+	path_segment2->m_mechanism_actions.assign(INTAKE_BALL, INTAKE_BALL +  sizeof(INTAKE_BALL)/sizeof(INTAKE_BALL[0]));
 	robot_path->m_path_segments.push_back(path_segment2);
 
 	PathSegment* path_segment3 = new PathSegment();
-	path_segment3->m_name = "Cube2_3";
+	path_segment3->m_name = "Ball2_3";
 	path_segment3->m_motion_profile.Setup(max_velocity, max_acceleration);
 	path_segment3->m_reverse = true;
 	path_segment3->m_path_definition.push_back(path3);
 	robot_path->m_path_segments.push_back(path_segment3);
 
 	PathSegment* path_segment4 = new PathSegment();
-	path_segment4->m_name = "Cube2_4";
+	path_segment4->m_name = "Ball2_4";
 	path_segment4->m_motion_profile.Setup(max_velocity, max_acceleration);
 	path_segment4->m_path_definition.push_back(path4);
-	path_segment4->m_mechanism_actions.assign(PLACE_CUBE, PLACE_CUBE +  sizeof(PLACE_CUBE)/sizeof(PLACE_CUBE[0]));
+	path_segment4->m_mechanism_actions.assign(SHOOT_BALL, SHOOT_BALL +  sizeof(SHOOT_BALL)/sizeof(SHOOT_BALL[0]));
 	robot_path->m_path_segments.push_back(path_segment4);
 
 	return robot_path;

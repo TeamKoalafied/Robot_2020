@@ -123,6 +123,33 @@ void Manipulator::Shutdown() {
 
 //==========================================================================
 // Mechanism Access
+void Manipulator::ExtendIntake() {
+    m_intake->Extend();
+}
+
+void Manipulator::RetractIntake() {
+    m_intake->Retract();
+}
+
+void Manipulator::RunIndexForward() {
+    m_indexer->VelocityDriveIndexer(0.09);
+}
+
+void Manipulator::RunIndexBack() {
+    m_indexer->VelocityDriveIndexer(-0.065);
+}
+
+void Manipulator::Shoot() {
+    double required_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+    m_shooter->AutoDriveDashboard(required_rpm);
+
+    while (!(m_shooter->ShooterAtSpeed(required_rpm))) {
+        continue;    
+    }
+
+    m_kicker->SetShoot();
+    m_shoot_timer.Reset();
+}
 
 //==========================================================================
 // Joystick Control
@@ -179,10 +206,10 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
         if (fabs(leftYAxisJoystickValue) < RC::kJoystickDeadzone) leftYAxisJoystickValue = 0.0;
         m_indexer->VelocityDriveIndexer(leftYAxisJoystickValue * 0.4);
 
-        if (joystick->GetPOV(0) == RC::kJoystickPovRight) {
+        if (joystick->GetPOV(0) == RC::kJoystickPovDown) {
             m_kicker->SetStop();
         }
-        if (joystick->GetRawButton(RC::kJoystickXButton)) {
+        if (joystick->GetPOV(0) == RC::kJoystickPovUp) {
             m_kicker->SetShoot();
         }
     }
@@ -238,10 +265,10 @@ void Manipulator::LeaveIntakingState() {
 }
 
 void Manipulator::UpdateIntakingState() {
-    const double kBallDistance = 7;
+    const double kBallDistance = 6;
     // If we sense the ball run the indexer for a short time
-    if (m_distanceSensor->GetDistance() < kBallDistance) {
-        m_indexer->VelocityDriveIndexer(0.1);
+    if (m_distanceSensor->GetIntakeDistance() < kBallDistance) {
+        m_indexer->VelocityDriveIndexer(0.09);
 
         // m_indexer->ManualDriveIndexer(0.5);
     }  else {
@@ -259,7 +286,7 @@ void Manipulator::EnterShootingState() {
     // maybe at other times too.
 
     m_shooting_state = ShootingState::DrivingBallsUp;
-    m_indexer->VelocityDriveIndexer(0.4);
+    m_indexer->VelocityDriveIndexer(0.15);
     m_shoot_timer.Start();
     m_shoot_timer.Reset();
 }
@@ -273,15 +300,15 @@ void Manipulator::UpdateShootingState() {
 
     // If we need to turn to the target do that
 
-    // Calculate the rmp required for the current distance to target
-    double required_rmp = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
-    m_shooter->AutoDriveDashboard(required_rmp);
+    // Calculate the rpm required for the current distance to target
+    double required_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+    m_shooter->AutoDriveDashboard(required_rpm);
 
 
     switch (m_shooting_state) {
         case ShootingState::BallInKicker:
             // If we are on target, up to speed and there is a ball in the kicker then kick it!
-            if (m_shooter->ShooterAtSpeed(required_rmp)) {
+            if (m_shooter->ShooterAtSpeed(required_rpm)) {
                 m_kicker->SetShoot();
                 m_shooting_state = ShootingState::KickingBall;
                 m_shoot_timer.Reset();
@@ -290,8 +317,8 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::DrivingBallsUp:
             // If the indexer current is high then the balls have reach the end so drive backwards
             // slightly to give a gap.
-            if (m_indexer->HasHighCurrent()) {
-                m_indexer->ManualDriveIndexer(-0.5);
+            if (m_distanceSensor->GetShooterDistance() <= 3.5 && m_distanceSensor->GetShooterDistance() >= 0) {
+                m_indexer->VelocityDriveIndexer(0.15);
                 m_shooting_state = ShootingState::SettlingBallsBack;
                 m_shoot_timer.Reset();
             }
@@ -305,18 +332,25 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::SettlingBallsBack:
             // After 100ms of driving back we are ready to shoot
             if (m_shoot_timer.Get() > 0.1) {
-                m_indexer->ManualDriveIndexer(0.0);
+                m_indexer->VelocityDriveIndexer(-0.065);
                 m_shooting_state = ShootingState::BallInKicker;
             }
             break;
         case ShootingState::KickingBall:
-            // After 200ms return the kicker and start moving the next ball up
+            // After 200ms return the kicker
             if (m_shoot_timer.Get() > 0.2) {
                 m_kicker->SetStop();
 
+                m_shooting_state = ShootingState::KickerReturn;
+                m_shoot_timer.Reset();
+            }
+            break;
+        case ShootingState::KickerReturn:
+        // After 200ms start moving the next ball up
+            if (m_shoot_timer.Get() > 0.2) {
                 m_shooting_state = ShootingState::DrivingBallsUp;
                 // m_indexer->ManualDriveIndexer(0.5);
-                m_indexer->VelocityDriveIndexer(0.5);
+                m_indexer->VelocityDriveIndexer(0.15);
                 m_shoot_timer.Reset();
             }
             break;
