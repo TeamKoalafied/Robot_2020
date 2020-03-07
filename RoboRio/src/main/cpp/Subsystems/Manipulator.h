@@ -56,7 +56,11 @@ public:
 
     //==========================================================================
     // Mechanism Access
-
+    void ExtendIntake();
+    void RetractIntake();
+    void RunIndexForward();
+    void RunIndexBack();
+    void Shoot();
 
 private:
     //==========================================================================
@@ -75,7 +79,8 @@ private:
         BallInKicker,
         DrivingBallsUp,
         SettlingBallsBack,
-        KickingBall
+        KickingBall,
+        KickerReturn
     };
 
 
@@ -132,6 +137,12 @@ private:
 
     static const double kIndexerDriveUpVelocity;      // Relative velocity for driving the balls up the indexer when shooting
     static const double kIndexerDriveBackVelocity;    // Relative velocity for driving the balls back down the indexer when shooting
+    static const double kKickerShootTimeS;            // Time to wait for the kicker to push the ball into the shooter in seconds
+    static const double kKickerReturnTimeS;           // Time to wait for the kicker to return to its start position in seconds
+    static const double kDriveUpTimeMaxS;             // Maximum time to drive balls up the indexer when shooting in seconds
+    static const double kDriveBackTimeS;              // Time to drive the balls back down the indexer when shooting in seconds
+    static const double kShootBallDetectInches;       // Distance in inches that indicates a ball is detected in the shooter
+
     static constexpr double kTestVelocityFactor = 0.5;      // Ratio to slow down movement by when testing
     
 };

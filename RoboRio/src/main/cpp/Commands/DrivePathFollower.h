@@ -49,8 +49,8 @@ private:
 	static PathFollower* CreatePathPointsFollower(RobotPath* robot_path);
 	static RobotPath* CreateVisionPathFromDashBoard(double max_velocity, double max_acceleration);
 	static RobotPath* CreateStraightPath(double max_velocity, double max_acceleration);
-	static RobotPath* CreateCube1Path(double max_velocity, double max_acceleration);
-	static RobotPath* CreateCube2Path(double max_velocity, double max_acceleration);
+	static RobotPath* CreateBall1Path(double max_velocity, double max_acceleration);
+	static RobotPath* CreateBall2Path(double max_velocity, double max_acceleration);
 
     //==========================================================================
     // Member Variables

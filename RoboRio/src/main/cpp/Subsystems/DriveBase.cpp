@@ -142,6 +142,9 @@ void DriveBase::Periodic() {
     frc::SmartDashboard::PutNumber("PositionX", m_position_x_inch*2.54);
     frc::SmartDashboard::PutNumber("PositionY", m_position_y_inch*2.54);
     frc::SmartDashboard::PutNumber("PositionHeading", position_heading_degrees);
+
+    // Update the haptic feedback
+    m_haptic_controller->Periodic();
 }
 
 //==============================================================================

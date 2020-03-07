@@ -59,7 +59,7 @@ void Indexer::Setup() {
     // Perform non-configuration setup
     m_indexer_speed_controller->SetSensorPhase(false); // Not reversed
     m_indexer_speed_controller->EnableCurrentLimit(true);
-	m_indexer_speed_controller->SetNeutralMode(NeutralMode::Coast);
+	m_indexer_speed_controller->SetNeutralMode(NeutralMode::Brake);
 }
 
 void Indexer::Shutdown() {
@@ -77,9 +77,19 @@ void Indexer::Periodic()
 // Operations
 
 void Indexer::ManualDriveIndexer(double percentage_speed) {
-    m_indexer_speed_controller->Set(ControlMode::PercentOutput, percentage_speed);
+    m_indexer_speed_controller->Set(ControlMode::PercentOutput, -percentage_speed);
 }
 
+void Indexer::VelocityDriveIndexer(double percentage_speed){
+    if (percentage_speed == 0) {
+        m_indexer_speed_controller->Set(ControlMode::PercentOutput, 0);
+    } else {
+        double targetRPM = -percentage_speed * 1050.0; // 1050 is maxrpm
+        double targetNative = KoalafiedUtilities::TalonSRXCtreVelocityRpmToNative(targetRPM);
+        m_indexer_speed_controller->Set(ControlMode::Velocity, targetNative);
+    }
+    
+}
 bool Indexer::HasHighCurrent() {
     return m_indexer_speed_controller->GetOutputCurrent() > 25.0;
 }
@@ -94,15 +104,4 @@ void Indexer::TestDriveIndexer(frc::Joystick* joystick) {
 
     const double MAX_RPM = 1050.0; // TODO need to work this out properly
     KoalafiedUtilities::TuneDriveTalonSRX(m_indexer_speed_controller, "Indexer", joystick_value, MAX_RPM, close_loop);
-}
-
-void Indexer::VelocityDriveIndexer(double percentage_speed){
-    if (percentage_speed == 0) {
-        m_indexer_speed_controller->Set(ControlMode::PercentOutput, 0);
-    } else {
-        double targetRPM = percentage_speed * 1050.0; // 1050 is maxrpm
-        double targetNative = KoalafiedUtilities::TalonSRXCtreVelocityRpmToNative(targetRPM);
-        m_indexer_speed_controller->Set(ControlMode::Velocity, targetNative);
-    }
-    
 }
