@@ -28,6 +28,8 @@ namespace RC = RobotConfiguration;
 // Static Member Variables
 
 DrivePathFollower* DrivePathFollower::ms_test_command = NULL;
+VisionFindTarget* ms_find_target_command = NULL;
+
 
 
 //==========================================================================
@@ -118,11 +120,20 @@ void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 			robot_path = CreateBall1Path(max_velocity, max_acceleration);;
 			break;
 		}
+		//case RC::kJoystickPovDown: {
+		//	std::cout << "Starting DrivePathFollower - Ball2\n";
+		//	robot_path = CreateBall2Path(max_velocity, max_acceleration);
+		//	break;
+		//}
 		case RC::kJoystickPovDown: {
-			std::cout << "Starting DrivePathFollower - Ball2\n";
-			robot_path = CreateBall2Path(max_velocity, max_acceleration);
-			break;
-		}
+        	std::cout << "Rotating to target using VisionFindTarget command";                                                                        
+            delete ms_find_target_command;
+            ms_find_target_command = new VisionFindTarget();
+            ms_find_target_command->Start();
+            break;
+        }
+
+		
 		case RC::kJoystickPovRight: {
 			std::cout << "Starting DrivePathFollower - From Dashboard\n";
 			robot_path = CreateVisionPathFromDashBoard(max_velocity, max_acceleration);
