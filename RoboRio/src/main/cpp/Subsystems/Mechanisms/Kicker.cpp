@@ -9,14 +9,10 @@
 
 #include <frc/Joystick.h>
 #include <frc/smartdashboard/SmartDashboard.h>
-#include <iostream>
-#include <ctre/Phoenix.h>
 #include <frc/DoubleSolenoid.h>
-
+#include <iostream>
 
 namespace RC = RobotConfiguration;
-
-
 
 
 //==============================================================================
@@ -36,7 +32,8 @@ Kicker::~Kicker() {
 void Kicker::Setup() {
     std::cout << "Kicker::Setup()\n";
 
-    m_kicker_double_solenoid = new frc::DoubleSolenoid(0,1);
+    m_kicker_double_solenoid = new frc::DoubleSolenoid(RC::kPneumaticsKickerForwardSolenoidId,
+                                                       RC::kPneumaticsKickerReverseSolenoidId);
     SetStop();
 }
 
@@ -53,8 +50,6 @@ void Kicker::Periodic() {
 
 void Kicker::SetStop() {
     m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kReverse);
-
-//    m_kicker_double_solenoid->Get();
 }
 
 void Kicker::SetShoot() {
@@ -63,10 +58,6 @@ void Kicker::SetShoot() {
 
 void Kicker::SetOff() {
     m_kicker_double_solenoid->Set(frc::DoubleSolenoid::Value::kOff);
-}
-
-void Kicker::KickBall() {
-
 }
 
 void Kicker::TestDriveKicker(frc::Joystick* joystick) {

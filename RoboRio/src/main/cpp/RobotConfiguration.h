@@ -77,6 +77,17 @@ const int kPneumaticsControlModuleId = 0;
 //==============================================================================
 // Pneumatics Configuration
 
+// Id of the forward side of the double solenoid that controls the kicker
+const int kPneumaticsKickerForwardSolenoidId = 0;
+
+// Id of the reverse side of the double solenoid that controls the kicker
+const int kPneumaticsKickerReverseSolenoidId = 1;
+
+// Id of the solenoid that controls the intake
+const int kPneumaticsIntakeSolenoidId = 2;
+
+// Id of the solenoid that controls the winch brake
+const int kPneumaticsWinchBrakeSolenoidId = 2;
 
 
 //==============================================================================

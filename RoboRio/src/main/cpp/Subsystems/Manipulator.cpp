@@ -129,14 +129,19 @@ void Manipulator::Shutdown() {
 
 void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
 
-
+    // Check for buttons that enter diffent operations
     bool shoot_button = joystick->GetRawButton(RC::kJoystickYButton);
     bool intake_button = joystick->GetRawButton(RC::kJoystickAButton);
+    bool climb_button = joystick->GetRawButton(RC::kJoystickLTrigButton);
 
-    // Calculate the new state based on the buttons pressed. This will get more complex
-    // with climbing is added.
+    // Calculate the new state based on the buttons pressed. The states are tested
+    // in the order of climbing, intaking, shooting. The first one found is used
+    // and the others are ignored. (Operator should not be pressing multiple buttons!)
     State new_state = State::Idle;
-    if (intake_button) {
+    if (climb_button) {
+        new_state = State::Climbing;
+    }
+    else if (intake_button) {
         new_state = State::Intaking;
     }
     else if (shoot_button) {
@@ -207,7 +212,6 @@ void Manipulator::ChangeState(State new_state) {
     // Record the new state as active
     m_state = new_state;
 
-
     // Enter the new state
     switch (m_state) {
         case State::Intaking: EnterIntakingState(); break;
@@ -216,11 +220,12 @@ void Manipulator::ChangeState(State new_state) {
         case State::Idle: break;
     }
 
+    // Display the state on the dashboard
     switch (m_state) {
         case State::Intaking: frc::SmartDashboard::PutString("m_state", "Intaking"); break;
         case State::Shooting: frc::SmartDashboard::PutString("m_state", "Shooting"); break;
         case State::Climbing: frc::SmartDashboard::PutString("m_state", "Climbing"); break;
-        case State::Idle: frc::SmartDashboard::PutString("m_state", "Idle"); break;
+        case State::Idle:     frc::SmartDashboard::PutString("m_state", "Idle");     break;
     }
 }
 
@@ -253,13 +258,16 @@ void Manipulator::UpdateIntakingState() {
 //==========================================================================
 // Shooting State
 
+const double Manipulator::kIndexerDriveUpVelocity = -0.4;
+const double Manipulator::kIndexerDriveBackVelocity = 0.5;
+
 void Manipulator::EnterShootingState() {
 
     // TODO at the start of the game we should start assuming there is a ball in the kicker and
     // maybe at other times too.
 
     m_shooting_state = ShootingState::DrivingBallsUp;
-    m_indexer->VelocityDriveIndexer(0.4);
+    m_indexer->VelocityDriveIndexer(kIndexerDriveUpVelocity);
     m_shoot_timer.Start();
     m_shoot_timer.Reset();
 }

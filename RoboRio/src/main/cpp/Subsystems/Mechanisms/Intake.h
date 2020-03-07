@@ -19,7 +19,7 @@ namespace frc {
 // actuators and sensors:
 //
 //  - Roller motor controlled by a Talon SRX with magnetic encoder
-//  - Deploy pneumatic cylinder controlled by a single solenoid
+//  - Deploy pneumatic cylinder controlled by a single solenoid, default position is retracted
 // 
 class Intake  {
 public:

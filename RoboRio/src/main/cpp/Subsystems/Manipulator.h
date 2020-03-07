@@ -117,19 +117,21 @@ private:
     //==========================================================================
     // Member Variables
 
-    Shooter* m_shooter;        // The shooter mechanism
-    Indexer* m_indexer;
-    Winch* m_winch;
-    Intake* m_intake;
-    Kicker* m_kicker;
-
-    State m_state;
+    Intake* m_intake;           // Intake mechanism
+    Indexer* m_indexer;         // Indexer mechanism
+    Kicker* m_kicker;           // Kicker mechanism
+    Shooter* m_shooter;         // Shooter mechanism
+    Winch* m_winch;             // Winch mechanism
     DistanceSensor* m_distanceSensor;
 
-    
-    frc::Timer m_shoot_timer;         // Timer used to time events during shooting
-    ShootingState m_shooting_state;
+    State m_state;                  // Current state of the mechanism
 
+    // Shooting State
+    frc::Timer m_shoot_timer;       // Timer used to time events during shooting
+    ShootingState m_shooting_state; // State in the shooting state machine
+
+    static const double kIndexerDriveUpVelocity;      // Relative velocity for driving the balls up the indexer when shooting
+    static const double kIndexerDriveBackVelocity;    // Relative velocity for driving the balls back down the indexer when shooting
     static constexpr double kTestVelocityFactor = 0.5;      // Ratio to slow down movement by when testing
     
 };

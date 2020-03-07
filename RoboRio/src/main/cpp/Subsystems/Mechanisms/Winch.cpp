@@ -8,10 +8,11 @@
 #include "../../KoalafiedUtilities.h"
 #include "../../Subsystems/DriveBase.h"
 
+#include <ctre/Phoenix.h>
 #include <frc/Joystick.h>
+#include <frc/Solenoid.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
-#include <ctre/Phoenix.h>
 
 namespace RC = RobotConfiguration;
 
@@ -20,6 +21,8 @@ namespace RC = RobotConfiguration;
 // Construction
 
 Winch::Winch()  {
+    m_winch_speed_controller = NULL;
+    m_brake_solenoid = NULL;
 }
 
 Winch::~Winch() {
@@ -65,10 +68,11 @@ void Winch::Setup() {
     winch_configuration.forwardSoftLimitThreshold = 0;
     winch_configuration.reverseSoftLimitThreshold = -max_extension_revolutions * RC::kCtreEnocderCounts;
     std::cout << "reverseSoftLimitThreshold = " << winch_configuration.reverseSoftLimitThreshold << "\n";
-    winch_configuration.forwardSoftLimitEnable = true;
+//    winch_configuration.forwardSoftLimitEnable = true;
     winch_configuration.reverseSoftLimitEnable = true;
 
     // Limit switches
+    winch_configuration.clearPositionOnLimitF = true;
 
     // Do all configuration and log if it fails
     int error = m_winch_speed_controller->ConfigAllSettings(winch_configuration, RC::kTalonTimeoutMs);
@@ -83,6 +87,9 @@ void Winch::Setup() {
 
     // Zero the encoder so that zero is the full retracted start position
     m_winch_speed_controller->SetSelectedSensorPosition(0, RC::kTalonPidIdx);
+
+    // Initialise the brake solenoid
+    m_brake_solenoid = new frc::Solenoid(RC::kPneumaticsWinchBrakeSolenoidId);
 }
 
 void Winch::Shutdown() {
@@ -105,6 +112,7 @@ void Winch::Periodic()
     frc::SmartDashboard::PutBoolean("Winch FLimit", talon_faults.ForwardSoftLimit);
     frc::SmartDashboard::PutBoolean("Winch RLimit", talon_faults.ReverseSoftLimit);
 
+    frc::SmartDashboard::PutBoolean("Winch Brake", !m_brake_solenoid->Get());
 
     // Code for possible winch adjustment for oscillation of the generator switch
     // DriveBase& drive_base = DriveBase::GetInstance();
@@ -130,12 +138,27 @@ double Winch::GetWinchPositionInch() {
 	return winch_circumference_inch * revolutions;
 }
 
+void Winch::BrakeOn() {
+    m_brake_solenoid->Set(false);
+
+    // Make sure the winch is not driving if the brake is on 
+    m_winch_speed_controller->Set(ControlMode::PercentOutput, 0.0);
+}
+
+void Winch::BrakeOff() {
+    m_brake_solenoid->Set(true);
+}
+
 void Winch::TestDriveWinch(frc::Joystick* joystick) {
+    // Drive the winch with the right Y axis, applying a normal dead zone and a 50% speed limit
     double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
-
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
-
     joystick_value *= 0.5;
-
     m_winch_speed_controller->Set(ControlMode::PercentOutput, joystick_value);
+
+    // Turn the brake off with POV up and on with POV down
+    switch (joystick->GetPOV(0)) {
+        case RC::kJoystickPovUp:   BrakeOff(); break;
+        case RC::kJoystickPovDown: BrakeOn(); break;
+    }
 }
