@@ -87,7 +87,7 @@ const int kPneumaticsKickerReverseSolenoidId = 1;
 const int kPneumaticsIntakeSolenoidId = 2;
 
 // Id of the solenoid that controls the winch brake
-const int kPneumaticsWinchBrakeSolenoidId = 2;
+const int kPneumaticsWinchBrakeSolenoidId = 3;
 
 
 //==============================================================================

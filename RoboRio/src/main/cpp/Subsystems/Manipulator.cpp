@@ -77,8 +77,6 @@ void Manipulator::DoJoystickControl() {
 
     // IMPORTANT: Only one of thes following lines should ever be uncommented at a time
     DoManualJoystickControl(joystick);
-
-
     
     // m_shooter->TestDriveShooter(joystick);
     // m_indexer->TestDriveIndexer(joystick);
@@ -203,9 +201,10 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
             m_shooter->ManualDriveShooter(0);
         }
 
-        double rightYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickRightYAxis);
-        if (fabs(rightYAxisJoystickValue) < RC::kJoystickDeadzone) rightYAxisJoystickValue = 0.0;
-        m_shooter->ManualDriveShooter(rightYAxisJoystickValue);
+        // Comment out while testing climber - Phil
+        // double rightYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickRightYAxis);
+        // if (fabs(rightYAxisJoystickValue) < RC::kJoystickDeadzone) rightYAxisJoystickValue = 0.0;
+        // m_shooter->ManualDriveShooter(rightYAxisJoystickValue);
       
         double leftYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
         if (fabs(leftYAxisJoystickValue) < RC::kJoystickDeadzone) leftYAxisJoystickValue = 0.0;
@@ -389,6 +388,7 @@ void Manipulator::UpdateClimbingState() {
     double joystick_value = GetJoystick()->GetRawAxis(RC::kJoystickRightYAxis);
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
     joystick_value *= 0.5;
-    m_winch->ManualDriveWinch(joystick_value);
+    // temporarily change direction - Phil
+    m_winch->ManualDriveWinch(-joystick_value);
 }
 

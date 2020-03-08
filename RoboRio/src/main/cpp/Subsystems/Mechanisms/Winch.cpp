@@ -65,10 +65,13 @@ void Winch::Setup() {
     // Soft limits
 	double winch_circumference_inch = RC::kWinchDiameterInch * M_PI;
 	double max_extension_revolutions = RC::kWinchMaximumExtensionInch/winch_circumference_inch;
-    winch_configuration.forwardSoftLimitThreshold = 0;
-    winch_configuration.reverseSoftLimitThreshold = -max_extension_revolutions * RC::kCtreEnocderCounts;
-    std::cout << "reverseSoftLimitThreshold = " << winch_configuration.reverseSoftLimitThreshold << "\n";
-//    winch_configuration.forwardSoftLimitEnable = true;
+//    winch_configuration.forwardSoftLimitThreshold = 0;
+//    winch_configuration.reverseSoftLimitThreshold = -max_extension_revolutions * RC::kCtreEnocderCounts;
+    winch_configuration.forwardSoftLimitThreshold = max_extension_revolutions * RC::kCtreEnocderCounts;
+    winch_configuration.reverseSoftLimitThreshold = 0;
+    std::cout << "forwardSoftLimitThreshold = " << winch_configuration.forwardSoftLimitThreshold << "\n";
+ 
+    winch_configuration.forwardSoftLimitEnable = true;
     winch_configuration.reverseSoftLimitEnable = true;
 
     // Limit switches
@@ -112,6 +115,9 @@ void Winch::Periodic()
     frc::SmartDashboard::PutBoolean("Winch FLimit", talon_faults.ForwardSoftLimit);
     frc::SmartDashboard::PutBoolean("Winch RLimit", talon_faults.ReverseSoftLimit);
 
+    bool forward_limit = m_winch_speed_controller->GetSensorCollection().IsFwdLimitSwitchClosed();
+    frc::SmartDashboard::PutBoolean("Winch FHardLimit", forward_limit);
+   
     frc::SmartDashboard::PutBoolean("Winch Brake", !m_brake_solenoid->Get());
 
     // Code for possible winch adjustment for oscillation of the generator switch
