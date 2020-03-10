@@ -48,14 +48,39 @@ namespace KoalafiedUtilities {
 	// name - Name for logging to distinguish when multiple controllers are used
 	void CalculateAndLogF(TalonSRX* controller, double speed_scale, const char* name);
 
-
-	// Calculate a log F, the feed forward gain for a Talon SRX controller
+	// Do a tuning drive for a Talon SRX controller with a CTRE magnetic encoder. Output is to the smart dashboard.
 	//
-	// controller - Talon SRX controller to log the F gain for
-	// scale - Scaling factor to convert encoder counts to 'speed' for logging. The
+	// controller - Talon SRX controller to do a tuning drive for
+	// name - Scaling factor to convert encoder counts to 'speed' for logging. The
 	//     meaning of 'speed' depends on the application.
-	// name - Name for logging to distinguish when multiple controllers are used
+	// name - Name for dashboard output to distinguish when multiple controllers are used
+    // drive - The drive to apply [-1, 1]
+    // max_rpm - Maximum RPM of close loop (drive of 1.0 cooresponds to this RPM)
+    // close_loop - Whether to do velocity close loop drive, or just open loop
 	void TuneDriveTalonSRX(TalonSRX* controller, const char* name, double drive, double max_rpm, bool close_loop);
+
+	// Do a tuning drive for a Talon FX controller and its built in encoder. Output is to the smart dashboard.
+	//
+	// controller - Talon SRX controller to do a tuning drive for
+	// name - Scaling factor to convert encoder counts to 'speed' for logging. The
+	//     meaning of 'speed' depends on the application.
+	// name - Name for dashboard output to distinguish when multiple controllers are used
+    // drive - The drive to apply [-1, 1]
+    // max_rpm - Maximum RPM of close loop (drive of 1.0 cooresponds to this RPM)
+    // close_loop - Whether to do velocity close loop drive, or just open loop
+	void TuneDriveTalonFX(TalonFX* controller, const char* name, double drive, double max_rpm, bool close_loop);
+
+	// Do a tuning drive for a Talon controller, either SRX or FX. Output is to the smart dashboard.
+	//
+	// controller - Talon controller to do a tuning drive for
+	// name - Scaling factor to convert encoder counts to 'speed' for logging. The
+	//     meaning of 'speed' depends on the application.
+	// name - Name for dashboard output to distinguish when multiple controllers are used
+    // drive - The drive to apply [-1, 1]
+    // max_rpm - Maximum RPM of close loop (drive of 1.0 cooresponds to this RPM)
+    // close_loop - Whether to do velocity close loop drive, or just open loop
+    // encoder_per_rev - number of encoder counts per revolution for the controller
+	void TuneDriveTalon(BaseTalon* controller, const char* name, double drive, double max_rpm, bool close_loop, int encoder_per_rev);
 
     // Convert a velocity from RPM to native TalonSRX units for a Talon using a CTRE magnetic encoder
     //

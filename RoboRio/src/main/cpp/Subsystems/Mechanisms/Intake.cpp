@@ -112,15 +112,15 @@ void Intake::TestDriveIntake(frc::Joystick* joystick) {
     // Do tune driving of the intake roller. Using the right Y for the drive and trigger
     // close loop with the left trigger button.
     double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
-    
+    if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
+    bool close_loop = joystick->GetRawButton(RobotConfiguration::kJoystickLTrigButton);
+    const double MAX_RPM = 1200.0;
+    KoalafiedUtilities::TuneDriveTalonSRX(m_intake_speed_controller, "Intake", joystick_value, MAX_RPM, close_loop);
+
+    // Extend the intake if the A button is held down
     if (joystick->GetRawButton(RC::kJoystickAButton)) {
         Extend();
     } else {
         Retract();
     }
-    if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
-    bool close_loop = joystick->GetRawButton(RobotConfiguration::kJoystickLTrigButton);
-
-    const double MAX_RPM = 1200.0; // TODO need to work this out properly
-    KoalafiedUtilities::TuneDriveTalonSRX(m_intake_speed_controller, "Intake", joystick_value, MAX_RPM, close_loop);
 }

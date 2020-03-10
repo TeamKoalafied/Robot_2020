@@ -36,6 +36,7 @@ public:
     virtual void Periodic() override;
     //==========================================================================
 
+
     //==========================================================================
     // Joystick Operation (from JoystickSubsystem)
     virtual void JoystickControlStarted() override;
@@ -84,6 +85,16 @@ private:
     };
 
 
+	// Sample data recorded while testing shooting
+	struct ShootingDataSample
+	{
+		double m_time_s;				// Time in seconds the sample was taken at relative to the start of the test
+        ShootingState m_shooting_state; // Shooting start being entered
+		double m_shooter_rpm;		    // Current shooter RPM
+        double m_indexer_position_inch; // Current position of the indexer in inches
+	};
+
+
     //==========================================================================
     // Joystick Control
 
@@ -95,27 +106,60 @@ private:
     //==========================================================================
     // State Management
 
+    // Change the current mehanism state to the given one. This will leave the
+    // existing state and then enter the new one.
+    //
+    // new_state - State to change to
     void ChangeState(State new_state);
+
 
     //==========================================================================
     // Intaking State
 
+    // Enter the intaking balls state
     void EnterIntakingState();
+
+    // Leave the intaking balls state
     void LeaveIntakingState();
+
+    // Do an update for the intaking balls state. Called from periodic.
     void UpdateIntakingState();
+
 
     //==========================================================================
     // Shooting State
 
+    // Enter the shooting balls state
     void EnterShootingState();
+
+    // Leave the shooting balls state
     void LeaveShootingState();
+
+    // Do an update for the shooting balls state. Called from periodic.
     void UpdateShootingState();
+
+    // Set up for logging the shooting state
+    void SetupShootingLogging();
+
+    // Log entering the given shooting state
+    //
+    // shooting_state - State being entered
+    void LogEnterShootingState(ShootingState shooting_state);
+
+    // Output the log of shooter state changes to the console
+    void OutputShootingLog();
+
 
     //==========================================================================
     // Climbing State
 
+    // Enter the climbing state
     void EnterClimbingState();
+
+    // Leave the climbing state
     void LeaveClimbingState();
+
+    // Do an update for the climbing state. Called from periodic.
     void UpdateClimbingState();
 
 
@@ -132,8 +176,10 @@ private:
     State m_state;                  // Current state of the mechanism
 
     // Shooting State
-    frc::Timer m_shoot_timer;       // Timer used to time events during shooting
+    frc::Timer m_shooting_timer;    // Timer used to time events during shooting
     ShootingState m_shooting_state; // State in the shooting state machine
+    frc::Timer m_shooting_log_timer;// Timer used to time stamp log entries during shooting
+    std::vector<ShootingDataSample> m_shooting_sample_list;	// List of data samples recorded during the test
 
     static const double kIndexerDriveUpVelocity;      // Relative velocity for driving the balls up the indexer when shooting
     static const double kIndexerDriveBackVelocity;    // Relative velocity for driving the balls back down the indexer when shooting

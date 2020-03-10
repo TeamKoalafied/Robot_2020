@@ -80,20 +80,15 @@ void Indexer::ManualDriveIndexer(double percentage_speed) {
     m_indexer_speed_controller->Set(ControlMode::PercentOutput, -percentage_speed);
 }
 
-void Indexer::VelocityDriveIndexer(double percentage_speed){
+void Indexer::VelocityDriveIndexer(double percentage_speed) {
     if (percentage_speed == 0) {
         m_indexer_speed_controller->Set(ControlMode::PercentOutput, 0);
     } else {
         double targetRPM = -percentage_speed * 1050.0; // 1050 is maxrpm
         double targetNative = KoalafiedUtilities::TalonSRXCtreVelocityRpmToNative(targetRPM);
         m_indexer_speed_controller->Set(ControlMode::Velocity, targetNative);
-    }
-    
+    }    
 }
-bool Indexer::HasHighCurrent() {
-    return m_indexer_speed_controller->GetOutputCurrent() > 25.0;
-}
-
 
 void Indexer::TestDriveIndexer(frc::Joystick* joystick) {
     // Do tune driving of the indexer. Using the right Y for the drive and trigger

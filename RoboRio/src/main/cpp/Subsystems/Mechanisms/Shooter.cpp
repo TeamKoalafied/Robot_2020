@@ -12,10 +12,7 @@
 #include <iostream>
 #include <ctre/Phoenix.h>
 
-
 namespace RC = RobotConfiguration;
-
-//const double Shooter::kShooterDegreesPerEncoder = 360.0 / (4096.0 * RC::kShooterRetractRatio);
 
 
 //==============================================================================
@@ -80,7 +77,6 @@ void Shooter::Setup() {
     m_shooter_master_speed_controller->SetSensorPhase(false);
 }
 
-
 void Shooter::Shutdown() {
     std::cout << "Shooter::Shutdown()\n";
 }
@@ -88,11 +84,7 @@ void Shooter::Shutdown() {
 void Shooter::Periodic() {
     frc::SmartDashboard::PutNumber("Shooter Current", m_shooter_master_speed_controller->GetOutputCurrent());            
     frc::SmartDashboard::PutNumber("Shooter Output", m_shooter_master_speed_controller->GetMotorOutputPercent());              
-
-    double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
-    double shooter_speed_rpm =  KoalafiedUtilities::TalonFXVelocityNativeToRpm(shooter_speed_native) * RC::kShooterMotorGearRatio;
-
-    frc::SmartDashboard::PutNumber("Shooter Speed RPM", shooter_speed_rpm);
+    frc::SmartDashboard::PutNumber("Shooter Speed RPM", GetShooterRpm());
 }
 
 
@@ -103,72 +95,42 @@ void Shooter::ManualDriveShooter(double percentage_speed) {
     m_shooter_master_speed_controller->Set(ControlMode::PercentOutput, percentage_speed);
 }
 
-void Shooter::AutoDriveDashboard(double dRPM) {
-    // std::cout << "in auto drive dash" << std::endl;
-    m_shooter_master_speed_controller->Set(ControlMode::Velocity, (dRPM * 2048.0 / (60.0 * 10.0)));
-
-    double closed_loop_error_native = m_shooter_master_speed_controller->GetClosedLoopError(RC::kTalonPidIdx);
-    frc::SmartDashboard::PutNumber("Shooter Closed Loop Error", closed_loop_error_native);
+void Shooter::DriveShooterRpm(double shooter_speed_rpm) {
+    double shooter_motor_speed_rpm = shooter_speed_rpm / RC::kShooterMotorGearRatio;
+    double shooter_speed_native =  KoalafiedUtilities::TalonFXVelocityRpmToNative(shooter_motor_speed_rpm);
+    m_shooter_master_speed_controller->Set(ControlMode::Velocity, shooter_speed_native);
 }
 
-bool Shooter::ShooterAtSpeed(double dRPM) {
+double Shooter::GetShooterRpm() {
     double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
-    double shooter_speed_rpm =  KoalafiedUtilities::TalonFXVelocityNativeToRpm(shooter_speed_native);
+    double shooter_motor_speed_rpm =  KoalafiedUtilities::TalonFXVelocityNativeToRpm(shooter_speed_native);
+    double shooter_speed_rpm = shooter_motor_speed_rpm * RC::kShooterMotorGearRatio;
+    return shooter_speed_rpm;
+}
 
-    double diffpercent = fabs(dRPM-shooter_speed_rpm) * 100 /dRPM;
+bool Shooter::ShooterAtSpeed(double desired_shooter_speed_rpm) {
+    double shooter_speed_rpm = GetShooterRpm();
+
+    double diffpercent = fabs(desired_shooter_speed_rpm - shooter_speed_rpm) * 100 / desired_shooter_speed_rpm;
     return (diffpercent < 5);
 }
 
-void Shooter::TestDriveShooter(frc::Joystick* joystick) {  
-    double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+void Shooter::TestDriveShooter(frc::Joystick* joystick) {
 
-    if (joystick->GetRawAxis(RobotConfiguration::kJoystickRightTriggerAxis) > 0.0) {
-        // Run in close loop and report the error margin
+    // Do tune driving of the shooter. If the A button is down drive to the dashboard speed,
+    // otherwise use the right Y for the drive and trigger close loop with the left trigger button.
+    if (joystick->GetRawButton(RobotConfiguration::kJoystickLTrigButton)) {
+        double shooter_speed_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+        double shooter_motor_speed_rpm = shooter_speed_rpm / RC::kShooterMotorGearRatio;
 
-        // Do closed loop velocity control and set a desired speed from
-        // our movement value.
-        m_shooter_master_speed_controller->Set(ControlMode::Velocity, (dRPM * 2048.0/ (60.0 *10.0)));
-
-
-        // Get the close loop error and convert to RPM
-        double closed_loop_error_native = m_shooter_master_speed_controller->GetClosedLoopError(RC::kTalonPidIdx);
-        frc::SmartDashboard::PutNumber("Shooter Closed Loop Error", closed_loop_error_native);    
-    } else {
-
-        double shooter_drive = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
-        if (fabs(shooter_drive) < RC::kJoystickDeadzone) shooter_drive = 0.0;
-
-        m_shooter_master_speed_controller->Set(ControlMode::PercentOutput, shooter_drive);
-        
-        // Run in open loo
-    // if (joystick->GetRawAxis(RobotConfiguration::kJoystickLeftYAxis)){
-    //     m_shooter_master_speed_controller->Set(ControlMode::PercentOutput, joystick->GetRawAxis(RobotConfiguration::kJoystickLeftYAxis));
-    // } else {p and calculate a value for F
-
-        // $5 for free - afghan32
-
-        // Calculate the motor output voltage as a fraction
-        double motor_output = m_shooter_master_speed_controller->GetMotorOutputVoltage()/
-                                m_shooter_master_speed_controller->GetBusVoltage();
-
-        // Get the speed in RPM and convert to the native units of encode counts
-        // per 100ms time period (see TSSRM page 88).
-        double speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
-        // double speed_rpm = speed_native * 60.0 *10.0 / 2048.0;
-
-        // Calculate a feed forward gain (F) for this speed
-        double F;
-        if (speed_native == 0) {
-            F = 0;
-        } else
-        {
-            F = motor_output * 1023.0/speed_native;
-        }
-        
-        // output F to the networktables
-        frc::SmartDashboard::PutNumber("Shooter F", F);
-        // Output the values if required
-        // sstd::cout << "shooter F: " << F << std::endl;
-    // }
+        // Still use the test drive function as it records everything to the dashboard.
+        KoalafiedUtilities::TuneDriveTalonFX(m_shooter_master_speed_controller, "Shooter", 1.0, shooter_motor_speed_rpm, true);
+    }
+    else {
+        double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
+        if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
+        bool close_loop = joystick->GetRawButton(RobotConfiguration::kJoystickLTrigButton);
+        const double MAX_RPM = 4000.0;
+        KoalafiedUtilities::TuneDriveTalonFX(m_shooter_master_speed_controller, "Shooter", joystick_value, MAX_RPM, close_loop);
     }
 }
