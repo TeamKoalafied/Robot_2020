@@ -185,9 +185,6 @@ const double kRotatePower = 1.0;
 // slower and more controllable.
 const double kRotateJoystickScale = 0.8;
 
-// Scaling factor applied to rotate and move when driving with the climbing arm raised
-const double kClimbingArmRaisedMovementScale = 0.5;
-
 
 //==============================================================================
 //  MANIPULATOR CONFIGURATION
