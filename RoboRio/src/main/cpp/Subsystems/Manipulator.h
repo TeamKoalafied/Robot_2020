@@ -149,6 +149,13 @@ private:
     // Output the log of shooter state changes to the console
     void OutputShootingLog();
 
+    // Get a shooting state enum value as a string for logging
+    //
+    // shooting_state - State to get the string for
+    //
+    // Returns a string for the state
+    const char* GetShootingStateName(ShootingState shooting_state);
+
 
     //==========================================================================
     // Climbing State

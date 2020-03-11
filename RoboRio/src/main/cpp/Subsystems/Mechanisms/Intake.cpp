@@ -47,8 +47,10 @@ void Intake::Setup() {
     intake_configuration.peakCurrentLimit = RobotConfiguration::kShooterMotorPeakCurrentLimit;
     intake_configuration.peakCurrentDuration = RobotConfiguration::kShooterMotorPeakCurrentDurationMs;
 
+    // Closed loop PID parameters
     intake_configuration.slot0.kF = 0.12;
     intake_configuration.slot0.kP = 0.25;
+    
     // Feedback sensor
     intake_configuration.primaryPID.selectedFeedbackSensor = FeedbackDevice::CTRE_MagEncoder_Absolute;
  
@@ -89,13 +91,11 @@ void Intake::Retract() {
 }
 
 void Intake::Run() {
-    // double target_velocity_rpm = max_rpm * drive;
 	double target_velocity_native = KoalafiedUtilities::TalonSRXCtreVelocityRpmToNative(-1050);
     m_intake_speed_controller->Set(ControlMode::Velocity, target_velocity_native);
 }
 
 void Intake::RunReverse() {
-    // double target_velocity_rpm = max_rpm * drive;
 	double target_velocity_native = KoalafiedUtilities::TalonSRXCtreVelocityRpmToNative(600);
     m_intake_speed_controller->Set(ControlMode::Velocity, target_velocity_native);
 }
@@ -109,7 +109,7 @@ void Intake::ManualDriveIntake(double percentage_output) {
 }
 
 void Intake::TestDriveIntake(frc::Joystick* joystick) {
-    // Do tune driving of the intake roller. Using the right Y for the drive and trigger
+    // Do tune driving of the intake roller. Using the right Y for the drive and set
     // close loop with the left trigger button.
     double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;

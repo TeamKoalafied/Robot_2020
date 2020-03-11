@@ -41,15 +41,17 @@ void Indexer::Setup() {
     TalonSRXConfiguration indexer_configuration;
 
     // Current limit
-    indexer_configuration.continuousCurrentLimit = RobotConfiguration::kShooterMotorContinuousCurrentLimit;
-    indexer_configuration.peakCurrentLimit = RobotConfiguration::kShooterMotorPeakCurrentLimit;
-    indexer_configuration.peakCurrentDuration = RobotConfiguration::kShooterMotorPeakCurrentDurationMs;
+    indexer_configuration.continuousCurrentLimit = RobotConfiguration::kIntakeMotorContinuousCurrentLimit;
+    indexer_configuration.peakCurrentLimit = RobotConfiguration::kIntakeMotorPeakCurrentLimit;
+    indexer_configuration.peakCurrentDuration = RobotConfiguration::kIntakeMotorPeakCurrentDurationMs;
     
     // Feedback sensor
     indexer_configuration.primaryPID.selectedFeedbackSensor = FeedbackDevice::CTRE_MagEncoder_Absolute;
     
+    // Closed loop PID parameters
     indexer_configuration.slot0.kF = 0.3;
     indexer_configuration.slot0.kP = 0.05;
+
     // Do all configuration and log if it fails
     int error = m_indexer_speed_controller->ConfigAllSettings(indexer_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
@@ -90,8 +92,19 @@ void Indexer::VelocityDriveIndexer(double percentage_speed) {
     }    
 }
 
+void Indexer::ZeroIndexerPosition() {
+    m_indexer_speed_controller->SetSelectedSensorPosition(0, RC::kTalonPidIdx);
+}
+
+double Indexer::GetIndexerPositionInch() {
+    int encoder_count = -m_indexer_speed_controller->GetSelectedSensorPosition(RC::kTalonPidIdx);
+	double revolutions = (double)encoder_count / (double)RC::kCtreEnocderCounts;
+	double indexer_circumference_inch = RC::kIndexerDiameterInch * M_PI;
+	return indexer_circumference_inch * revolutions;
+}
+
 void Indexer::TestDriveIndexer(frc::Joystick* joystick) {
-    // Do tune driving of the indexer. Using the right Y for the drive and trigger
+    // Do tune driving of the indexer. Using the right Y for the drive and set
     // close loop with the left trigger button.
     double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;

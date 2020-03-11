@@ -17,8 +17,10 @@
 
 #include <frc/Joystick.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <iomanip>
 #include <iostream>
 #include <math.h>
+#include <sstream>
 
 namespace RC = RobotConfiguration;
 
@@ -272,11 +274,9 @@ void Manipulator::LeaveIntakingState() {
 
 void Manipulator::UpdateIntakingState() {
     const double kBallDistance = 6;
-    // If we sense the ball run the indexer for a short time
+    // If we sense the ball run the indexer. The means the indexer runs until the ball has cleared the sensor
     if (m_distanceSensor->GetIntakeDistance() < kBallDistance) {
         m_indexer->VelocityDriveIndexer(0.09);
-
-        // m_indexer->ManualDriveIndexer(0.5);
     }  else {
         m_indexer->ManualDriveIndexer(0);
     }
@@ -302,9 +302,10 @@ void Manipulator::EnterShootingState() {
 
     SetupShootingLogging();
 
-    m_shooting_state = ShootingState::DrivingBallsUp;
-    m_indexer->VelocityDriveIndexer(0.15);
     m_shooting_timer.Start();
+    m_indexer->VelocityDriveIndexer(kIndexerDriveUpVelocity);
+    m_shooting_state = ShootingState::DrivingBallsUp;
+    LogEnterShootingState(ShootingState::DrivingBallsUp);
     m_shooting_timer.Reset();
 }
 
@@ -338,7 +339,10 @@ void Manipulator::UpdateShootingState() {
             double shooter_distance = m_distanceSensor->GetShooterDistance();
             if (shooter_distance <= 3.5 && shooter_distance >= 0) {
                 m_indexer->VelocityDriveIndexer(kIndexerDriveBackVelocity);
+
+                // Move the the 'SettlingBallsBack' state
                 m_shooting_state = ShootingState::SettlingBallsBack;
+                LogEnterShootingState(ShootingState::SettlingBallsBack);
                 m_shooting_timer.Reset();
             }
 
@@ -346,7 +350,11 @@ void Manipulator::UpdateShootingState() {
             // trying to shoot (probably we are empty)
             if (m_shooting_timer.Get() > kDriveUpTimeMaxS) {
                 m_indexer->ManualDriveIndexer(0.0);
+
+                // Move the the 'BallInKicker' state
                 m_shooting_state = ShootingState::BallInKicker;
+                LogEnterShootingState(ShootingState::BallInKicker);
+                m_shooting_timer.Reset();
             }
             break;
         }
@@ -354,7 +362,11 @@ void Manipulator::UpdateShootingState() {
             // After 100ms of driving back we are ready to shoot
             if (m_shooting_timer.Get() > kDriveBackTimeS) {
                 m_indexer->VelocityDriveIndexer(-0.065);
+
+                // Move the the 'BallInKicker' state
                 m_shooting_state = ShootingState::BallInKicker;
+                LogEnterShootingState(ShootingState::BallInKicker);
+                m_shooting_timer.Reset();
             }
             break;
         case ShootingState::KickingBall:
@@ -362,15 +374,20 @@ void Manipulator::UpdateShootingState() {
             if (m_shooting_timer.Get() > kKickerShootTimeS) {
                 m_kicker->SetStop();
 
+                // Move the the 'KickerReturn' state
                 m_shooting_state = ShootingState::KickerReturn;
+                LogEnterShootingState(ShootingState::KickerReturn);
                 m_shooting_timer.Reset();
             }
             break;
         case ShootingState::KickerReturn:
-            // After 200ms the kicker shoult be back in position so start moving the next ball up
-            if (m_shooting_timer.Get() > 0.2) {
-                m_shooting_state = ShootingState::DrivingBallsUp;
+            // After 200ms the kicker should be back in position so start moving the next ball up
+            if (m_shooting_timer.Get() > kKickerReturnTimeS) {
                 m_indexer->VelocityDriveIndexer(kIndexerDriveUpVelocity);
+
+                // Move the the 'DrivingBallsUp' state
+                m_shooting_state = ShootingState::DrivingBallsUp;
+                LogEnterShootingState(ShootingState::DrivingBallsUp);
                 m_shooting_timer.Reset();
             }
             break;
@@ -382,6 +399,8 @@ void Manipulator::SetupShootingLogging() {
     m_shooting_log_timer.Start();
     m_shooting_sample_list.clear();
     m_shooting_sample_list.reserve(30);
+
+    m_indexer->ZeroIndexerPosition();
 }
 
 void Manipulator::LogEnterShootingState(ShootingState shooting_state) {
@@ -389,13 +408,38 @@ void Manipulator::LogEnterShootingState(ShootingState shooting_state) {
 	sample.m_time_s = m_shooting_log_timer.Get();
     sample.m_shooting_state = shooting_state;
 	sample.m_shooter_rpm = m_shooter->GetShooterRpm();
-    sample.m_indexer_position_inch; // Current position of the indexer in inches
+    sample.m_indexer_position_inch = m_indexer->GetIndexerPositionInch();
     m_shooting_sample_list.push_back(sample);
 }
 
 void Manipulator::OutputShootingLog() {
-
+    // Output the recorded sample as tab delimited data, with a header row and one sample per row.
+    // Acculumate the output in a buffer and do a single log to the console (should be faster,
+    // but have not tested it)
+    std::stringstream buffer;
+    buffer << "Time\tType\nShooter\tIndexer\n";
+    int total_samples = m_shooting_sample_list.size();
+    for (int i = 0; i < total_samples; i++) {
+        const ShootingDataSample& sample = m_shooting_sample_list[i];
+        buffer << std::fixed << std::setprecision(2) << sample.m_time_s << "\t";
+        buffer << GetShootingStateName(sample.m_shooting_state) << "\t";
+        buffer << std::fixed << std::setprecision(0) << sample.m_shooter_rpm << "\t";
+        buffer << std::fixed << std::setprecision(2) << sample.m_indexer_position_inch << "\n";
+    }
+    std::cout << buffer.str();
 }
+
+const char* Manipulator::GetShootingStateName(ShootingState shooting_state) {
+    switch (shooting_state) {
+        case BallInKicker:      return "BallInKicker";
+        case DrivingBallsUp:    return "DrivingBallsUp";
+        case SettlingBallsBack: return "SettlingBallsBack";
+        case KickingBall:       return "KickingBall";
+        case KickerReturn:      return "KickerReturn";
+    }
+    return "<Unknown>";
+}
+
 
 
 //==========================================================================
