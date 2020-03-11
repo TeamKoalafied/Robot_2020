@@ -108,6 +108,8 @@ void Manipulator::Setup() {
     m_kicker->Setup();
 
     m_distanceSensor->Setup();
+
+    m_shooting_test_led_output = new frc::DigitalOutput(0);
 }
 
 void Manipulator::Shutdown() {
@@ -125,6 +127,25 @@ void Manipulator::Shutdown() {
 
 //==========================================================================
 // Mechanism Access
+
+double Manipulator::GetDriveBaseSlowDownFactor() {
+    const double kLowSlowExtensionInch = 10.0;
+    const double kHighSlowExtensionInch = 20.0;
+    const double kSlowDownFactor = 0.3;
+
+    double winch_extension_inch = m_winch->GetWinchPositionInch();
+    if (winch_extension_inch < kLowSlowExtensionInch) {
+        // Below the low extension go at full speed
+        return 1.0;
+    } else if (winch_extension_inch < kHighSlowExtensionInch) {
+        // Between the low and high extension interpolate between full and slow speed
+        double pos = (winch_extension_inch - kLowSlowExtensionInch) / (kHighSlowExtensionInch - kLowSlowExtensionInch);
+        return (1.0 - pos)*1.0 + pos*kSlowDownFactor;
+    } else {
+        // Above the high extension use the slow speed
+        return kSlowDownFactor;
+    }
+}
 
 void Manipulator::ExtendIntake() {
     m_intake->Extend();
@@ -312,6 +333,7 @@ void Manipulator::EnterShootingState() {
 void Manipulator::LeaveShootingState() {
     m_shooter->ManualDriveShooter(0);
     m_kicker->SetStop();
+    m_shooting_test_led_output->Set(false);
 
     OutputShootingLog();
 }
@@ -331,7 +353,11 @@ void Manipulator::UpdateShootingState() {
             if (m_shooter->ShooterAtSpeed(required_rpm)) {
                 m_kicker->SetShoot();
                 m_shooting_state = ShootingState::KickingBall;
+                LogEnterShootingState(ShootingState::KickingBall);
                 m_shooting_timer.Reset();
+
+                // Indicate shooting with an LED for testing
+                m_shooting_test_led_output->Set(true);
             }
             break;
         case ShootingState::DrivingBallsUp: {
@@ -373,6 +399,9 @@ void Manipulator::UpdateShootingState() {
             // After 200ms the balls should have been grabbed by the shooter wheel so return the kicker to is normal position
             if (m_shooting_timer.Get() > kKickerShootTimeS) {
                 m_kicker->SetStop();
+
+                // Clear the shooting indicator LED
+                m_shooting_test_led_output->Set(false);
 
                 // Move the the 'KickerReturn' state
                 m_shooting_state = ShootingState::KickerReturn;

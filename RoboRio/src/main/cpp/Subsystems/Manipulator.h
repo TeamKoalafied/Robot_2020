@@ -9,6 +9,7 @@
 #include "JoystickSubsystem.h"
 #include <ctre/Phoenix.h>
 #include <frc/Timer.h>
+#include <frc/DigitalOutput.h>
 
 class Shooter;
 class Indexer;
@@ -57,6 +58,10 @@ public:
 
     //==========================================================================
     // Mechanism Access
+
+    // Get a factor to slow down the drivebase speed by
+    double GetDriveBaseSlowDownFactor();
+
     void ExtendIntake();
     void RetractIntake();
     void RunIndexForward();
@@ -187,6 +192,7 @@ private:
     ShootingState m_shooting_state; // State in the shooting state machine
     frc::Timer m_shooting_log_timer;// Timer used to time stamp log entries during shooting
     std::vector<ShootingDataSample> m_shooting_sample_list;	// List of data samples recorded during the test
+    frc::DigitalOutput* m_shooting_test_led_output;    // Output to drive led for shooter testing
 
     static const double kIndexerDriveUpVelocity;      // Relative velocity for driving the balls up the indexer when shooting
     static const double kIndexerDriveBackVelocity;    // Relative velocity for driving the balls back down the indexer when shooting
