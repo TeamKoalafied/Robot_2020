@@ -83,8 +83,8 @@ void VisionFindTarget::Execute() {
 	float minRotation = frc::SmartDashboard::GetNumber("VisionMinRotation", 0.0);	// 0.33 on carpet, 0.25 on wood
 	float maxRotation = frc::SmartDashboard::GetNumber("VisionMaxRotation", 0.0);	// 0.7
 
-//	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("pivision");
-	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("pivision");
+//	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
 	float tx = table->GetNumber("tx", 0.0);  // degrees (-27 to 27 for limelight1)
 	bool object_found = (0.0f != table->GetNumber("tv", 0.0));  // 0.0 unless the target is detected
 
@@ -115,7 +115,8 @@ void VisionFindTarget::Execute() {
 				rotation = -maxRotation;
 
 			std::cout << "Vision: tx " << tx << "rotation " << rotation << std::endl; //debug
-			drive_base.ArcadeDriveForVision(0.0, -rotation);
+//			drive_base.ArcadeDriveForVision(0.0, -rotation);
+			drive_base.TankDriveOpenLoop(rotation, -rotation);
 
 			// give vision pipeline 40ms TBD: Does the motor keep turning? Does it stop at timeout?
 			m_timer = 2;
