@@ -49,6 +49,9 @@ void Shooter::Setup() {
     shooter_configuration.peakOutputReverse = -1.0f;
     shooter_configuration.peakOutputForward = +1.0f;
 
+    shooter_configuration.closedloopRamp = 0.5;
+    shooter_configuration.openloopRamp = 0.5;
+
     shooter_configuration.forwardSoftLimitEnable = false;
     shooter_configuration.reverseSoftLimitEnable = false;
 
