@@ -49,14 +49,16 @@ void Shooter::Setup() {
     shooter_configuration.forwardSoftLimitEnable = false;
     shooter_configuration.reverseSoftLimitEnable = false;
 
+    shooter_configuration.closedloopRamp = 0.5;
+    shooter_configuration.openloopRamp = 0.5;
     
     shooter_configuration.supplyCurrLimit = ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration (true, 
         RobotConfiguration::kShooterMotorPeakCurrentLimit,
         RobotConfiguration::kShooterMotorPeakCurrentLimit,
         RobotConfiguration::kShooterMotorPeakCurrentDurationMs);
 
-    shooter_configuration.slot0.kF = 0.048;
-    shooter_configuration.slot0.kP= 0.25;
+    shooter_configuration.slot0.kF = 0.052;
+    shooter_configuration.slot0.kP= 0.32;
     
     // shooter_configuration.statorCurrLimit = ctre::phoenix::motorcontrol::SupplyCurrentLimitConfiguration ();
         
@@ -96,7 +98,7 @@ void Shooter::ManualDriveShooter(double percentage_speed) {
 }
 
 void Shooter::DriveShooterRpm(double shooter_speed_rpm) {
-    double shooter_motor_speed_rpm = shooter_speed_rpm / RC::kShooterMotorGearRatio;
+    double shooter_motor_speed_rpm = -shooter_speed_rpm / RC::kShooterMotorGearRatio;
     double shooter_speed_native =  KoalafiedUtilities::TalonFXVelocityRpmToNative(shooter_motor_speed_rpm);
     m_shooter_master_speed_controller->Set(ControlMode::Velocity, shooter_speed_native);
 }
@@ -105,7 +107,7 @@ double Shooter::GetShooterRpm() {
     double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
     double shooter_motor_speed_rpm =  KoalafiedUtilities::TalonFXVelocityNativeToRpm(shooter_speed_native);
     double shooter_speed_rpm = shooter_motor_speed_rpm * RC::kShooterMotorGearRatio;
-    return shooter_speed_rpm;
+    return -shooter_speed_rpm;
 }
 
 bool Shooter::ShooterAtSpeed(double desired_shooter_speed_rpm) {
@@ -129,7 +131,7 @@ void Shooter::TestDriveShooter(frc::Joystick* joystick) {
     else {
         double joystick_value = joystick->GetRawAxis(RC::kJoystickRightYAxis);
         if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
-        bool close_loop = joystick->GetRawButton(RobotConfiguration::kJoystickLTrigButton);
+        bool close_loop = joystick->GetRawButton(RobotConfiguration::kJoystickRTrigButton);
         const double MAX_RPM = 4000.0;
         KoalafiedUtilities::TuneDriveTalonFX(m_shooter_master_speed_controller, "Shooter", joystick_value, MAX_RPM, close_loop);
     }

@@ -79,8 +79,8 @@ void Manipulator::DoJoystickControl() {
 
     // IMPORTANT: Only one of thes following lines should ever be uncommented at a time
     DoManualJoystickControl(joystick);
-
-
+// 
+// 
     
     // m_shooter->TestDriveShooter(joystick);
     // m_indexer->TestDriveIndexer(joystick);
@@ -164,7 +164,7 @@ void Manipulator::RunIndexBack() {
 }
 
 void Manipulator::Shoot() {
-    double required_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+    double required_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0));
     m_shooter->DriveShooterRpm(required_rpm);
 
     while (!(m_shooter->ShooterAtSpeed(required_rpm))) {
@@ -206,7 +206,10 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
 
     // If in the idle state allow special override controls
     if (m_state == State::Idle) {
-        double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+
+        // HERE
+
+        double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0));
 
         // Run indexer and intake together
         if (joystick->GetPOV(0) == RC::kJoystickPovLeft) {
@@ -220,9 +223,6 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
         // Shoot, then kick
         if (joystick->GetRawButton(RC::kJoystickBButton)) {
             m_shooter->DriveShooterRpm(dRPM);
-            if (frc::SmartDashboard::GetNumber("Shooter Speed RPM", 0)*1.075 < dRPM){
-                m_kicker->SetShoot();
-            }
         } else {
             m_shooter->ManualDriveShooter(0);
         }
@@ -294,7 +294,7 @@ void Manipulator::LeaveIntakingState() {
 }
 
 void Manipulator::UpdateIntakingState() {
-    const double kBallDistance = 6;
+    const double kBallDistance = 7;
     // If we sense the ball run the indexer. The means the indexer runs until the ball has cleared the sensor
     if (m_distanceSensor->GetIntakeDistance() < kBallDistance) {
         m_indexer->VelocityDriveIndexer(0.09);
@@ -312,7 +312,7 @@ const double Manipulator::kIndexerDriveBackVelocity = -0.065;
 const double Manipulator::kKickerShootTimeS = 0.2;
 const double Manipulator::kKickerReturnTimeS = 0.2;
 const double Manipulator::kDriveUpTimeMaxS = 1.0;
-const double Manipulator::kDriveBackTimeS = 0.1;
+const double Manipulator::kDriveBackTimeS = 0.2;
 const double Manipulator::kShootBallDetectInches = 3.5;
 
 
@@ -343,7 +343,7 @@ void Manipulator::UpdateShootingState() {
     // If we need to turn to the target do that
 
     // Calculate the rpm required for the current distance to target
-    double required_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
+    double required_rpm = (frc::SmartDashboard::GetNumber("dRPM", 4000.0));
     m_shooter->DriveShooterRpm(required_rpm);
 
 
