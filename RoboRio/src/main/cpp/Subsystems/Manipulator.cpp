@@ -266,10 +266,10 @@ void Manipulator::LeaveIntakingState() {
 }
 
 void Manipulator::UpdateIntakingState() {
-    const double kBallDistance = 7.5;
+    const double kBallDistance = 7;
     // If we sense the ball run the indexer for a short time
     if (m_distanceSensor->GetIntakeDistance() < kBallDistance) {
-        m_indexer->VelocityDriveIndexer(0.09);
+        m_indexer->VelocityDriveIndexer(0.1);
 
         // m_indexer->ManualDriveIndexer(0.5);
     }  else {
