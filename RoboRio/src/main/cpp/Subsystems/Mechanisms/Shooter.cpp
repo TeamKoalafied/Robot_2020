@@ -119,10 +119,14 @@ bool Shooter::ShooterAtSpeed(double dRPM) {
     double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
     double shooter_speed_rpm =  KoalafiedUtilities::TalonFXVelocityNativeToRpm(shooter_speed_native);
 
-    double diffpercent = fabs(dRPM-shooter_speed_rpm) * 100 /dRPM;
+    double diffpercent = fabs(dRPM-shooter_speed_rpm) * 100 / fabs(dRPM);
     return (diffpercent < 5);
 }
 
+int Shooter::getRPM() {
+    double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
+    return (KoalafiedUtilities::TalonFXVelocityNativeToRpm(shooter_speed_native));
+}
 void Shooter::TestDriveShooter(frc::Joystick* joystick) {  
     double dRPM = (frc::SmartDashboard::GetNumber("dRPM", 4000.0)) * -1;
 
