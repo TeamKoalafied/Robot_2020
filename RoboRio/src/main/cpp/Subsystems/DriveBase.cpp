@@ -651,6 +651,20 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate) {
     double joystick_x = m_joystick->GetRawAxis(RobotConfiguration::kJoystickLeftXAxis);
     rotate = -joystick_x;
     if (fabs(rotate) < RobotConfiguration::kJoystickDeadzone) rotate = 0.0;
+    else {
+        // NOTE: This change was tried and seemed OK, but was removed because it seemed to cause
+        //       a problem (stalling). That was incorrect so it should be tried again to see if
+        //       it helps
+
+        // // Adjust so that the rotation starts smoothly at the edge of the deadzone, rather
+        // // than starting with a step change.
+        // if (rotate < 0) {
+        //     rotate += RobotConfiguration::kJoystickDeadzone;
+        // }
+        // else {
+        //     rotate -= RobotConfiguration::kJoystickDeadzone;
+        // }
+    }
 
     // Forward movement is controlled by the right trigger and backwards
     // movement by the left trigger. We only register a trigger if the other
