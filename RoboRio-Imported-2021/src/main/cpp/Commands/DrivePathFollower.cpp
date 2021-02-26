@@ -9,6 +9,8 @@
 #include "../Subsystems/DriveBase.h"
 #include "../Subsystems/Manipulator.h"
 
+#include "ChallengePaths.h"
+
 #include "RobotPath/Bezier3.h"
 #include "RobotPath/MotionProfile.h"
 #include "RobotPath/Point2D.h"
@@ -109,6 +111,8 @@ void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 	// If the POV is pressed start one of the test paths
 	RobotPath* robot_path = NULL;
 	int pov_angle = joystick->GetPOV(0);
+	robot_path = ChallengePaths::CreateTestPath(pov_angle, max_velocity, max_acceleration);
+/*
 	switch (pov_angle) {
 		case RC::kJoystickPovUp: {
 			std::cout << "Starting DrivePathFollower - Straight\n";
@@ -140,12 +144,12 @@ void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 			break;
 		}
 
-	}
+	}*/
 
 	// If there is a path create a follower and a command to do it
 	if (robot_path != NULL) {
-		PathFollower* path_follower = CreatePathPointsFollower(robot_path);
-//		PathFollower* path_follower = CreatePathfinderFollower(robot_path);
+//		PathFollower* path_follower = CreatePathPointsFollower(robot_path);
+		PathFollower* path_follower = CreatePathfinderFollower(robot_path);
 
 		delete ms_test_command;
 		ms_test_command = new DrivePathFollower(path_follower);

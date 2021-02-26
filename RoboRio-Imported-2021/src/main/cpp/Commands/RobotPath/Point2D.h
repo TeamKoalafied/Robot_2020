@@ -125,7 +125,7 @@ public:
 // Extra Operations
 //
 // These are needed because in C++ the first argument of an operator is the one
-// that the compil,er looks at. For example, we can scale a point by multiplying
+// that the compiler looks at. For example, we can scale a point by multiplying
 // by a number
 //
 //	Point2D(2.0, 3.0) * 10.0;

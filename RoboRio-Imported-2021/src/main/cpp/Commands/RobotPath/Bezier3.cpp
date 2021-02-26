@@ -42,8 +42,6 @@ Point2D Bezier3::Derivative(double u) const
 
 void Bezier3::Split(double u, Bezier3& bezier3_1, Bezier3& bezier3_2) const
 {
-	// double u_m_1 = 1.0 - u;
-
 	bezier3_1.m_point1 = m_point1;
 	bezier3_2.m_point4 = m_point4;
 
