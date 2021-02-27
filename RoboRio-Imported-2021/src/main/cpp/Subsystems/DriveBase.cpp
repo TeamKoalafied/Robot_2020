@@ -326,8 +326,6 @@ void DriveBase::DoCheezyDrive() {
 	// DoTuningDrive();
 	// return;
 
-
-
     // Get the movement and rotation values from the joystick, including any speed
     // limiting and response curve shaping.
     double move = 0.0;
@@ -338,7 +336,14 @@ void DriveBase::DoCheezyDrive() {
     // Get the robot drive to do arcade driving with our rotate and move values
     ArcadeDrive(move, rotate);
 
-//   TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
+    //--------------------------------------------------------------------------
+    // NOTE: Extra testing code is often added here. This allows test operations
+    //       to be triggered by the driver's joystick, which is often very helpful.
+    //       However having the driver trigger test code accidentally is potentially
+    //       dangerous and you should not have any code active here when submitted
+    //       to the 'master' branch.
+
+    // TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
     // DrivePathFollower::DoJoystickTestControl(m_joystick);
 
 	// If the 'B' button is pressed reset the drive base dead reckoning position
@@ -348,31 +353,7 @@ void DriveBase::DoCheezyDrive() {
 	// 	drive_base.ResetPosition();
 	// }
 
-    static int previous_pov_angle = 0;
-	int pov_angle = m_joystick->GetPOV(0);
-    if (pov_angle != previous_pov_angle) {
-        previous_pov_angle = pov_angle;
-        switch (pov_angle) {
-            case RC::kJoystickPovUp: {
-                m_haptic_controller->DoContinuousFeedback(1.0, 1.0);
-                break;
-            }
-            case RC::kJoystickPovLeft: {
-                m_haptic_controller->DoContinuousFeedback(1.0, 0.5);
-                break;
-            }
-            case RC::kJoystickPovDown: {
-                m_haptic_controller->DoContinuousFeedback(1.0, 0.25);
-                break;
-            }
-            case RC::kJoystickPovRight: {
-                static double PATTERN[10] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
-                m_haptic_controller->DoFeedback(PATTERN, 10);
-                break;
-            }
-        }
-    }
-
+    //--------------------------------------------------------------------------
 }
 
 void DriveBase::StartDrivingStraight(double heading) {

@@ -39,6 +39,11 @@ public:
 
     void DoContinuousFeedback(double time_s, double value);
 
+    //==========================================================================
+    // Testing
+    
+    void DoJoystickTestControl();
+
 private:
 
     //==========================================================================
