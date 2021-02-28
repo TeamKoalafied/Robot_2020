@@ -344,7 +344,7 @@ void DriveBase::DoCheezyDrive() {
     //       to the 'master' branch.
 
     // TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
-    // DrivePathFollower::DoJoystickTestControl(m_joystick);
+    DrivePathFollower::DoJoystickTestControl(m_joystick);
 
 	// If the 'B' button is pressed reset the drive base dead reckoning position
     // if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {

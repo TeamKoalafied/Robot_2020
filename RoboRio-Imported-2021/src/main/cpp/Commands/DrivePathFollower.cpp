@@ -148,8 +148,8 @@ void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 
 	// If there is a path create a follower and a command to do it
 	if (robot_path != NULL) {
-//		PathFollower* path_follower = CreatePathPointsFollower(robot_path);
-		PathFollower* path_follower = CreatePathfinderFollower(robot_path);
+		PathFollower* path_follower = CreatePathPointsFollower(robot_path);
+		// PathFollower* path_follower = CreatePathfinderFollower(robot_path);
 
 		delete ms_test_command;
 		ms_test_command = new DrivePathFollower(path_follower);

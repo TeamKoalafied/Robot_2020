@@ -161,7 +161,7 @@ void PathPointsFollower::FollowSegment() {
 
 	// Calculate a turn value from the angle error. NOTE: this uses the same gain as
 	// DriveBase::CalculateDriveStraightAdjustment() so it should be good.
-	double turn = 0.01 * angle_difference_deg;
+	double turn = 0.005 * angle_difference_deg; // 0.01 original
 
 	// Adjust the left and right output by the turning values. Note this calculation is
 	// slightly different to DriveBase::ArcadeDrive() so it should be checked. However for

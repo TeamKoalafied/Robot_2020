@@ -46,9 +46,9 @@ RobotPath* ChallengePaths::CreateTestPath(int pov_angle, double max_velocity, do
 	}
 
 	// Append the max velocity and acceleration to the name so it gets logged
-	std::ostringstream full_name;
-  	full_name << robot_path->m_name << " MaxV: " << max_velocity << " MaxA: " << max_acceleration;
-  	robot_path->m_name = full_name.str();
+	// std::ostringstream full_name;
+  	// full_name << robot_path->m_name << " MaxV: " << max_velocity << " MaxA: " << max_acceleration;
+  	// robot_path->m_name = full_name.str();
 
     return robot_path;
 }
