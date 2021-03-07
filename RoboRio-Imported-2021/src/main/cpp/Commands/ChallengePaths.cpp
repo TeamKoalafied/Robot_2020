@@ -139,46 +139,61 @@ RobotPath* ChallengePaths::CreateSlalomPathRightAngles(double max_velocity, doub
 	// Create a path where the robot does the slalom in straight sections and right angle turns.
 	// This might not work very well but is a useful experiment.
  	
-	double start_length = length /2 - radius;
-	Bezier3 path1; // Initial straight section
-	path1.m_point1.Set(0.0, 0.0);
-	path1.m_point2.Set(start_length * 0.25, 0.0);
-	path1.m_point3.Set(start_length * 0.75, 0.0);
-	path1.m_point4.Set(start_length, 0.0);			
-	Bezier3 path2; // Right angle turn right
-	path2.m_point1.Set(start_length, 0.0);
-	path2.m_point2.Set(length/2, 0.0);
-	path2.m_point3.Set(length/2, 0.0);
-	path2.m_point4.Set(length/2,     -radius);
-	Bezier3 path3; // Straight through the first gap
-	path3.m_point1.Set(length/2,     -radius);
-	path3.m_point2.Set(length/2, -width/2);
-	path3.m_point3.Set(length/2, -width/2);
-	path3.m_point4.Set(length/2,     -width + radius);
-	Bezier3 path4; // Right angle turn right
-	path4.m_point1.Set(length/2,     -width + radius);
-	path4.m_point2.Set(length/2,     -width);
-	path4.m_point3.Set(length/2,     -width);
-	path4.m_point4.Set(length/2 + radius, -width);
+// 	double start_length = length /2 - radius;
+// 	Bezier3 path1; // Initial straight section
+// 	path1.m_point1.Set(0.0, 0.0);
+// 	path1.m_point2.Set(start_length * 0.25, 0.0);
+// 	path1.m_point3.Set(start_length * 0.75, 0.0);
+// 	path1.m_point4.Set(start_length, 0.0);			
+// 	Bezier3 path2; // Right angle turn right
+// 	path2.m_point1.Set(start_length, 0.0);
+// 	path2.m_point2.Set(length/2, 0.0);
+// 	path2.m_point3.Set(length/2, 0.0);
+// 	path2.m_point4.Set(length/2,     -radius);
+// 	Bezier3 path3; // Straight through the first gap
+// 	path3.m_point1.Set(length/2,     -radius);
+// 	path3.m_point2.Set(length/2, -width/2);
+// 	path3.m_point3.Set(length/2, -width/2);
+// 	path3.m_point4.Set(length/2,     -width + radius);
+// 	Bezier3 path4; // Right angle turn right
+// 	path4.m_point1.Set(length/2,     -width + radius);
+// 	path4.m_point2.Set(length/2,     -width);
+// 	path4.m_point3.Set(length/2,     -width);
+// 	path4.m_point4.Set(length/2 + radius, -width);
 
 
-	PathSegment* path_segment = new PathSegment();
+PathSegment* path_segment = new PathSegment();
 	path_segment->m_name = "Slalom";
 	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment->m_path_definition.push_back(path1);
-	path_segment->m_path_definition.push_back(path2);
-	path_segment->m_path_definition.push_back(path3);
-	path_segment->m_path_definition.push_back(path4);
+// 	path_segment->m_path_definition.push_back(path1);
+// 	path_segment->m_path_definition.push_back(path2);
+// 	path_segment->m_path_definition.push_back(path3);
+// 	path_segment->m_path_definition.push_back(path4);
 	path_segment->m_reverse = false;
-//	path_segment->m_mechanism_actions.assign(GRAB_CUBE, GRAB_CUBE +  sizeof(GRAB_CUBE)/sizeof(GRAB_CUBE[0]));
 	robot_path->m_path_segments.push_back(path_segment);
 
-	// Alternative method for creating the path
-	// AddStraight(path_segment, length /2 - radius, Point2D(0, 0), Point2D(1.0, 0.0));
-	// AddTurnLeft(path_segment, radius);
-	// AddStraight(path_segment, width - 2*radius);
-	// AddTurnRight(path_segment, radius);
-	// AddStraight(path_segment, 2*length);
+// Alternative method for creating the path
+double startLength = length/2 - radius;
+AddStraight(path_segment, startLength + length/2 - radius, Point2D(0, 0), Point2D(1.0, 0.0));
+AddTurnRight(path_segment, radius);
+AddStraight(path_segment, width - 2*radius - 0.3);
+AddTurnLeft(path_segment, radius);
+AddStraight(path_segment, 2*length - 0.3);
+AddTurnLeft(path_segment, radius);
+AddStraight(path_segment, width - 2*radius);
+AddTurnRight(path_segment, radius);
+AddStraight(path_segment, length/2 - 1.05*radius);
+AddTurnRight(path_segment, radius);
+AddStraight(path_segment, width - 2*radius - 0.3);
+AddTurnRight(path_segment, radius);
+AddTurnRight(path_segment, radius);
+AddStraight(path_segment, width - 2*radius);
+AddTurnLeft(path_segment, radius);
+AddStraight(path_segment, 2*length - 0.3);
+AddTurnLeft(path_segment, radius);
+AddStraight(path_segment, width - 2*radius);
+AddTurnRight(path_segment, radius);
+AddStraight(path_segment, 0.1);
 
 	return robot_path;
 }

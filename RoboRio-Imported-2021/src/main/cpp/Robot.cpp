@@ -66,8 +66,8 @@ private:
 		frc::SmartDashboard::PutNumber("VisionTrackX", 3.0);
     	frc::SmartDashboard::PutNumber("VisionTrackY", 0.0);
     	frc::SmartDashboard::PutNumber("VisionTrackHeading", 0.0);
-    	frc::SmartDashboard::PutNumber("AutoMaxV", 1.0);
-    	frc::SmartDashboard::PutNumber("AutoMaxA", 0.5);
+    	frc::SmartDashboard::PutNumber("AutoMaxV", 0.5);
+    	frc::SmartDashboard::PutNumber("AutoMaxA", 0.25);
     	frc::SmartDashboard::PutNumber("AutoP", 1.0);
     	frc::SmartDashboard::PutNumber("AutoI", 0.0);
     	frc::SmartDashboard::PutNumber("AutoD", 0.0);
