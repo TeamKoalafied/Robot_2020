@@ -47,6 +47,7 @@ private:
     mode_t m_mode;          // Current mode
     mode_t m_next_mode;     // Next mode when timed out
     int m_timer;            // countdown timer to use when mode is ktimer
+	double m_target_bearing;
 
     //==========================================================================
     // Utility functions

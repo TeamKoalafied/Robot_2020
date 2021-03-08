@@ -69,6 +69,7 @@ void VisionFindTarget::Initialize() {
     m_mode = kvision;
 	m_next_mode = kdone;
 	m_timer = 0;
+	m_target_bearing = DriveBase::GetInstance().GetPigeonHeading();
 }
 
 void VisionFindTarget::Execute() {
@@ -87,6 +88,8 @@ void VisionFindTarget::Execute() {
 //	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
 	float tx = table->GetNumber("tx", 0.0);  // degrees (-27 to 27 for limelight1)
 	bool object_found = (0.0f != table->GetNumber("tv", 0.0));  // 0.0 unless the target is detected
+	double heading = -drive_base.GetPigeonHeading();  // positive tx is clockwise, so flip sign here
+	float offset = 0;
 
     switch (m_mode) {
 	case ktimer:
@@ -97,16 +100,40 @@ void VisionFindTarget::Execute() {
 			m_mode = m_next_mode;
 	break;
 
-	// This approach uses tx as the error in a standard PID controller loop with I=0, D=0
-	// Since vision could add 20ms latency (a guess), we wait before reading the next value
+	// This approach uses tx as the offset in a standard PID controller loop with I=0, D=0
+	// If the object is not found, we estimate the offset based on how far we have turned
 	case kvision:
+		if (object_found) {
+			// compute the offset to aim for
+			offset = tx;
+			// Compute the target bearing for later
+			m_target_bearing = heading;
+			if (heading != DriveBase::kHeadingError)
+				m_target_bearing += offset;
+		}
+		else {
+			// estimate the offset so that we don't stop whenever object is not found
+			if ((m_target_bearing != DriveBase::kHeadingError) && (heading != DriveBase::kHeadingError)) {
+				// estimate the angle from last measured tx and pigeon heading
+				offset = m_target_bearing - heading;
+			}
+			else {
+				// Stop as a last resort (pigeon not ready or failed)
+				offset = 0;
+			}
+		}
+		while (offset < -180.0)
+			offset += 360.0;
+		while (offset > 180)
+			offset -= 360.0;
+
 		// Start the rotate, and give it 100ms to settle
-		if (object_found && ((tx < -0.5) || (tx > 0.5))) {
+		if ((offset < -0.5) || (offset > 0.5)) {
 			// Give motors a little power even if error is small
-			if (tx > 0.0)
-				rotation = kp*tx + minRotation;
+			if (offset > 0.0)
+				rotation = kp*offset + minRotation;
 			else
-				rotation = kp*tx - minRotation;
+				rotation = kp*offset - minRotation;
 
 			// Clip the maximum rotation for safety!
 			if (rotation > maxRotation)
@@ -114,18 +141,19 @@ void VisionFindTarget::Execute() {
 			if (rotation < -maxRotation)
 				rotation = -maxRotation;
 
-			std::cout << "Vision: tx " << tx << "rotation " << rotation << std::endl; //debug
+			std::cout << "Vision: offset " << offset << "rotation " << rotation << std::endl; //debug
 			drive_base.ArcadeDriveForVision(0.0, -rotation);
 
 			// give vision pipeline 40ms TBD: Does the motor keep turning? Does it stop at timeout?
-			m_timer = 2;
-			m_next_mode = kvision;
-			m_mode = ktimer;
+			//m_timer = 2;
+			//m_next_mode = kvision;
+			//m_mode = ktimer;
 			//m_mode = kvision;
 		} else {
-			m_timer = 4;	// wait 100ms then check again
-			m_next_mode = kvision_check;
-			m_mode = ktimer;
+			m_mode = kdone;
+			//m_timer = 4;	// wait 100ms then check again
+			//m_next_mode = kvision_check;
+			//m_mode = ktimer;
 		}
 	break;
 	case kvision_check:

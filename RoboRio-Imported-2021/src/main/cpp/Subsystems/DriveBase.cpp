@@ -339,7 +339,7 @@ void DriveBase::DoCheezyDrive() {
     ArcadeDrive(move, rotate);
 
 //   TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
-    // DrivePathFollower::DoJoystickTestControl(m_joystick);
+    DrivePathFollower::DoJoystickTestControl(m_joystick);
 
 	// If the 'B' button is pressed reset the drive base dead reckoning position
     // if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {
@@ -347,7 +347,7 @@ void DriveBase::DoCheezyDrive() {
 	// 	DriveBase& drive_base = DriveBase::GetInstance();
 	// 	drive_base.ResetPosition();
 	// }
-
+#if 0
     static int previous_pov_angle = 0;
 	int pov_angle = m_joystick->GetPOV(0);
     if (pov_angle != previous_pov_angle) {
@@ -372,7 +372,7 @@ void DriveBase::DoCheezyDrive() {
             }
         }
     }
-
+#endif
 }
 
 void DriveBase::StartDrivingStraight(double heading) {
