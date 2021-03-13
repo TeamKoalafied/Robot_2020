@@ -23,6 +23,7 @@ public:
 	static RobotPath* CreateStraightPath(double max_velocity, double max_acceleration);
 	static RobotPath* CreateSlalomPath(double max_velocity, double max_acceleration);
 	static RobotPath* CreateSlalomPathRightAngles(double max_velocity, double max_acceleration);
+	static RobotPath* CreateGalaticSearchPath(double max_velocity, double max_acceleration);
 
    	//==========================================================================
 	// Path Building
@@ -30,6 +31,8 @@ public:
 	static void AddStraight(PathSegment* path_segment, double length);
 	static void AddTurnLeft(PathSegment* path_segment, double radius);
 	static void AddTurnRight(PathSegment* path_segment, double radius);
+	static void AddSlalomLeft(PathSegment* path_segment, double length, double width, double fraction);
+	static void AddSlalomRight(PathSegment* path_segment, double length, double width, double fraction);
 
 	// Get the current position and direction from the last Bezier curve in a given path segment
 	//

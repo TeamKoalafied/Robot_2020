@@ -198,6 +198,37 @@ AddStraight(path_segment, 0.1);
 	return robot_path;
 }
 
+RobotPath* ChallengePaths::CreateGalaticSearchPath(double max_velocity, double max_acceleration)
+{
+	static MechanismAction START_INTAKE[] = {
+			{ "StartIntaking",     MechanismAction::TimeSpecification::Start, 0.5, 0 }
+	};
+
+	RobotPath* robot_path = new RobotPath();
+
+	robot_path->m_name = "GalaticSearch1";
+	PathSegment* path_segment = new PathSegment();
+	path_segment->m_name = "GalaticSearch1";
+	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment);
+
+
+	const double INCH = 0.0254;
+	const double radius = 30 * INCH;
+	const double robot_length = 37 * INCH;
+
+
+	AddStraight(path_segment, (90 - 30)*INCH + robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddSlalomRight(path_segment, (150 - 90)*INCH, 30 * INCH, 0.5);
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, 60 * INCH);
+	AddTurnRight(path_segment, radius);
+	AddStraight(path_segment, (360 - 180) * INCH - radius);
+
+	return robot_path;
+}
+
 
 //==============================================================================
 // Path Building
@@ -224,6 +255,48 @@ void ChallengePaths::AddTurnRight(PathSegment* path_segment, double radius)
 	Point2D direction;
 	GetCurrent(path_segment, start, direction);
 	AddTurnRight(path_segment, radius, start, direction);
+}
+
+void ChallengePaths::AddSlalomLeft(PathSegment* path_segment, double length, double width, double fraction)
+{
+	Point2D start;
+	Point2D direction;
+	GetCurrent(path_segment, start, direction);
+
+	Point2D unit_direction = direction;
+	unit_direction.Normalize();
+
+    Point2D fraction_vector = fraction * unit_direction;
+    Point2D end = start + unit_direction * length + TurnLeft(unit_direction) * width;
+
+	Bezier3 path;
+	path.m_point1 = start;
+	path.m_point2 = start + fraction_vector;
+	path.m_point3 = end - fraction_vector;
+	path.m_point4 = end;
+
+	path_segment->m_path_definition.push_back(path);
+}
+
+void ChallengePaths::AddSlalomRight(PathSegment* path_segment, double length, double width, double fraction)
+{
+	Point2D start;
+	Point2D direction;
+	GetCurrent(path_segment, start, direction);
+
+	Point2D unit_direction = direction;
+	unit_direction.Normalize();
+
+    Point2D fraction_vector = fraction * unit_direction;
+    Point2D end = start + unit_direction * length + TurnRight(unit_direction) * width;
+
+	Bezier3 path;
+	path.m_point1 = start;
+	path.m_point2 = start + fraction_vector;
+	path.m_point3 = end - fraction_vector;
+	path.m_point4 = end;
+
+	path_segment->m_path_definition.push_back(path);
 }
 
 void ChallengePaths::GetCurrent(PathSegment* path_segment, Point2D& position, Point2D& direction)
