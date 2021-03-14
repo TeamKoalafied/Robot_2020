@@ -489,6 +489,17 @@ void DriveBase::GetWheelDistancesM(double& left_distance_m, double& right_distan
     right_distance_m = -EncoderToInches(right_encoder) * INCH_TO_M;
 }
 
+void DriveBase::GetWheelVelocity(double& left_velocity, double& right_velocity)
+{
+    double left_speed_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(m_left_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));
+    double right_speed_rpm = -KoalafiedUtilities::TalonFXVelocityNativeToRpm(m_right_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));
+
+	double wheel_circumference_m = RobotConfiguration::kWheelDiameterInch * M_PI * 0.0254;
+
+	left_velocity = left_speed_rpm * wheel_circumference_m / 60;
+    right_velocity = right_speed_rpm * wheel_circumference_m / 60;
+}
+
 double DriveBase::GetVelocityFeetPerSecond()
 {
     double left_speed_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(m_left_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));

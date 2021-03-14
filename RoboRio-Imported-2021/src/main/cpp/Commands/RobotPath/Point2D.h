@@ -46,6 +46,11 @@ public:
 		y = _y;
 	}
 
+	// Unary minus
+	Point2D operator-() const {
+		return Point2D(-x, -y);
+	}
+
 	// Vector addition
 	Point2D operator+(const Point2D& pt) const {
 		return Point2D(x + pt.x, y + pt.y);
@@ -68,6 +73,11 @@ public:
 		return *this;
 	}
 	
+    // Dot product (aka inner product)
+    double Dot(const Point2D pt) {
+        return x*pt.x + y*pt.y;
+    }
+    
 
 	//=============================================================================
 	// Angle and Length
