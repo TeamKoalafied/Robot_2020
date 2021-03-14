@@ -105,10 +105,10 @@ void DrivePathFollower::Interrupted() {
 void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 {
 	// Get the maximum velocity and acceleration from the dashboard
-	double max_velocity = frc::SmartDashboard::GetNumber("AutoMaxV", 0.5);
+	double max_velocity = frc::SmartDashboard::GetNumber("AutoMaxV", 1.0);
 	if (max_velocity < 0.1) max_velocity = 0.1;
 	if (max_velocity > 3.0) max_velocity = 3.0;
-	double max_acceleration = frc::SmartDashboard::GetNumber("AutoMaxA", 0.25);
+	double max_acceleration = frc::SmartDashboard::GetNumber("AutoMaxA", 0.5);
 	if (max_acceleration < 0.1) max_acceleration = 0.1;
 	if (max_acceleration > 3.0) max_acceleration = 3.0;
 
@@ -168,7 +168,7 @@ PathFollower* DrivePathFollower::CreatePathPointsFollower(RobotPath* robot_path)
 }
 
 PathFollower* DrivePathFollower::CreatePurePursuitFollower(RobotPath* robot_path, double max_velocity, double max_acceleration) {
-	double p_gain = frc::SmartDashboard::GetNumber("AutoP", 1.0);
+	double p_gain = frc::SmartDashboard::GetNumber("AutoP", 0.3);
 	if (p_gain < 0.1) p_gain = 0.1;
 	if (p_gain > 3.0) p_gain = 3.0;
 	double i_gain = frc::SmartDashboard::GetNumber("AutoI", 0.0);

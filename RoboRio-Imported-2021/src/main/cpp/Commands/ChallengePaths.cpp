@@ -35,20 +35,22 @@ RobotPath* ChallengePaths::CreateTestPath(int pov_angle, double max_velocity, do
 			break;
 		}
 		case RC::kJoystickPovDown: {
-			std::cout << "Starting DrivePathFollower - ChallengePaths::SlalomRA\n";
-			robot_path = CreateSlalomPathRightAngles(max_velocity, max_acceleration);
+			std::cout << "Starting DrivePathFollower - ChallengePaths::CreateBarrelRacingPathRightAngles\n";
+			robot_path = CreateBarrelRacingPathRightAngles(max_velocity, max_acceleration);
 			break;
 		}
 		case RC::kJoystickPovRight: {
+			std::cout << "Starting DrivePathFollower - ChallengePaths::CreateGalaticSearchPath\n";
+			robot_path = CreateGalaticSearchPath(max_velocity, max_acceleration);
 			break;
 		}
 
 	}
 
 	// Append the max velocity and acceleration to the name so it gets logged
-	// std::ostringstream full_name;
-  	// full_name << robot_path->m_name << " MaxV: " << max_velocity << " MaxA: " << max_acceleration;
-  	// robot_path->m_name = full_name.str();
+//	std::ostringstream full_name;
+//  	full_name << robot_path->m_name << " MaxV: " << max_velocity << " MaxA: " << max_acceleration;
+//  	robot_path->m_name = full_name.str();
 
     return robot_path;
 }
@@ -82,48 +84,34 @@ RobotPath* ChallengePaths::CreateStraightPath(double max_velocity, double max_ac
 RobotPath* ChallengePaths::CreateSlalomPath(double max_velocity, double max_acceleration) {
 	RobotPath* robot_path = new RobotPath();
 
-	robot_path->m_name = "Slalom";
-
-	const double length = 60 * 0.0254;
-	const double width = 70 * 0.0254;
-	const double d_fraction = 0.25;
-	const double d = d_fraction * length;
-
-	// Straight 2m forward
-	Bezier3 path1;
-	path1.m_point1.Set(0.0, 0.0);
-	path1.m_point2.Set(d*2, 0.0);
-	path1.m_point3.Set(length - d, -width);
-	path1.m_point4.Set(length,     -width);			
-	Bezier3 path2;
-	path2.m_point1.Set(length,       -width);
-	path2.m_point2.Set(length + d,   -width);
-	path2.m_point3.Set(3*length - d, -width);
-	path2.m_point4.Set(3*length,     -width);
-	Bezier3 path3;
-	path3.m_point1.Set(3*length, 		 -width);
-	path3.m_point2.Set((3*length)+d, -width);
-	path3.m_point3.Set((4*length)-d, 		0.0);
-	path3.m_point4.Set(4*length, 	 		0.0);
-
-	Bezier3 path4;
-	path4.m_point1.Set(4*length, 		 -0.0);
-	path4.m_point2.Set((4*length)+d,    0.0);
-	path4.m_point3.Set(5*length,	-width/2 + d);
-	path4.m_point4.Set(5*length, 	-width/2);
-
-
+	robot_path->m_name = "SlalomRA";
 	PathSegment* path_segment = new PathSegment();
 	path_segment->m_name = "Slalom";
 	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment->m_path_definition.push_back(path1);
-	path_segment->m_path_definition.push_back(path2);
-	path_segment->m_path_definition.push_back(path3);
-	path_segment->m_path_definition.push_back(path4);
 	path_segment->m_reverse = false;
-//	path_segment->m_mechanism_actions.assign(GRAB_CUBE, GRAB_CUBE +  sizeof(GRAB_CUBE)/sizeof(GRAB_CUBE[0]));
 	robot_path->m_path_segments.push_back(path_segment);
 
+
+	const double length = 60 * 0.0254;
+	const double width = 70 * 0.0254;
+	const double robot_length = 37 * 0.0254;
+
+	// Create a path where the robot does the slalom in straight sections and right angle turns.
+	// This might not work very well but is a useful experiment.
+ 	
+
+	// Alternative method for creating the path
+	AddStraight(path_segment, robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddSlalomLeft(path_segment, length, width, 0.5);
+	AddStraight(path_segment, 2 * length);
+	AddSlalomRight(path_segment, length, width, 0.5);
+	AddTurnLeft(path_segment, width /2);
+	AddTurnLeft(path_segment, width /2);
+	AddSlalomLeft(path_segment, length, width, 0.5);
+	AddStraight(path_segment, 2 * length);
+	AddSlalomRight(path_segment, length, width, 0.5);
+	AddStraight(path_segment, robot_length);
+	
 	return robot_path;
 }
 
@@ -131,72 +119,206 @@ RobotPath* ChallengePaths::CreateSlalomPathRightAngles(double max_velocity, doub
 	RobotPath* robot_path = new RobotPath();
 
 	robot_path->m_name = "SlalomRA";
+	PathSegment* path_segment = new PathSegment();
+	path_segment->m_name = "Slalom";
+	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment);
+
 
 	const double length = 60 * 0.0254;
 	const double width = 70 * 0.0254;
 	const double radius = 25 * 0.0254;
+	const double robot_length = 37 * 0.0254;
 
 	// Create a path where the robot does the slalom in straight sections and right angle turns.
 	// This might not work very well but is a useful experiment.
  	
-// 	double start_length = length /2 - radius;
-// 	Bezier3 path1; // Initial straight section
-// 	path1.m_point1.Set(0.0, 0.0);
-// 	path1.m_point2.Set(start_length * 0.25, 0.0);
-// 	path1.m_point3.Set(start_length * 0.75, 0.0);
-// 	path1.m_point4.Set(start_length, 0.0);			
-// 	Bezier3 path2; // Right angle turn right
-// 	path2.m_point1.Set(start_length, 0.0);
-// 	path2.m_point2.Set(length/2, 0.0);
-// 	path2.m_point3.Set(length/2, 0.0);
-// 	path2.m_point4.Set(length/2,     -radius);
-// 	Bezier3 path3; // Straight through the first gap
-// 	path3.m_point1.Set(length/2,     -radius);
-// 	path3.m_point2.Set(length/2, -width/2);
-// 	path3.m_point3.Set(length/2, -width/2);
-// 	path3.m_point4.Set(length/2,     -width + radius);
-// 	Bezier3 path4; // Right angle turn right
-// 	path4.m_point1.Set(length/2,     -width + radius);
-// 	path4.m_point2.Set(length/2,     -width);
-// 	path4.m_point3.Set(length/2,     -width);
-// 	path4.m_point4.Set(length/2 + radius, -width);
 
+	// Alternative method for creating the path
+	double start_length = length /2 - radius;
+	AddStraight(path_segment, start_length + robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, width - 2*radius);
+	AddTurnRight(path_segment, radius);
+	AddStraight(path_segment, 2*length + 2*start_length);
+	AddTurnRight(path_segment, radius);
+	
+	AddStraight(path_segment, width - 2*radius);
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, 2*start_length);
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, width - 2*radius); // Far end
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, 2*start_length);
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, width - 2*radius);
+	AddTurnRight(path_segment, radius);
+	AddStraight(path_segment, 2*length + 2*start_length);
+	AddTurnRight(path_segment, radius);
+	AddStraight(path_segment, width - 2*radius);
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, start_length + robot_length);
 
-PathSegment* path_segment = new PathSegment();
-	path_segment->m_name = "Slalom";
-	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
-// 	path_segment->m_path_definition.push_back(path1);
-// 	path_segment->m_path_definition.push_back(path2);
-// 	path_segment->m_path_definition.push_back(path3);
-// 	path_segment->m_path_definition.push_back(path4);
-	path_segment->m_reverse = false;
-	robot_path->m_path_segments.push_back(path_segment);
-
-// Alternative method for creating the path
-double startLength = length/2 - radius;
-AddStraight(path_segment, startLength + length/2 - radius, Point2D(0, 0), Point2D(1.0, 0.0));
-AddTurnRight(path_segment, radius);
-AddStraight(path_segment, width - 2*radius - 0.3);
-AddTurnLeft(path_segment, radius);
-AddStraight(path_segment, 2*length - 0.3);
-AddTurnLeft(path_segment, radius);
-AddStraight(path_segment, width - 2*radius);
-AddTurnRight(path_segment, radius);
-AddStraight(path_segment, length/2 - 1.05*radius);
-AddTurnRight(path_segment, radius);
-AddStraight(path_segment, width - 2*radius - 0.3);
-AddTurnRight(path_segment, radius);
-AddTurnRight(path_segment, radius);
-AddStraight(path_segment, width - 2*radius);
-AddTurnLeft(path_segment, radius);
-AddStraight(path_segment, 2*length - 0.3);
-AddTurnLeft(path_segment, radius);
-AddStraight(path_segment, width - 2*radius);
-AddTurnRight(path_segment, radius);
-AddStraight(path_segment, 0.1);
 
 	return robot_path;
 }
+
+RobotPath* ChallengePaths::CreateBarrelRacingPathRightAngles(double max_velocity, double max_acceleration) {
+	RobotPath* robot_path = new RobotPath();
+
+	robot_path->m_name = "BarrelRacingRA";
+	PathSegment* path_segment = new PathSegment();
+	path_segment->m_name = "BarrelRacingRA";
+	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment);
+
+
+	const double INCH = 0.0254;
+	const double radius = 30 * INCH;
+	const double robot_length = 37 * INCH;
+
+    // Barrel Racing Layout
+    //
+    //                /---\                        .
+    // 300"          |  *  |  3rd barrel, turn right
+    //          /---\|     |
+    // 240"    |  *  |     |  2nd barrel, turn left
+    //          \----|----/
+    //               |/---\                        .
+    // 150"          |  *  |  1st barrel, trun right
+    //               |\---/
+    //               |
+    // 60"        +  |  +
+    //            +     +
+    // 0"         +     +
+
+	// Forwards and right around the first barrel
+	AddStraight(path_segment, (150 - 60)*INCH + robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddTurnRight(path_segment, radius);
+	AddTurnRight(path_segment, radius);
+	AddTurnRight(path_segment, radius);
+	AddTurnRight(path_segment, radius);
+
+    // Forwards and left 3/4 around the second barrel
+	AddStraight(path_segment, (240 - 150)*INCH);
+	AddTurnLeft(path_segment, radius);
+	AddTurnLeft(path_segment, radius);
+	AddTurnLeft(path_segment, radius);
+
+    // Forwards, single right and up to the third barrel
+	AddStraight(path_segment, 60*INCH);
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, (300 - 240)*INCH);
+	
+    // Left 1/2 turn around the third barrel and back to the finish zone
+	AddTurnLeft(path_segment, radius);
+	AddTurnLeft(path_segment, radius);
+	AddStraight(path_segment, (300 - 60)*INCH + robot_length);
+
+	return robot_path;
+}
+
+RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acceleration) {
+	RobotPath* robot_path = new RobotPath();
+
+	robot_path->m_name = "Bounce";
+
+
+	const double INCH = 0.0254;
+	const double radius = 30 * INCH;
+	const double robot_length = 37 * INCH;
+
+
+	// Forwards and turn to first bump
+	PathSegment* path_segment1 = new PathSegment();
+	path_segment1->m_name = "Bounce";
+	path_segment1->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment1->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment1);
+	AddStraight(path_segment1, (150 - 60)*INCH + robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddTurnLeft(path_segment1, radius);
+	AddStraight(path_segment1, 40*INCH);
+
+	// Reverse to line up for second bump
+	PathSegment* path_segment2 = new PathSegment();
+	path_segment2->m_name = "Bounce";
+	path_segment2->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment2->m_reverse = true;
+	robot_path->m_path_segments.push_back(path_segment2);
+    Point2D start;
+    Point2D direction;
+   	GetCurrent(path_segment1, start, direction);
+    direction = -direction;
+	AddStraight(path_segment1, 40*INCH, start, direction);
+	AddSlalomLeft(path_segment1, 120*INCH, (150 - 90)*INCH, 0.5);
+
+	// Forwards to second bump
+	PathSegment* path_segment3 = new PathSegment();
+	path_segment3->m_name = "Bounce";
+	path_segment3->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment3->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment3);
+   	GetCurrent(path_segment2, start, direction);
+    direction = -direction;
+	AddSlalomLeft(path_segment3, 120*INCH, (180 - 150)*INCH, 0.5, start, direction);
+	AddStraight(path_segment3, 40*INCH);
+
+	// Reverse to line up for third bump
+	PathSegment* path_segment4 = new PathSegment();
+	path_segment4->m_name = "Bounce";
+	path_segment4->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment4->m_reverse = true;
+	robot_path->m_path_segments.push_back(path_segment4);
+   	GetCurrent(path_segment3, start, direction);
+    direction = -direction;
+	AddStraight(path_segment4, 40*INCH, start, direction);
+	AddSlalomLeft(path_segment4, 120*INCH, (225 - 180)*INCH, 0.5);
+
+	// Forwards to third bump
+	PathSegment* path_segment5 = new PathSegment();
+	path_segment5->m_name = "Bounce";
+	path_segment5->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment5->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment5);
+   	GetCurrent(path_segment4, start, direction);
+    direction = -direction;
+	AddSlalomLeft(path_segment5, 120*INCH, (270 - 225)*INCH, 0.5, start, direction);
+	AddStraight(path_segment5, 40*INCH);
+
+	// Reverse to finish
+	PathSegment* path_segment6 = new PathSegment();
+	path_segment6->m_name = "Bounce";
+	path_segment6->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment6->m_reverse = true;
+	robot_path->m_path_segments.push_back(path_segment6);
+   	GetCurrent(path_segment5, start, direction);
+    direction = -direction;
+	AddStraight(path_segment6, 30*INCH, start, direction);
+	AddTurnLeft(path_segment6, 40*INCH);
+	AddStraight(path_segment6, robot_length);
+
+	return robot_path;
+}
+
+RobotPath* ChallengePaths::CreateTestPath(double max_velocity, double max_acceleration) {
+	RobotPath* robot_path = new RobotPath();
+
+	robot_path->m_name = "SlalomRA";
+	PathSegment* path_segment = new PathSegment();
+	path_segment->m_name = "Slalom";
+	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment->m_reverse = true;
+	robot_path->m_path_segments.push_back(path_segment);
+
+
+	AddStraight(path_segment, 0.5, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddTurnLeft(path_segment, 1.0);
+
+	return robot_path;
+}
+
 
 RobotPath* ChallengePaths::CreateGalaticSearchPath(double max_velocity, double max_acceleration)
 {
@@ -213,6 +335,8 @@ RobotPath* ChallengePaths::CreateGalaticSearchPath(double max_velocity, double m
 	path_segment->m_reverse = false;
 	robot_path->m_path_segments.push_back(path_segment);
 
+	path_segment->m_mechanism_actions.assign(START_INTAKE, START_INTAKE +  sizeof(START_INTAKE)/sizeof(START_INTAKE[0]));
+
 
 	const double INCH = 0.0254;
 	const double radius = 30 * INCH;
@@ -228,7 +352,6 @@ RobotPath* ChallengePaths::CreateGalaticSearchPath(double max_velocity, double m
 
 	return robot_path;
 }
-
 
 //==============================================================================
 // Path Building
@@ -262,20 +385,7 @@ void ChallengePaths::AddSlalomLeft(PathSegment* path_segment, double length, dou
 	Point2D start;
 	Point2D direction;
 	GetCurrent(path_segment, start, direction);
-
-	Point2D unit_direction = direction;
-	unit_direction.Normalize();
-
-    Point2D fraction_vector = fraction * unit_direction;
-    Point2D end = start + unit_direction * length + TurnLeft(unit_direction) * width;
-
-	Bezier3 path;
-	path.m_point1 = start;
-	path.m_point2 = start + fraction_vector;
-	path.m_point3 = end - fraction_vector;
-	path.m_point4 = end;
-
-	path_segment->m_path_definition.push_back(path);
+    AddSlalomLeft(path_segment, length, width, fraction, start, direction);
 }
 
 void ChallengePaths::AddSlalomRight(PathSegment* path_segment, double length, double width, double fraction)
@@ -283,20 +393,8 @@ void ChallengePaths::AddSlalomRight(PathSegment* path_segment, double length, do
 	Point2D start;
 	Point2D direction;
 	GetCurrent(path_segment, start, direction);
-
-	Point2D unit_direction = direction;
-	unit_direction.Normalize();
-
-    Point2D fraction_vector = fraction * unit_direction;
-    Point2D end = start + unit_direction * length + TurnRight(unit_direction) * width;
-
-	Bezier3 path;
-	path.m_point1 = start;
-	path.m_point2 = start + fraction_vector;
-	path.m_point3 = end - fraction_vector;
-	path.m_point4 = end;
-
-	path_segment->m_path_definition.push_back(path);
+    AddSlalomRight(path_segment, length, width, fraction, start, direction
+	);
 }
 
 void ChallengePaths::GetCurrent(PathSegment* path_segment, Point2D& position, Point2D& direction)
@@ -348,6 +446,41 @@ void ChallengePaths::AddTurnRight(PathSegment* path_segment, double radius, cons
 	path_segment->m_path_definition.push_back(path);
 }
 
+void ChallengePaths::AddSlalomLeft(PathSegment* path_segment, double length, double width, double fraction,
+                                   const Point2D& start, const Point2D& direction)
+{
+	Point2D unit_direction = direction;
+	unit_direction.Normalize();
+
+    Point2D fraction_vector = fraction * unit_direction;
+    Point2D end = start + unit_direction * length + TurnLeft(unit_direction) * width;
+
+	Bezier3 path;
+	path.m_point1 = start;
+	path.m_point2 = start + fraction_vector;
+	path.m_point3 = end - fraction_vector;
+	path.m_point4 = end;
+
+	path_segment->m_path_definition.push_back(path);
+}
+
+void ChallengePaths::AddSlalomRight(PathSegment* path_segment, double length, double width, double fraction,
+                                    const Point2D& start, const Point2D& direction)
+{
+	Point2D unit_direction = direction;
+	unit_direction.Normalize();
+
+    Point2D fraction_vector = fraction * unit_direction;
+    Point2D end = start + unit_direction * length + TurnRight(unit_direction) * width;
+
+	Bezier3 path;
+	path.m_point1 = start;
+	path.m_point2 = start + fraction_vector;
+	path.m_point3 = end - fraction_vector;
+	path.m_point4 = end;
+
+	path_segment->m_path_definition.push_back(path);
+}
 
 //==============================================================================
 // Utility Helpers
