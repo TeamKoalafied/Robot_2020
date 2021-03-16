@@ -38,6 +38,7 @@ public:
 		m_manipulator = NULL;
 		m_pneumatics = NULL;
 		m_vision_system = NULL;
+        m_autonomous_command = NULL;
 	}
 
 private:
@@ -61,6 +62,9 @@ private:
 //    	m_vision_system->Setup();
 
 		m_manipulator->Setup();
+
+        // Set up controls on the dashboard for choosing autonomous parameters
+    	AutonomousCommand::SetupDashboard();
 
 		// NICKTODO This code should be in DrivePathFollower with the test joystick stuff
 		frc::SmartDashboard::PutNumber("VisionTrackX", 3.0);
@@ -94,6 +98,11 @@ private:
         printf("AutonomousInit()\n");
 
         m_periodic_timer.Init();
+
+        // Create the autonomous command and start it
+        delete m_autonomous_command;
+        m_autonomous_command = new AutonomousCommand();
+      	m_autonomous_command->Start();
 	}
 
 	void AutonomousPeriodic() override {
@@ -165,6 +174,9 @@ private:
 
     VisionSystem* m_vision_system;			// Vision subsystem - camera & processing thread
 	PeriodicTimer m_periodic_timer;         // Timer for monitoring response times
+
+    frc::Command* m_autonomous_command;     // Command to run in the autonomous period
+
 };
 
 

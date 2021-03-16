@@ -154,7 +154,7 @@ const int kDriveMotorContinuousCurrentLimitA = 20;
 // Peak current limit for drive base motors in amps
 const int kDriveMotorPeakCurrentLimitA = 30;
 
-// Peak current duration for drive base motors in milliseconds
+// Peak current duration for drive base motors in milliseconds  
 const int kDriveMotorPeakCurrentDurationMs = 500;
 
 // Drive motor ramp rate in second from neutral to full
