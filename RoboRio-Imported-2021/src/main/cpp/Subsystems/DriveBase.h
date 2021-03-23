@@ -202,6 +202,9 @@ public:
     // Get the total motor current (A). Absolute current from all motors summed. 
     double GetMotorCurrent();
 
+    //==========================================================================
+    // Public Constants
+    static constexpr double kHeadingError = 999.0; 	// Value indicating an error reading the heading from the Pigeon IMU
 
 private:
     //==========================================================================
@@ -322,7 +325,6 @@ private:
     //==========================================================================
     // Contants
 
-    static constexpr double kHeadingError = 999.0; 	// Value indicating an error reading the heading from the Pigeon IMU
     static const int kTalonTimeoutMs = 10; 			// Default timeout for TalonSRX commands in milliseconds
     static const int kRunProfileSlotIdx = 0;		// PID profile slot id to use when running the robot
     static const int kTuneProfileSlotIdx = 1;		// PID profile slot id to use when tuning the controllers

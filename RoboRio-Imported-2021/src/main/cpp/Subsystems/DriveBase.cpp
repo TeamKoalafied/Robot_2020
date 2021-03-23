@@ -357,8 +357,32 @@ void DriveBase::DoCheezyDrive() {
 	// 	DriveBase& drive_base = DriveBase::GetInstance();
 	// 	drive_base.ResetPosition();
 	// }
-
-    //--------------------------------------------------------------------------
+#if 0
+    static int previous_pov_angle = 0;
+	int pov_angle = m_joystick->GetPOV(0);
+    if (pov_angle != previous_pov_angle) {
+        previous_pov_angle = pov_angle;
+        switch (pov_angle) {
+            case RC::kJoystickPovUp: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 1.0);
+                break;
+            }
+            case RC::kJoystickPovLeft: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 0.5);
+                break;
+            }
+            case RC::kJoystickPovDown: {
+                m_haptic_controller->DoContinuousFeedback(1.0, 0.25);
+                break;
+            }
+            case RC::kJoystickPovRight: {
+                static double PATTERN[10] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
+                m_haptic_controller->DoFeedback(PATTERN, 10);
+                break;
+            }
+        }
+    }
+#endif
 }
 
 void DriveBase::StartDrivingStraight(double heading) {
