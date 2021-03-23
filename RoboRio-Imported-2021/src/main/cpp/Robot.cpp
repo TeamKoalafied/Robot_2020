@@ -101,7 +101,7 @@ private:
 
         // Create the autonomous command and start it
         delete m_autonomous_command;
-        m_autonomous_command = new AutonomousCommand();
+        m_autonomous_command = AutonomousCommand::CreateAutonomousCommand();
       	m_autonomous_command->Start();
 	}
 
