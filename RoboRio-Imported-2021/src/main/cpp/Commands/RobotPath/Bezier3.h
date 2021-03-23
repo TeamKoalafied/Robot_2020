@@ -42,6 +42,21 @@ public:
 	// Returns the derivative of the curve
 	Point2D Derivative(double u) const;
 
+	// Evaluate the second derivate of the curve at the given parameter value
+	//
+	// u - Parameter value to evaluate at. Range is [0.0, 1.0]</param>
+	//
+	// Returns the second derivative of the curve
+	Point2D Derivative2(double u) const;
+
+	// Evaluate the signed curvature of the curve at the given parameter value
+	//
+	// u - Parameter value to evaluate at. Range is [0.0, 1.0]</param>
+	//
+	// Returns the signed curvature of the curve, with +ve to the left and -ve to
+    // the right (when travelling in the direction of increasing u)
+	double Curvature(double u) const;
+
 	// Split the curve into two at a given parameter position
 	//
 	// u -  Parameter value to split at. Range is [0.0, 1.0]

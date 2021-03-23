@@ -5,11 +5,11 @@
 #include "DrivePathFollower.h"
 
 #include "MechanismController2020.h"
+#include "ChallengePaths.h"
+#include "TestPaths.h"
 #include "../RobotConfiguration.h"
 #include "../Subsystems/DriveBase.h"
 #include "../Subsystems/Manipulator.h"
-
-#include "ChallengePaths.h"
 
 #include "RobotPath/Bezier3.h"
 #include "RobotPath/MotionProfile.h"
@@ -19,8 +19,13 @@
 
 #include "PathFollower/PathfinderFollower.h"
 #include "PathFollower/PathPointsFollower.h"
+#include "PathFollower/PurePursuitFollower.h"
+
+#include "VisionFindTarget.h"
 
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
 #include <iostream>
 
 namespace RC = RobotConfiguration;
@@ -33,14 +38,13 @@ DrivePathFollower* DrivePathFollower::ms_test_command = NULL;
 VisionFindTarget* ms_find_target_command = NULL;
 
 
-
 //==========================================================================
 // Construction
 
 DrivePathFollower::DrivePathFollower(PathFollower* path_follower_controller):
 	frc::Command("DrivePathFollower") {
 
-	// Driving requires the DriveBase and Manipulator
+	// Driving requires the DriveBase and elevator
     Requires(&DriveBase::GetInstance());
     Requires(&Manipulator::GetInstance());
 
@@ -101,10 +105,10 @@ void DrivePathFollower::Interrupted() {
 void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 {
 	// Get the maximum velocity and acceleration from the dashboard
-	double max_velocity = frc::SmartDashboard::GetNumber("AutoMaxV", 0.5);
+	double max_velocity = frc::SmartDashboard::GetNumber("AutoMaxV", 1.0);
 	if (max_velocity < 0.1) max_velocity = 0.1;
 	if (max_velocity > 3.0) max_velocity = 3.0;
-	double max_acceleration = frc::SmartDashboard::GetNumber("AutoMaxA", 0.25);
+	double max_acceleration = frc::SmartDashboard::GetNumber("AutoMaxA", 0.5);
 	if (max_acceleration < 0.1) max_acceleration = 0.1;
 	if (max_acceleration > 3.0) max_acceleration = 3.0;
 
@@ -112,44 +116,13 @@ void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 	RobotPath* robot_path = NULL;
 	int pov_angle = joystick->GetPOV(0);
 	robot_path = ChallengePaths::CreateTestPath(pov_angle, max_velocity, max_acceleration);
-/*
-	switch (pov_angle) {
-		case RC::kJoystickPovUp: {
-			std::cout << "Starting DrivePathFollower - Straight\n";
-			robot_path = CreateStraightPath(max_velocity, max_acceleration);
-			break;
-		}
-		case RC::kJoystickPovLeft: {
-			std::cout << "Starting DrivePathFollower - Ball1\n";
-			robot_path = CreateBall1Path(max_velocity, max_acceleration);;
-			break;
-		}
-		//case RC::kJoystickPovDown: {
-		//	std::cout << "Starting DrivePathFollower - Ball2\n";
-		//	robot_path = CreateBall2Path(max_velocity, max_acceleration);
-		//	break;
-		//}
-		case RC::kJoystickPovDown: {
-        	std::cout << "Rotating to target using VisionFindTarget command";                                                                        
-            delete ms_find_target_command;
-            ms_find_target_command = new VisionFindTarget();
-            ms_find_target_command->Start();
-            break;
-        }
-
-		
-		case RC::kJoystickPovRight: {
-			std::cout << "Starting DrivePathFollower - From Dashboard\n";
-			robot_path = CreateVisionPathFromDashBoard(max_velocity, max_acceleration);
-			break;
-		}
-
-	}*/
+	//robot_path = TestPaths::CreateTestPath(pov_angle, max_velocity, max_acceleration);
 
 	// If there is a path create a follower and a command to do it
 	if (robot_path != NULL) {
-		PathFollower* path_follower = CreatePathPointsFollower(robot_path);
-		// PathFollower* path_follower = CreatePathfinderFollower(robot_path);
+//		PathFollower* path_follower = CreatePathPointsFollower(robot_path);
+//		PathFollower* path_follower = CreatePathfinderFollower(robot_path);
+		PathFollower* path_follower = CreatePurePursuitFollower(robot_path, max_velocity, max_acceleration);
 
 		delete ms_test_command;
 		ms_test_command = new DrivePathFollower(path_follower);
@@ -180,6 +153,7 @@ PathFollower* DrivePathFollower::CreatePathPointsFollower(RobotPath* robot_path)
 	if (d_gain > 3.0) d_gain = 3.0;
 
 
+
 	DriveBase& drive_base = DriveBase::GetInstance();
 	PathPointsFollower* path_follower = new PathPointsFollower(robot_path, &drive_base, new MechanismController2020, true);
 	path_follower->GetFollowerParameters().m_kp = p_gain;
@@ -190,6 +164,41 @@ PathFollower* DrivePathFollower::CreatePathPointsFollower(RobotPath* robot_path)
 	path_follower->GetFollowerParameters().m_ka = 1.0/18.29;
 	path_follower->GetFollowerParameters().m_wheelbase_width_m = 0.64;
 	path_follower->GetFollowerParameters().m_period_s = 0.02;
+	return path_follower;
+}
+
+PathFollower* DrivePathFollower::CreatePurePursuitFollower(RobotPath* robot_path, double max_velocity, double max_acceleration) {
+	double p_gain = frc::SmartDashboard::GetNumber("AutoP", 0.3);
+	if (p_gain < 0.1) p_gain = 0.1;
+	if (p_gain > 3.0) p_gain = 3.0;
+	double i_gain = frc::SmartDashboard::GetNumber("AutoI", 0.0);
+	if (i_gain < 0.0) i_gain = 0.0;
+	if (i_gain > 3.0) i_gain = 3.0;
+	double d_gain = frc::SmartDashboard::GetNumber("AutoD", 0.0);
+	if (d_gain < 0.0) d_gain = 0.0;
+	if (d_gain > 3.0) d_gain = 3.0;
+	double curvature_gain = frc::SmartDashboard::GetNumber("AutoCurveGain", 1.5);
+	if (curvature_gain < 1.0) curvature_gain = 1.0;
+	if (curvature_gain > 3.0) curvature_gain = 3.0;
+	double lookahead_distance = frc::SmartDashboard::GetNumber("AutoLookAhead", 0.3);
+	if (lookahead_distance < 0.2) lookahead_distance = 0.2;
+	if (lookahead_distance > 1.0) lookahead_distance = 1.0;
+
+
+	DriveBase& drive_base = DriveBase::GetInstance();
+	PurePursuitFollower* path_follower = new PurePursuitFollower(robot_path, &drive_base, new MechanismController2020, true);
+	path_follower->GetFollowerParameters().m_kp = p_gain;
+	path_follower->GetFollowerParameters().m_ki = i_gain;
+	path_follower->GetFollowerParameters().m_kd = d_gain;
+	path_follower->GetFollowerParameters().m_kv = 1.0/4.28;
+	path_follower->GetFollowerParameters().m_kv_offset = 0.104; // 0.05719;
+	path_follower->GetFollowerParameters().m_ka = 1.0/18.29;
+	path_follower->GetFollowerParameters().m_wheelbase_width_m = 0.64;
+	path_follower->GetFollowerParameters().m_period_s = 0.02;
+	path_follower->GetFollowerParameters().m_max_velocity = max_velocity;
+	path_follower->GetFollowerParameters().m_max_acceleration = max_acceleration;
+	path_follower->GetFollowerParameters().m_curvature_gain = curvature_gain;
+	path_follower->GetFollowerParameters().m_lookahead_distance = lookahead_distance;
 	return path_follower;
 }
 
@@ -211,218 +220,90 @@ PathFollower* DrivePathFollower::CreatePathfinderFollower(RobotPath* robot_path)
 	return new PathfinderFollower(robot_path, &drive_base, new MechanismController2020, true, encode_config);
 }
 
-RobotPath* DrivePathFollower::CreateVisionPathFromDashBoard(double max_velocity, double max_acceleration) {
-	RobotPath* robot_path = new RobotPath();
+//==============================================================================
+// NOTE: These functions are broken, but left here until I ask what they are meant to be doing - Nick
 
-	// Get the parameters from the SmartDashboard
-    double vision_x = frc::SmartDashboard::GetNumber("VisionTrackX", 3.0);
-    double vision_y = frc::SmartDashboard::GetNumber("VisionTrackY", 0.0);
-    double vision_heading_degrees = frc::SmartDashboard::GetNumber("VisionTrackHeading", 0.0);
+// void DrivePathFollower::Rotate2Target(double max_velocity, double max_acceleration) {
+// 	DriveBase& drive_base = DriveBase::GetInstance();
 
-	// Limit the values to a sensible range (could change, but prevents nasty behaviour while testing)
-	if (vision_x < 0.0) vision_x = 0.0;
-	if (vision_x > 5.0) vision_x = 5.0;
-	if (vision_y < -3.0) vision_y = -3.0;
+// 	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+// 	double rotateSpeed = 0.0;
+// 	double targetOffsetAngle_Horizontal = table->GetNumber("tx",0.0);
 	
-	if (vision_y > 3.0)  vision_y =  3.0;
+// 	while (targetOffsetAngle_Horizontal > 1.0 || targetOffsetAngle_Horizontal < -1.0){
+// 		targetOffsetAngle_Horizontal = table->GetNumber("tx",0.0);
+// 		if (targetOffsetAngle_Horizontal > 1.0)
+// 		rotateSpeed = -0.5;
+// 		if (targetOffsetAngle_Horizontal < -1.0)
+// 		rotateSpeed = 0.5;
+// 		drive_base.ArcadeDriveForVision(0.0, rotateSpeed);
+		
+// 	}
+// }
 
-	// Start the path at the origin. This is arbitrary, so the origin is just simplest.
-	Bezier3 path;
-	path.m_point1.Set(0.0, 0.0);
+// void DrivePathFollower::Rotate2Target2(double max_velocity, double max_acceleration) {
 
-	// Set the end of the path and calculate the straight line distance
-	path.m_point4.Set(vision_x, vision_y);
-	double distance = path.m_point4.Length();
+// 	// Modified from docs.limelightvision.io/en/latest/cs_aiming.html to fix errors
 
+// 	double rotation = 0.0f;
+// 	DriveBase& drive_base = DriveBase::GetInstance();
+	
+// 	//if (max_rotation > max_velocity)
+// 	//	max_rotation = max_velocity;
 
-	// The initial heading is 0 degrees so the second Bezier point is directly on the x axis.
-	// We chose the distance to the second Bezier point be half the distance. This is can be changed
-	// but seems to produce reasonable results
-	path.m_point2.Set(distance / 2.0, 0.0);
+// 	// Proportional constant Kp: Reduce from 1.0 until slight overshoot
+// 	float kp = frc::SmartDashboard::GetNumber("VisionKp", 0.016);
+// 	// Minimum rotation speed: Adjust so it is not quite enough to turn the robot
+// 	// Test results: Use 0.25 wood or 0.33 for carpet tiles
+// 	float minRotation = frc::SmartDashboard::GetNumber("VisionMinRotation", 0.25);
+// 	// Maximum rotation speed - just to make sure we don't rotate too fast
+// 	float maxRotation = frc::SmartDashboard::GetNumber("VisionMaxRotation", 1.0);
 
-	// The third Bezier point is calculated using the desired final heading.
-	path.m_point3 = path.m_point4 - (distance / 2.0)*Point2D::UnitVectorDegrees(vision_heading_degrees);
+// 	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+// 	float tx = -table->GetNumber("tx", 0.0);  // degrees (-27 to 27 for limelight1)
+// 	float tv = table->GetNumber("tv", 0.0);  // 0.0 unless the target is detected
 
-	// Setup a path segment using the calculated Bezier
-	PathSegment* path_segment = new PathSegment();
-	path_segment->m_name = "Vision";
-	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment->m_path_definition.push_back(path);
-	robot_path->m_path_segments.push_back(path_segment);
+// 	// Only turn if the target is detected
+// 	if (tv != 0.0f) {
 
-	return robot_path;
-}
+// 		// Give motors a little power even if error is small
+// 		if (tx > 0.0)
+// 			rotation = kp*tx + minRotation;
+// 		else
+// 			rotation = kp*tx - minRotation;
 
-// static MechanismAction GRAB_CUBE[] = {
-//		{ "DropArm",    MechanismAction::TimeSpecification::End, -2.5, 0 },
-//		{ "OpenClaw",   MechanismAction::TimeSpecification::End, -2.0, 0 },
-//		{ "RollerGrab", MechanismAction::TimeSpecification::End, -1.0, 0 },
-//		{ "CloseClaw",  MechanismAction::TimeSpecification::End, -0.5, 0 },
-//		{ "LiftArm",    MechanismAction::TimeSpecification::End,  0.0, 0 },
-//};
-//static MechanismAction PLACE_CUBE[] = {
-//		{ "DropArm",     MechanismAction::TimeSpecification::End, -1.5, 0 },
-//		{ "OpenClaw",    MechanismAction::TimeSpecification::End,  0.0, 0 },
-//		{ "RollerPlace", MechanismAction::TimeSpecification::End,  0.0, 0 },
-//};
-//static MechanismAction RESET[] = {
-//		{ "CloseClaw",   MechanismAction::TimeSpecification::Start, 1.0, 0 },
-//		{ "LiftArm",     MechanismAction::TimeSpecification::Start, 1.0, 0 },
-//};	
+// 		// Clip the maximum rotation for safety!
+// 		if (rotation > maxRotation)
+// 			rotation = maxRotation;
 
-static MechanismAction INTAKE_BALL[] = {
-		 { "ExtendIntake", MechanismAction::TimeSpecification::Start, 1.0, 0 },
-		 { "RunIndexForward", MechanismAction::TimeSpecification::Start, 1.0, 0 },
-		 { "RetractIntake", MechanismAction::TimeSpecification::Start, 2.0, 0 },
-};
+// 		if (rotation < -maxRotation)
+// 			rotation = -maxRotation;
 
-static MechanismAction SHOOT_BALL[] = {
-		{ "Shoot",     MechanismAction::TimeSpecification::End, -1.5, 0 },
-};
+// 		drive_base.ArcadeDriveForVision(0.0, rotation);
+// 		// drive_base.Drive(0.0, rotation);
+// 		// drive_base.Drive(0.0, 0.5);
+// 		//rotation = 1.0;  // min = 0.2, max = 1.0?
+// 		//drive_base.ArcadeDriveForVision(0.0, rotation);
+// 	}
+// }
 
-static MechanismAction RESET[] = {
-		{ "RetractIntake", MechanismAction::TimeSpecification::Start, 2.0, 0 },
-};
+// void DrivePathFollower::rotateForSkew(double max_velocity, double max_acceleration) {
+// 	DriveBase& drive_base = DriveBase::GetInstance();
 
+// 	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+// 	double rotateSpeed = 0.0;
+// 	double targetOffsetSkew = table->GetNumber("ts",0.0);
+// 	std::cout << "Offset Skew" << targetOffsetSkew << std::endl;
+// 	while (targetOffsetSkew > -4.5 || targetOffsetSkew < -5.5){
+// 		targetOffsetSkew = table->GetNumber("ts",0.0);
+// 		if (targetOffsetSkew < -70 && table->GetNumber("tx", 0.0) > 2){
+// 			targetOffsetSkew = targetOffsetSkew +90;
+// 		}
+// 		if (targetOffsetSkew > -4.5)
+// 			rotateSpeed = -0.5;
+// 		if (targetOffsetSkew < -6.5)
+// 			rotateSpeed = 0.5;
 
-RobotPath* DrivePathFollower::CreateStraightPath(double max_velocity, double max_acceleration) {
-	RobotPath* robot_path = new RobotPath();
-
-	robot_path->m_name = "Straight2m";
-
-	// Straight 2m forward
-	Bezier3 path;
-	path.m_point1.Set(0.0, 0.0);
-	path.m_point2.Set(0.5, 0.0);
-	path.m_point3.Set(1.5, 0.0);
-	path.m_point4.Set(2.0, 0.0);			
-	PathSegment* path_segment = new PathSegment();
-	path_segment->m_name = "Straight";
-	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment->m_path_definition.push_back(path);
-	path_segment->m_reverse = false;
-	path_segment->m_mechanism_actions.assign(INTAKE_BALL, INTAKE_BALL +  sizeof(INTAKE_BALL)/sizeof(INTAKE_BALL[0]));
-	robot_path->m_path_segments.push_back(path_segment);
-
-	return robot_path;
-}
-
-RobotPath* DrivePathFollower::CreateBall1Path(double max_velocity, double max_acceleration) {
-	RobotPath* robot_path = new RobotPath();
-	robot_path->m_name = "Ball1";
-
-	const double TL = 1.5;
-	Bezier3 path1;
-	path1.m_point1.Set( 0.0,  0.0);
-	path1.m_point2.Set( 0.5,  0.0);
-	path1.m_point3.Set( 2.5,  0.0);
-	path1.m_point4.Set( 3.0,  0.0);
-	Bezier3 path2;
-	path2.m_point1.Set( 3.0,  0.0);
-	path2.m_point2.Set( 3.0-TL,  0.0);
-	path2.m_point3.Set( 1.5,  -1.5+TL);
-	path2.m_point4.Set( 1.5, -1.5);			
-	Bezier3 path3;
-	path3.m_point1.Set( 1.5, -1.5);
-	path3.m_point2.Set( 1.5,  -1.5+TL);
-	path3.m_point3.Set( TL,  0.0);
-	path3.m_point4.Set( 0.0,  0.0);
-
-
-	PathSegment* path_segment1 = new PathSegment();
-	path_segment1->m_name = "GrabBall";
-	path_segment1->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment1->m_path_definition.push_back(path1);
-	path_segment1->m_mechanism_actions.assign(INTAKE_BALL, INTAKE_BALL +  sizeof(INTAKE_BALL)/sizeof(INTAKE_BALL[0]));
-	robot_path->m_path_segments.push_back(path_segment1);
-
-	PathSegment* path_segment2 = new PathSegment();
-	path_segment2->m_name = "Reverse";
-	path_segment2->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment2->m_reverse = true;
-	path_segment2->m_path_definition.push_back(path2);
-	robot_path->m_path_segments.push_back(path_segment2);
-
-	PathSegment* path_segment3 = new PathSegment();
-	path_segment3->m_name = "ShootBall";
-	path_segment3->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment3->m_path_definition.push_back(path3);
-	path_segment3->m_mechanism_actions.assign(SHOOT_BALL, SHOOT_BALL +  sizeof(SHOOT_BALL)/sizeof(SHOOT_BALL[0]));
-	robot_path->m_path_segments.push_back(path_segment3);
-
-	return robot_path;
-}
-
-RobotPath* DrivePathFollower::CreateBall2Path(double max_velocity, double max_acceleration) {
-	RobotPath* robot_path = new RobotPath();
-	robot_path->m_name = "Ball2";
-
-	Bezier3 path1;
-	path1.m_point1.x =  0.0;
-	path1.m_point1.y =  0.0;
-	path1.m_point2.x =  1.5;
-	path1.m_point2.y =  0.0;
-	path1.m_point3.x =  1.5;
-	path1.m_point3.y =  0.0;
-	path1.m_point4.x =  1.5;
-	path1.m_point4.y = -1.5;
-	Bezier3 path2;
-	path2.m_point1.x =  1.5;
-	path2.m_point1.y = -1.5;
-	path2.m_point2.x =  1.5;
-	path2.m_point2.y =  0.0;
-	path2.m_point3.x =  1.5;
-	path2.m_point3.y =  1.0;
-	path2.m_point4.x =  3.0;
-	path2.m_point4.y =  1.0;			
-	Bezier3 path3;
-	path3.m_point1.x =  3.0;
-	path3.m_point1.y =  1.0;
-	path3.m_point2.x =  1.5;
-	path3.m_point2.y =  1.0;
-	path3.m_point3.x =  1.5;
-	path3.m_point3.y =  0.0;
-	path3.m_point4.x =  1.5;
-	path3.m_point4.y = -1.5;			
-	Bezier3 path4;
-	path4.m_point1.x =  1.5;
-	path4.m_point1.y = -1.5;
-	path4.m_point2.x =  1.5;
-	path4.m_point2.y =  0.0;
-	path4.m_point3.x =  1.5;
-	path4.m_point3.y =  0.0;
-	path4.m_point4.x =  0.0;
-	path4.m_point4.y =  0.0;
-
-
-	PathSegment* path_segment1 = new PathSegment();
-	path_segment1->m_name = "Ball2_1";
-	path_segment1->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment1->m_reverse = true;
-	path_segment1->m_path_definition.push_back(path1);
-	path_segment1->m_mechanism_actions.assign(RESET, RESET +  sizeof(RESET)/sizeof(RESET[0]));
-	robot_path->m_path_segments.push_back(path_segment1);
-
-	PathSegment* path_segment2 = new PathSegment();
-	path_segment2->m_name = "Ball2_2";
-	path_segment2->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment2->m_path_definition.push_back(path2);
-	path_segment2->m_mechanism_actions.assign(INTAKE_BALL, INTAKE_BALL +  sizeof(INTAKE_BALL)/sizeof(INTAKE_BALL[0]));
-	robot_path->m_path_segments.push_back(path_segment2);
-
-	PathSegment* path_segment3 = new PathSegment();
-	path_segment3->m_name = "Ball2_3";
-	path_segment3->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment3->m_reverse = true;
-	path_segment3->m_path_definition.push_back(path3);
-	robot_path->m_path_segments.push_back(path_segment3);
-
-	PathSegment* path_segment4 = new PathSegment();
-	path_segment4->m_name = "Ball2_4";
-	path_segment4->m_motion_profile.Setup(max_velocity, max_acceleration);
-	path_segment4->m_path_definition.push_back(path4);
-	path_segment4->m_mechanism_actions.assign(SHOOT_BALL, SHOOT_BALL +  sizeof(SHOOT_BALL)/sizeof(SHOOT_BALL[0]));
-	robot_path->m_path_segments.push_back(path_segment4);
-
-	return robot_path;
-}
+// 		drive_base.ArcadeDriveForVision(0.0, rotateSpeed);
+// 	}
+// }

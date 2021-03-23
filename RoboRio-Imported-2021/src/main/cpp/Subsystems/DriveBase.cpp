@@ -122,6 +122,11 @@ void DriveBase::Periodic() {
         //PigeonImu::GeneralStatus pigeon_status;
         //m_pigen_imu->GetGeneralStatus(pigeon_status);
         frc::SmartDashboard::PutNumber("Heading", heading);
+        double left_velocity;
+        double right_velocity;
+        GetWheelVelocity(left_velocity, right_velocity);
+        frc::SmartDashboard::PutNumber("Velocity Left", left_velocity);
+        frc::SmartDashboard::PutNumber("Velocity Right", right_velocity);
     }
 
     // Update the dead reconning position
@@ -343,7 +348,7 @@ void DriveBase::DoCheezyDrive() {
     //       dangerous and you should not have any code active here when submitted
     //       to the 'master' branch.
 
-    // TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
+    //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
     DrivePathFollower::DoJoystickTestControl(m_joystick);
 
 	// If the 'B' button is pressed reset the drive base dead reckoning position
@@ -487,6 +492,20 @@ void DriveBase::GetWheelDistancesM(double& left_distance_m, double& right_distan
     const double INCH_TO_M = 0.0254;
     left_distance_m = EncoderToInches(left_encoder) * INCH_TO_M;
     right_distance_m = -EncoderToInches(right_encoder) * INCH_TO_M;
+}
+
+void DriveBase::GetWheelVelocity(double& left_velocity, double& right_velocity)
+{
+    double left_motor_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(m_left_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));
+    double right_motor_rpm = -KoalafiedUtilities::TalonFXVelocityNativeToRpm(m_right_master_speed_controller->GetSelectedSensorVelocity(kPidDefaultIdx));
+
+    double left_wheel_rpm = left_motor_rpm / RC::kDriveBaseGearRatio;
+    double right_wheel_rpm = right_motor_rpm / RC::kDriveBaseGearRatio;
+
+	double wheel_circumference_m = RobotConfiguration::kWheelDiameterInch * M_PI * 0.0254;
+
+	left_velocity = left_wheel_rpm * wheel_circumference_m / 60;
+    right_velocity = right_wheel_rpm * wheel_circumference_m / 60;
 }
 
 double DriveBase::GetVelocityFeetPerSecond()

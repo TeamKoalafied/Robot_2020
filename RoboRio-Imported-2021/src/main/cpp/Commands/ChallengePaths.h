@@ -23,6 +23,9 @@ public:
 	static RobotPath* CreateStraightPath(double max_velocity, double max_acceleration);
 	static RobotPath* CreateSlalomPath(double max_velocity, double max_acceleration);
 	static RobotPath* CreateSlalomPathRightAngles(double max_velocity, double max_acceleration);
+	static RobotPath* CreateBarrelRacingPathRightAngles(double max_velocity, double max_acceleration);
+	static RobotPath* CreateBouncePath(double max_velocity, double max_acceleration);
+	static RobotPath* CreateTestPath(double max_velocity, double max_acceleration);
 	static RobotPath* CreateGalaticSearchPath(double max_velocity, double max_acceleration);
 
    	//==========================================================================
@@ -44,6 +47,8 @@ public:
 	static void AddStraight(PathSegment* path_segment, double length, const Point2D& start, const Point2D& direction);
 	static void AddTurnLeft(PathSegment* path_segment, double radius, const Point2D& start, const Point2D& direction);
 	static void AddTurnRight(PathSegment* path_segment, double radius, const Point2D& start, const Point2D& direction);
+	static void AddSlalomLeft(PathSegment* path_segment, double length, double width, double fraction, const Point2D& start, const Point2D& direction);
+	static void AddSlalomRight(PathSegment* path_segment, double length, double width, double fraction, const Point2D& start, const Point2D& direction);
 
 
    	//==========================================================================

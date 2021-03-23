@@ -137,6 +137,12 @@ public:
     // right_distance_m - Returns the right distance in metres
     void GetWheelDistancesM(double& left_distance_m, double& right_distance_m);
 
+    // Get velocity of the left and right wheels
+    //
+    // left_velocity - Returns the left wheel velocity
+    // right_velocity - Returns the right wheel velocity
+    virtual void GetWheelVelocity(double& left_velocity, double& right_velocity);
+
     // Get the velocity in feet per second
     double GetVelocityFeetPerSecond();
 

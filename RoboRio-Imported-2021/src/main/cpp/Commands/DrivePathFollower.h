@@ -47,10 +47,12 @@ private:
 
 	static PathFollower* CreatePathfinderFollower(RobotPath* robot_path);
 	static PathFollower* CreatePathPointsFollower(RobotPath* robot_path);
-	static RobotPath* CreateVisionPathFromDashBoard(double max_velocity, double max_acceleration);
-	static RobotPath* CreateStraightPath(double max_velocity, double max_acceleration);
-	static RobotPath* CreateBall1Path(double max_velocity, double max_acceleration);
-	static RobotPath* CreateBall2Path(double max_velocity, double max_acceleration);
+	static PathFollower* CreatePurePursuitFollower(RobotPath* robot_path, double max_velocity, double max_acceleration);
+
+    // NOTE: These functions are broken, but left here until I ask what they are meant to be doing - Nick
+	// static void Rotate2Target(double max_velocity, double max_acceleration);
+	// static void Rotate2Target2(double max_velocity, double max_acceleration);
+	// static void rotateForSkew(double max_velocity, double max_acceleration);
 
     //==========================================================================
     // Member Variables

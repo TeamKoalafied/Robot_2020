@@ -29,7 +29,7 @@ PathPointsFollower::PathPointsFollower(RobotPath* robot_path, IPathDriveBase* dr
     m_follower_parameters.m_ki = 0.0;
     m_follower_parameters.m_kd = 0.0;
     m_follower_parameters.m_kv = 1.0/4.28;
-    m_follower_parameters.m_kv_offset = 1.0;
+    m_follower_parameters.m_kv_offset = 0.104;
     m_follower_parameters.m_ka =  1.0/18.29;
     m_follower_parameters.m_period_s = 0.02; // 20ms
     m_follower_parameters.m_wheelbase_width_m = 0.71;
@@ -161,7 +161,7 @@ void PathPointsFollower::FollowSegment() {
 
 	// Calculate a turn value from the angle error. NOTE: this uses the same gain as
 	// DriveBase::CalculateDriveStraightAdjustment() so it should be good.
-	double turn = 0.005 * angle_difference_deg; // 0.01 original
+	double turn = 0.01 * angle_difference_deg;
 
 	// Adjust the left and right output by the turning values. Note this calculation is
 	// slightly different to DriveBase::ArcadeDrive() so it should be checked. However for

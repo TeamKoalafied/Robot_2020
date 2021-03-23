@@ -4,8 +4,6 @@
 
 #include "PathFollower.h"
 
-#include "PathfinderFollower.h"
-#include "../../Subsystems/DriveBase.h"
 #include "../RobotPath/Bezier3.h"
 #include "../RobotPath/IPathDriveBase.h"
 #include "../RobotPath/Point2D.h"
