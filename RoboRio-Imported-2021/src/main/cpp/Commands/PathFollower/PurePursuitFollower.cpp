@@ -38,7 +38,10 @@ PurePursuitFollower::PurePursuitFollower(RobotPath* robot_path, IPathDriveBase* 
     m_follower_parameters.m_max_acceleration = 0.25;
     m_follower_parameters.m_max_velocity_curve = 2.0;
     m_follower_parameters.m_lookahead_distance = 0.5;
-    m_follower_parameters.m_curvature_gain = 1.8;
+    m_follower_parameters.m_lookahead_factor = 1.5;
+    m_follower_parameters.m_lookahead_curvature_gain = 1.0;
+    m_follower_parameters.m_path_curvature_gain = 1.0;
+    m_follower_parameters.m_lookalong_time = 0.1;
 }
 
 PurePursuitFollower::~PurePursuitFollower() {
@@ -305,12 +308,15 @@ void PurePursuitFollower::GenerateSegmentPathPoints()
         m_path_points[i].m_velocity = velocity;
     }
 
-    // Calculate the acceleration for each point
+    // Calculate the acceleration for each point and the time to traverse the path
+    m_path_time = 0.0;
  	for (int i = 0; i < total_points - 1; i++) {
         double velocity = m_path_points[i].m_velocity;
         double final_velocity = m_path_points[i + 1].m_velocity;
         double distance = m_path_points[i + 1].m_distance - m_path_points[i].m_distance;
         m_path_points[i].m_acceleration = (final_velocity * final_velocity - velocity * velocity)/(2*distance);
+
+        m_path_time += distance / (0.5 * (velocity + final_velocity));
     }
 
     // Add an extra 'extension' point to the end of the points list. This gives a long straight segment
@@ -395,18 +401,15 @@ void PurePursuitFollower::CalculatePurePursuitDrive(double& left_output, double&
     // Calculate the curvature to the lookahead using the pure pursuit equation. If going in reverse
     // the curvature has to flip sign.
     double lookahead_distance = lookahead_relative.Length();
-    double curvature = 2.0 * side_distance / lookahead_distance;
+    double lookahead_curvature = 2.0 * side_distance / lookahead_distance;
     if (GetPathSegment().m_reverse) {
-        curvature = -curvature;
+        lookahead_curvature = -lookahead_curvature;
     }
-    sample.m_curvature_lookahead = curvature;
+    sample.m_curvature_lookahead = lookahead_curvature;
 
-    // Method 1: Multiple the curvature by a gain. Work OK for a gain of 2, but oscillates a lot
-    // curvature *= m_follower_parameters.m_curvature_gain;
-    
-    // Method 2: Add the path curvature
-    curvature += path_curvature;
-
+    // Add the lookahead curvature and the path curvature  after multiply each by an adjustable gain
+    double curvature = lookahead_curvature * m_follower_parameters.m_lookahead_curvature_gain + 
+                       path_curvature * m_follower_parameters.m_path_curvature_gain;
     sample.m_curvature = curvature;
 
     // Calculate the left and right velocity and acceleration to achieve the required
@@ -454,6 +457,7 @@ Point2D PurePursuitFollower::GetClosestPoint(Point2D robot_position, double& pat
     double closest_distance;
     Point2D closest_point;
     int path_index = m_closest_index;
+    double closest_relative = 0.0;
     while (path_index < (int)m_path_points.size() - 1) {
         // Get the ends of the path segment to test
         const PathPoint& segment_pt1 = m_path_points[path_index];
@@ -482,10 +486,12 @@ Point2D PurePursuitFollower::GetClosestPoint(Point2D robot_position, double& pat
             closest_distance = distance;
             closest_point = point_on_line;
 
+            closest_relative = relative;
+
             // Get the velocity and acceleration by linearly interpolating between the ends of the segment
-            path_velocity = Lerp(segment_pt1.m_velocity, segment_pt2.m_velocity, relative);
-            path_acceleration = Lerp(segment_pt1.m_acceleration, segment_pt2.m_acceleration, relative);
-            path_curvature = Lerp(segment_pt1.m_curvature, segment_pt2.m_curvature, relative);
+            // path_velocity = Lerp(segment_pt1.m_velocity, segment_pt2.m_velocity, relative);
+            // path_acceleration = Lerp(segment_pt1.m_acceleration, segment_pt2.m_acceleration, relative);
+            // path_curvature = Lerp(segment_pt1.m_curvature, segment_pt2.m_curvature, relative);
         } else if (distance > 10*closest_distance || distance > 2) {
             // If this segment is a long way further than the best then stop searching. This saves time
             // and also prevent accidentally picking up a later part of the path if it loops back on
@@ -507,13 +513,58 @@ Point2D PurePursuitFollower::GetClosestPoint(Point2D robot_position, double& pat
         return robot_position;
     }
 
+    // Update the closest point index for next time and return the closest point
+    m_closest_index = closest_index;
+ 
+
+    if (m_follower_parameters.m_lookalong_time == 0.0) {
+        // Get the velocity and acceleration by linearly interpolating between the ends of the segment
+        const PathPoint& segment_pt1 = m_path_points[closest_index];
+        const PathPoint& segment_pt2 = m_path_points[closest_index + 1];
+        path_velocity = Lerp(segment_pt1.m_velocity, segment_pt2.m_velocity, closest_relative);
+        path_acceleration = Lerp(segment_pt1.m_acceleration, segment_pt2.m_acceleration, closest_relative);
+        path_curvature = Lerp(segment_pt1.m_curvature, segment_pt2.m_curvature, closest_relative);
+    }
+    else {
+        double lookalong_time = m_follower_parameters.m_lookalong_time;
+        while (true) {
+            const PathPoint& segment_pt1 = m_path_points[closest_index];
+            const PathPoint& segment_pt2 = m_path_points[closest_index + 1];
+
+            double velocity = Lerp(segment_pt1.m_velocity, segment_pt2.m_velocity, closest_relative);
+            double average_velocity = (velocity + segment_pt2.m_velocity)/2.0;
+            double segment_length = segment_pt2.m_distance - segment_pt1.m_distance;
+            double remaining_distance_in_segment = segment_length * (1.0 - closest_relative);
+            double remaining_time_in_segment = remaining_distance_in_segment / average_velocity;
+            if (lookalong_time < remaining_time_in_segment) {
+                closest_relative = Lerp(closest_relative, 1.0, lookalong_time/remaining_time_in_segment);
+                path_velocity = Lerp(segment_pt1.m_velocity, segment_pt2.m_velocity, closest_relative);
+                path_acceleration = Lerp(segment_pt1.m_acceleration, segment_pt2.m_acceleration, closest_relative);
+                path_curvature = Lerp(segment_pt1.m_curvature, segment_pt2.m_curvature, closest_relative);
+                break;
+            }
+            else {
+                lookalong_time -= remaining_time_in_segment;
+                closest_relative = 0.0;
+                if (closest_index < (int)m_path_points.size() - 2) {
+                    closest_index++;
+                }
+                else {
+                    path_velocity = segment_pt2.m_velocity;
+                    path_acceleration = segment_pt2.m_acceleration;
+                    path_curvature = segment_pt2.m_curvature;
+                    break;
+                }
+            }
+        }
+    }
+
     //
     if (closest_index == (int)m_path_points.size() - 2) {
         m_segment_finished = true;
     }
 
-    // Update the closest point index for next time and return the closest point
-    m_closest_index = closest_index;
+    // Return the closest point
     return closest_point;
 }
 
@@ -524,8 +575,9 @@ Point2D PurePursuitFollower::GetLookAheadPoint(Point2D robot_position, double cl
     // distance by some margin. This margin is an important parameter. If it is not large enough then
     // the search may not find a lookahead point point and following the path will fail.
     double lookahead_distance = m_follower_parameters.m_lookahead_distance;
-    if (lookahead_distance < closest_point_distance * 1.5) {
-        lookahead_distance = closest_point_distance * 1.5;
+    double lookahead_distance_closest = closest_point_distance * m_follower_parameters.m_lookahead_factor;
+    if (lookahead_distance < lookahead_distance_closest) {
+        lookahead_distance = lookahead_distance_closest;
     }
 
     // Search for the closest point on the path starting at the previous closest point and
@@ -627,19 +679,27 @@ void PurePursuitFollower::WriteTestSampleToFile(const char* filename) {
 	// Write the parameters used for the test
 	results_file << "\"Path\",\"" << GetRobotPath()->m_name << "\"\n";
 	results_file << "\"Follower\",\"PurePursuitFollower\"\n";
+
 	results_file << "\"kv\",\"" << m_follower_parameters.m_kv << "\"\n";
 	results_file << "\"kv offset\",\"" << m_follower_parameters.m_kv_offset << "\"\n";
 	results_file << "\"ka\",\"" << m_follower_parameters.m_ka << "\"\n";
+
 	results_file << "\"kp\",\"" << m_follower_parameters.m_kp << "\"\n";
 	results_file << "\"ki\",\"" << m_follower_parameters.m_ki << "\"\n";
 	results_file << "\"kd\",\"" << m_follower_parameters.m_kd << "\"\n";
-	results_file << "\"max velocity\",\"" << m_follower_parameters.m_max_velocity << "\"\n";
-	results_file << "\"max aceleration\",\"" << m_follower_parameters.m_max_acceleration << "\"\n";
-	results_file << "\"lookahead distance\",\"" << m_follower_parameters.m_lookahead_distance << "\"\n";
-	results_file << "\"curvature gain\",\"" << m_follower_parameters.m_curvature_gain << "\"\n";
+
+	results_file << "\"Max Velocity\",\"" << m_follower_parameters.m_max_velocity << "\"\n";
+	results_file << "\"Max Velocity Curve\",\"" << m_follower_parameters.m_max_velocity_curve << "\"\n";
+	results_file << "\"Max Acceleration\",\"" << m_follower_parameters.m_max_acceleration << "\"\n";
+	results_file << "\"Lookahead Distance\",\"" << m_follower_parameters.m_lookahead_distance << "\"\n";
+	results_file << "\"Lookahead Factor\",\"" << m_follower_parameters.m_lookahead_factor << "\"\n";
+	results_file << "\"Lookahead Curvature Gain\",\"" << m_follower_parameters.m_lookahead_curvature_gain << "\"\n";
+	results_file << "\"Path Curvature Gain\",\"" << m_follower_parameters.m_path_curvature_gain << "\"\n";
+	results_file << "\"Lookalong Time\",\"" << m_follower_parameters.m_lookalong_time << "\"\n";
 	results_file << "\"Wheelbase Width (m)\",\"" << m_follower_parameters.m_wheelbase_width_m << "\"\n";
 	results_file << "\"Time Period (s)\",\"" << m_follower_parameters.m_period_s << "\"\n";
 	results_file << "\"Time (s)\",\"" << (m_follower_parameters.m_period_s * m_sample_list.size()) << "\"\n";
+	results_file << "\"Path Time (s)\",\"" << m_path_time << "\"\n";
 
    // Write the path points. Each parameter is on a separate line
 	int total_points = m_total_path_points.size();

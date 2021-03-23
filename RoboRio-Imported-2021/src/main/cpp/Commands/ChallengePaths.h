@@ -25,6 +25,7 @@ public:
 	static RobotPath* CreateSlalomPathRightAngles(double max_velocity, double max_acceleration);
 	static RobotPath* CreateBarrelRacingPathRightAngles(double max_velocity, double max_acceleration);
 	static RobotPath* CreateBouncePath(double max_velocity, double max_acceleration);
+    static RobotPath* CreateBouncePathReversing(double max_velocity, double max_acceleration);
 	static RobotPath* CreateTestPath(double max_velocity, double max_acceleration);
 	static RobotPath* CreateGalaticSearchPath(double max_velocity, double max_acceleration);
 

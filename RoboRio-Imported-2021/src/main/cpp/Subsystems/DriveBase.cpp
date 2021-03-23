@@ -18,7 +18,10 @@
 #include <frc/Joystick.h>
 #include <frc/Solenoid.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <fstream>
 #include <iostream>
+#include <iomanip>
+
 
 namespace RC = RobotConfiguration;
 
@@ -333,13 +336,14 @@ void DriveBase::DoCheezyDrive() {
 
     // Get the movement and rotation values from the joystick, including any speed
     // limiting and response curve shaping.
+    Sample sample;
     double move = 0.0;
     double rotate = 0.0;
-    GetMovementFromJoystick(move, rotate);
-    CalculateDriveStraightAdjustment(move, rotate);
+    GetMovementFromJoystick(move, rotate, sample);
+    CalculateDriveStraightAdjustment(move, rotate, sample);
 
     // Get the robot drive to do arcade driving with our rotate and move values
-    ArcadeDrive(move, rotate);
+    ArcadeDrive(move, rotate, sample);
 
     //--------------------------------------------------------------------------
     // NOTE: Extra testing code is often added here. This allows test operations
@@ -350,6 +354,19 @@ void DriveBase::DoCheezyDrive() {
 
     //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
     DrivePathFollower::DoJoystickTestControl(m_joystick);
+    // Record the sample
+    GetWheelDistancesM(sample.m_left_distance_m, sample.m_right_distance_m);
+    double robot_heading;
+    GetPositionM(sample.m_robot_position_x, sample.m_robot_position_y, robot_heading);
+    sample.m_gyro_heading_deg = GetPigeonHeading();
+    m_sample_list.push_back(sample);
+
+    // If the B button is pressed write the samples to a file
+    if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {
+        const char* const RESULT_FILENAME = "/home/lvuser/DriveBase.csv";
+        WriteTestSampleToFile(RESULT_FILENAME);
+        SetupSampleRecording();
+    }
 
 	// If the 'B' button is pressed reset the drive base dead reckoning position
     // if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {
@@ -402,10 +419,11 @@ void DriveBase::Drive(double velocity_feet_per_second, double rotate) {
 	if (velocity_proportional > 1.0) velocity_proportional = 1.0;
 	if (velocity_proportional < -1.0) velocity_proportional = -1.0;
 
-	CalculateDriveStraightAdjustment(velocity_proportional, rotate);
+    Sample sample;
+	CalculateDriveStraightAdjustment(velocity_proportional, rotate, sample);
 
 	// Get the robot drive to do arcade driving with our rotate and move values
-	ArcadeDrive(velocity_proportional, rotate);
+	ArcadeDrive(velocity_proportional, rotate, sample);
 }
 
 void DriveBase::DriveDistance(double distance_inch, double velocity_feet_per_second) {
@@ -581,17 +599,6 @@ double DriveBase::GetStablePigeonHeading() {
     }
 }
 
-int DriveBase::GetPigeonRawGyro(double gyro_xyz_dps[3]) {
-    // If there is no Pigeon IMU return an error
-    if (m_pigen_imu == NULL) return kGyroError;
-
-    // If the Pigeon IMU is not ready return an error
-    if (m_pigen_imu->GetState() != PigeonIMU::Ready) return kGyroError;
-
-    // For the moment we are using the gyro to return rotate speed
-    m_pigen_imu->GetRawGyro(gyro_xyz_dps);
-    return kGyroTrue;
-}
 
 /*int sentient = 0;
   if (robot == sentient){
@@ -668,12 +675,13 @@ double DriveBase::GetMotorCurrent() {
 //==========================================================================
 // Input Functions
 
-void DriveBase::GetMovementFromJoystick(double& move, double& rotate) {
+void DriveBase::GetMovementFromJoystick(double& move, double& rotate, Sample& sample) {
     // The rotate input comes directly from the x axis of the joystick.
     // Apply a 'deadzone' so that very small inputs all map to 0. This is
     // necessary because the joystick does not centre perfectly when released.
     double joystick_x = m_joystick->GetRawAxis(RobotConfiguration::kJoystickLeftXAxis);
     rotate = -joystick_x;
+    sample.m_rotate_input = rotate;
     if (fabs(rotate) < RobotConfiguration::kJoystickDeadzone) rotate = 0.0;
     else {
         // NOTE: This change was tried and seemed OK, but was removed because it seemed to cause
@@ -703,6 +711,7 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate) {
     } else if (left_trigger > 0.0 && right_trigger > 0.0) {
 		std::cout << "WARNING: Both driver triggers pressed\n";
     }
+    sample.m_move_input = move;
 
     // Apply a 'power' adjustment to the move and rotate values. This gives
     // more precision for small adjustments (this is like mouse pointer
@@ -715,6 +724,8 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate) {
     if (!m_joystick->GetRawButton(RobotConfiguration::kJoystickYButton)) {
     	rotate *= RobotConfiguration::kRotateJoystickScale;
     }
+    sample.m_move = move;
+    sample.m_rotate = rotate;
 
     // Display the joystick inputs and the move value we calculate from them
     // frc::SmartDashboard::PutNumber("JoystickX", joystick_x);
@@ -728,8 +739,7 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate) {
 //==========================================================================
 // Drive Functions
 
-
-void DriveBase::ArcadeDrive(double move_value, double rotate_value) {
+void DriveBase::ArcadeDrive(double move_value, double rotate_value, Sample& sample) {
 	// Scale the rotation and movement to slow the drive base down when the
 	// lift is in a high position.
 //	double lift_scale_factor = Elevator::GetInstance().GetLiftRaiseMovementScale();
@@ -789,13 +799,18 @@ void DriveBase::ArcadeDrive(double move_value, double rotate_value) {
 
 }
 
+void DriveBase::CalculateDriveStraightAdjustment(double move, double& rotate, Sample& sample) {
 
-void DriveBase::CalculateDriveStraightAdjustment(double move, double& rotate) {
     // If the rotation value is zero then we want to drive straight
     bool driving_straight = rotate == 0.0;
 
-	if (move == 0.0){
+    // If we stop moving then drive straight is cancelled
+	if (move == 0.0) {
 		m_driving_straight = false;
+
+        sample.m_stable_heading = m_straight_heading;
+        sample.m_driving_straight = false;
+        sample.m_rotate_straight = rotate;
 		return;
 	}
 
@@ -844,6 +859,10 @@ void DriveBase::CalculateDriveStraightAdjustment(double move, double& rotate) {
             rotate = error * straight_gain;
         }
     }
+
+    sample.m_stable_heading = m_straight_heading;
+    sample.m_driving_straight = driving_straight;
+    sample.m_rotate_straight = rotate;
 }
 
 
@@ -998,4 +1017,85 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, 
         frc::SmartDashboard::PutNumber(std::string(name) + "OL Output", motor_output);
         frc::SmartDashboard::PutNumber(std::string(name) + "OL Rpm", speed_rpm);
     }
+}
+
+//==========================================================================
+// Manual Drive Logging
+
+void DriveBase::SetupSampleRecording()
+{
+	// Clear the list of samples
+	m_sample_list.clear();
+}
+
+void DriveBase::WriteTestSampleToFile(const char* filename)
+{
+	std::ofstream results_file;
+	results_file.open(filename, std::ios::out | std::ios::app);
+	if (results_file.fail()) {
+		std::cout << "DriveBase::WriteTestSampleToFile() - Failed to open result file\n";
+		return;
+	}
+
+	// Write the parameters used for the test
+	results_file << "\"Test\",\"DriveBase\"\n";
+	//results_file << "\"max velocity\",\"" << m_follower_parameters.m_max_velocity << "\"\n";
+
+    // Write the recorded sample data for the test. Each sample parameter is on a separate line
+	int total_samples = m_sample_list.size();
+
+
+	// Write the raw and filtered move/rotate inputs
+	results_file << "\"Move Input\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_move_input;
+	results_file << "\n";
+	results_file << "\"Rotate Input\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_rotate_input;
+	results_file << "\n";
+	results_file << "\"Move\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_move;
+	results_file << "\n";
+	results_file << "\"Rotate\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_rotate;
+	results_file << "\n";
+
+    // Write the drive straight data
+	results_file << "\"Stable Heading\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_stable_heading;
+	results_file << "\n";
+	results_file << "\"Driving Straight\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_driving_straight;
+	results_file << "\n";
+	results_file << "\"Rotate Straight\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_rotate_straight;
+	results_file << "\n";
+
+    // Write the motor outputs and the robot position data
+	results_file << "\"Left Output\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_left_output;
+	results_file << "\n";
+	results_file << "\"Right Output\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_right_output;
+	results_file << "\n";
+	results_file << "\"Left Distance\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_left_distance_m;
+	results_file << "\n";
+	results_file << "\"Right Distance\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_right_distance_m;
+	results_file << "\n";
+	results_file << "\"Gyro Heading\"";
+	results_file << std::fixed;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(2) << m_sample_list[i].m_gyro_heading_deg;
+	results_file << std::defaultfloat;
+	results_file << "\n";
+	results_file << "\"RobotX\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_robot_position_x;
+	results_file << "\n";
+	results_file << "\"RobotY\"";
+	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_robot_position_y;
+	results_file << "\n";
+
+	// Write a completely blank line to mark the end of this test
+	results_file << "\n";
+
 }

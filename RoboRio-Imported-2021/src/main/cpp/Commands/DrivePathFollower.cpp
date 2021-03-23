@@ -177,12 +177,25 @@ PathFollower* DrivePathFollower::CreatePurePursuitFollower(RobotPath* robot_path
 	double d_gain = frc::SmartDashboard::GetNumber("AutoD", 0.0);
 	if (d_gain < 0.0) d_gain = 0.0;
 	if (d_gain > 3.0) d_gain = 3.0;
-	double curvature_gain = frc::SmartDashboard::GetNumber("AutoCurveGain", 1.5);
-	if (curvature_gain < 1.0) curvature_gain = 1.0;
-	if (curvature_gain > 3.0) curvature_gain = 3.0;
-	double lookahead_distance = frc::SmartDashboard::GetNumber("AutoLookAhead", 0.3);
+	double path_point_spacing = frc::SmartDashboard::GetNumber("AutoPointSpacing", PurePursuitFollower::kPathPointSpacingDefault);
+	if (path_point_spacing < 0.05) path_point_spacing = 0.05;
+	if (path_point_spacing > 0.5) path_point_spacing = 0.5;
+	double lookahead_distance = frc::SmartDashboard::GetNumber("AutoLookAhead", PurePursuitFollower::kLookaheadDistanceDefault);
 	if (lookahead_distance < 0.2) lookahead_distance = 0.2;
 	if (lookahead_distance > 1.0) lookahead_distance = 1.0;
+	double lookahead_factor = frc::SmartDashboard::GetNumber("AutoLookAheadFactor", PurePursuitFollower::kLookaheadFactorDefault);
+	if (lookahead_factor < 1.2) lookahead_factor = 1.2;
+	if (lookahead_factor > 2.0) lookahead_factor = 2.0;
+	double lookahead_curvature_gain = frc::SmartDashboard::GetNumber("AutoLookaheadCurveGain", PurePursuitFollower::kLookaheadCurvatureGainDefault);
+	if (lookahead_curvature_gain < 0.0) lookahead_curvature_gain = 0.0;
+	if (lookahead_curvature_gain > 2.0) lookahead_curvature_gain = 2.0;
+	double path_curvature_gain = frc::SmartDashboard::GetNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
+	if (path_curvature_gain < 0.0) path_curvature_gain = 0.0;
+	if (path_curvature_gain > 2.0) path_curvature_gain = 2.0;
+
+	double max_velocity_curve = frc::SmartDashboard::GetNumber("AutoMaxVCurve", PurePursuitFollower::kMaxVelocityCurve);
+	if (max_velocity_curve < 1.0) max_velocity_curve = 1.0;
+	if (max_velocity_curve > 4.0) max_velocity_curve = 4.0;
 
 
 	DriveBase& drive_base = DriveBase::GetInstance();
@@ -190,15 +203,22 @@ PathFollower* DrivePathFollower::CreatePurePursuitFollower(RobotPath* robot_path
 	path_follower->GetFollowerParameters().m_kp = p_gain;
 	path_follower->GetFollowerParameters().m_ki = i_gain;
 	path_follower->GetFollowerParameters().m_kd = d_gain;
-	path_follower->GetFollowerParameters().m_kv = 1.0/4.28;
-	path_follower->GetFollowerParameters().m_kv_offset = 0.104; // 0.05719;
-	path_follower->GetFollowerParameters().m_ka = 1.0/18.29;
-	path_follower->GetFollowerParameters().m_wheelbase_width_m = 0.64;
+
+	path_follower->GetFollowerParameters().m_kv = RC::kDriveBaseVelocityConstant;
+	path_follower->GetFollowerParameters().m_kv_offset = RC::kDriveBaseVelocityOffset;
+	path_follower->GetFollowerParameters().m_ka = RC::kDriveBaseAccelerationConstant;
+	path_follower->GetFollowerParameters().m_wheelbase_width_m = RC::kDriveBaseTraceWidth;
 	path_follower->GetFollowerParameters().m_period_s = 0.02;
+
+	path_follower->GetFollowerParameters().m_path_point_spacing = path_point_spacing;
 	path_follower->GetFollowerParameters().m_max_velocity = max_velocity;
 	path_follower->GetFollowerParameters().m_max_acceleration = max_acceleration;
-	path_follower->GetFollowerParameters().m_curvature_gain = curvature_gain;
+	path_follower->GetFollowerParameters().m_max_velocity_curve = max_velocity_curve;
+
 	path_follower->GetFollowerParameters().m_lookahead_distance = lookahead_distance;
+	path_follower->GetFollowerParameters().m_lookahead_factor = lookahead_factor;
+	path_follower->GetFollowerParameters().m_lookahead_curvature_gain = lookahead_curvature_gain;
+	path_follower->GetFollowerParameters().m_path_curvature_gain = path_curvature_gain;
 	return path_follower;
 }
 

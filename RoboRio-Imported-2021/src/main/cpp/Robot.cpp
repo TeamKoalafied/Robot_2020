@@ -4,6 +4,8 @@
 
 #include "RobotConfiguration.h"
 
+#include "Commands/AutonomousCommand.h"
+#include "Commands/PathFollower/PurePursuitFollower.h"
 #include "Subsystems/DriveBase.h"
 #include "Subsystems/Manipulator.h"
 #include "Subsystems/Pneumatics.h"
@@ -71,10 +73,17 @@ private:
     	frc::SmartDashboard::PutNumber("VisionTrackY", 0.0);
     	frc::SmartDashboard::PutNumber("VisionTrackHeading", 0.0);
     	frc::SmartDashboard::PutNumber("AutoMaxV", 1.0);
+    	frc::SmartDashboard::PutNumber("AutoMaxVCurve", PurePursuitFollower::kMaxVelocityCurve);
     	frc::SmartDashboard::PutNumber("AutoMaxA", 0.5);
     	frc::SmartDashboard::PutNumber("AutoP", 0.3);
     	frc::SmartDashboard::PutNumber("AutoI", 0.0);
     	frc::SmartDashboard::PutNumber("AutoD", 0.0);
+    	frc::SmartDashboard::PutNumber("AutoLookAhead", PurePursuitFollower::kLookaheadDistanceDefault);
+    	frc::SmartDashboard::PutNumber("AutoLookAheadFactor", PurePursuitFollower::kLookaheadFactorDefault);
+    	frc::SmartDashboard::PutNumber("AutoPointSpacing", PurePursuitFollower::kPathPointSpacingDefault);
+	    frc::SmartDashboard::PutNumber("AutoLookaheadCurveGain", PurePursuitFollower::kLookaheadCurvatureGainDefault);
+        frc::SmartDashboard::PutNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
+
 
         // Values for VisionFindTarget pure vision feedback (open loop motor control)                                                         
         frc::SmartDashboard::PutNumber("VisionKp", 0.017);         // Start small and double until overshoot                                          
@@ -181,6 +190,6 @@ private:
 
 
 //==============================================================================
-// Robot Definition
+// Robot Main Function
 //==============================================================================
 int main() { return frc::StartRobot<Robot>(); }

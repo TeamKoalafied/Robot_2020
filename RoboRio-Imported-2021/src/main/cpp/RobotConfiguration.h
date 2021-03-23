@@ -174,6 +174,22 @@ const double kDriveBasePidD = 0.0;
 
 
 //==============================================================================
+// Drive Base Autonomous Configuration
+
+// Drive base equation velocity constant [output/m/s]
+const double kDriveBaseVelocityConstant = 0.208747534;
+
+// Drive base equation velocity offset [output]
+const double kDriveBaseVelocityOffset = 0.0;  // Measured as -0.004778574
+
+// Drive base equation acceleration constant [output/m/s2]
+const double kDriveBaseAccelerationConstant = 0.035884186;
+
+// Drive base track width [m]
+const double kDriveBaseTraceWidth = 0.64;
+
+
+//==============================================================================
 // Cheezy Drive Parameters
 
 // Exponential power to apply to the joystick movement and rotation values. These

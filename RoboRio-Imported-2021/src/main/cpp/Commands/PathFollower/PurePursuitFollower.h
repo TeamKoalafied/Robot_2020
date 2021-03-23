@@ -35,25 +35,40 @@ public:
 
     // Parameters that control how the path is generated and followed
     struct FollowerParameters {
-        double m_kp;
-        double m_ki;
-        double m_kd;
-        double m_kv;
-        double m_kv_offset;
-        double m_ka;
+        double m_kp;                    // P gain for the PID control of wheel velocity
+        double m_ki;                    // I gain for the PID control of wheel velocity
+        double m_kd;                    // D gain for the PID control of wheel velocity
+
+        double m_kv;                    // Velocity constant [output/velocity]
+        double m_kv_offset;             // Velocity offsee [output]
+        double m_ka;                    // Acceleration constant [output/acceleration]
         double m_period_s;              // Update period in seconds
         double m_wheelbase_width_m;     // Width of the wheelbase in metres
 
         double m_path_point_spacing;  // Spacing between generated path points
-        double m_max_velocity;
-        double m_max_acceleration;
-        double m_max_velocity_curve;
+        double m_max_velocity;          // Maximum velocity allowed on the path
+        double m_max_acceleration;      // Maximum acceleration allowed on the path
+        double m_max_velocity_curve;    // Scale factor to determine maximum cornering velocity from curvature
 
-        double m_lookahead_distance;
-        double m_curvature_gain;
+        double m_lookahead_distance;    // Lookahead distance
+        double m_lookahead_factor;      // Scale factor to get minimum lookahead distance from closest point distance
+        double m_lookahead_curvature_gain;  // Gain applied to the curvature from the pure pursuit lookahead
+        double m_path_curvature_gain;   // Gain applied to the curvature from the path
+        double m_lookalong_time;        // Time to look along the path into the future to get the velocity and acceleration
     };
 
     
+    //==========================================================================
+    // Parameter Constants
+
+    static constexpr double kPathPointSpacingDefault = 0.2;
+    static constexpr double kLookaheadDistanceDefault = 0.4;
+    static constexpr double kLookaheadFactorDefault = 1.5;
+    static constexpr double kMaxVelocityCurve = 2.0;
+
+    static constexpr double kLookaheadCurvatureGainDefault = 1.0;
+    static constexpr double kPathCurvatureGainDefault = 0.5;
+
     //==========================================================================
     // Construction and Destruction
 
@@ -237,6 +252,7 @@ private:
     FollowerState m_right_follower_state;       // State of the PID follower for the right side of the robot
 
     std::vector<PathPoint> m_path_points;       // Point data that describes the current segment
+    double m_path_time;                         // Theoretical time to transverse the path
     int m_closest_index;                        // Index of the closest path point at the last update
     int m_lookahead_index;                      // Index of the lookahead path point at the last update
 
