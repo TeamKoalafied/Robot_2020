@@ -40,6 +40,13 @@ public:
     // right_distance_m - Returns the right distance in metres
     virtual void GetWheelDistancesM(double& left_distance_m, double& right_distance_m) = 0;
 
+    // Get velocity of the left and right wheels
+    //
+    // left_velocity - Returns the left wheel velocity
+    // right_velocity - Returns the right wheel velocity
+    virtual void GetWheelVelocity(double& left_velocity, double& right_velocity) = 0;
+
+
     // Get the current heading from the Pigeon IMU device
     //
     // Returns the heading in degrees, or kHeadingError if the value cannot be read. Positive is anticlockwise.

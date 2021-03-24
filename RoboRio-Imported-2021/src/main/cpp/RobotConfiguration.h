@@ -154,7 +154,7 @@ const int kDriveMotorContinuousCurrentLimitA = 20;
 // Peak current limit for drive base motors in amps
 const int kDriveMotorPeakCurrentLimitA = 30;
 
-// Peak current duration for drive base motors in milliseconds
+// Peak current duration for drive base motors in milliseconds  
 const int kDriveMotorPeakCurrentDurationMs = 500;
 
 // Drive motor ramp rate in second from neutral to full
@@ -171,6 +171,22 @@ const double kDriveBasePidF = 0.047;
 const double kDriveBasePidP = 0.1077;
 const double kDriveBasePidI = 0.0;
 const double kDriveBasePidD = 0.0;
+
+
+//==============================================================================
+// Drive Base Autonomous Configuration
+
+// Drive base equation velocity constant [output/m/s]
+const double kDriveBaseVelocityConstant = 0.208747534;
+
+// Drive base equation velocity offset [output]
+const double kDriveBaseVelocityOffset = 0.0;  // Measured as -0.004778574
+
+// Drive base equation acceleration constant [output/m/s2]
+const double kDriveBaseAccelerationConstant = 0.035884186;
+
+// Drive base track width [m]
+const double kDriveBaseTraceWidth = 0.64;
 
 
 //==============================================================================

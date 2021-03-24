@@ -100,8 +100,8 @@ private:
 		double m_gyro_heading_deg;		// Measured gyro heading in degrees
 		double m_left_output;			// Proportional output to the left motor [-1, 1]
 		double m_right_output;			// Proportional output to the right motor [-1, 1]
-		double m_left_feed_forward;		// Feedforward componenet of the output to the left motor
-		double m_right_feed_forward;	// Feedforward componenet of the output to the right motor
+		double m_left_feed_forward;		// Feedforward component of the output to the left motor
+		double m_right_feed_forward;	// Feedforward component of the output to the right motor
 		int m_segment_index;			// Index of the path segment being followed
 		const std::string* m_mechanism_action; // Mechanism action performed (NULL for none)
 

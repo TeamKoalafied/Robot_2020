@@ -97,7 +97,8 @@ public:
     // Temporary arcade drive function for the vision command the uses proportional
     // movement rather than a real world velocity.
     void ArcadeDriveForVision(double move, double rotate) { // TODO Change vision to use real velocity
-        ArcadeDrive(move, rotate);
+        Sample sample;
+        ArcadeDrive(move, rotate, sample);
     }
 
     // Do tank drive in open loop mode
@@ -137,8 +138,17 @@ public:
     // right_distance_m - Returns the right distance in metres
     void GetWheelDistancesM(double& left_distance_m, double& right_distance_m);
 
+    // Get velocity of the left and right wheels
+    //
+    // left_velocity - Returns the left wheel velocity
+    // right_velocity - Returns the right wheel velocity
+    virtual void GetWheelVelocity(double& left_velocity, double& right_velocity);
+
     // Get the velocity in feet per second
     double GetVelocityFeetPerSecond();
+
+    // Value indicating an error reading the heading from the Pigeon IMU
+    static constexpr double kHeadingError = 999.0; 
 
     // Get the current heading from the Pigeon IMU device
     //
@@ -150,14 +160,8 @@ public:
      // Returns the heading in degrees, or kHeadingError if the value cannot be read or is not stable. Positive is anticlockwise.
     double GetStablePigeonHeading();
 
-    // get raw gyro to get angular velocity
-    int GetPigeonRawGyro(double gyro_xyz_dps[3]);
-
     // Reset the Pigeon IMU device heading so that the current heading is 0 degrees
     void ResetPigeonHeading();
-
-    // Get the Pigeon IMU
-    PigeonIMU* GetPigeonIMU() { return m_pigen_imu; }  
 
     // Reset the dead reconning position. A position and heading can be specified.
     //
@@ -196,11 +200,29 @@ public:
     // Get the total motor current (A). Absolute current from all motors summed. 
     double GetMotorCurrent();
 
-    //==========================================================================
-    // Public Constants
-    static constexpr double kHeadingError = 999.0; 	// Value indicating an error reading the heading from the Pigeon IMU
-
 private:
+    //==========================================================================
+	// Private Nested Types
+
+	// Sample data recorded during a test
+	struct Sample
+	{
+        double m_move_input;            // Raw move input value (+ve if right trigger -ve if left trigger)
+        double m_rotate_input;          // Raw rotate joystick value
+        double m_move;                  // Move value after power adjustment
+        double m_rotate;                // Rotate value after power adjustment and rotate scaling
+        double m_stable_heading;        // Stable version of the pigeon heading (can be kHeadingError)
+        bool   m_driving_straight;      // Whether drive straight is currently occuring
+        double m_rotate_straight;       // Rotate value after drive straight adjustment
+		double m_left_output;			// Proportional output to the left motor [-1, 1]
+		double m_right_output;			// Proportional output to the right motor [-1, 1]
+		double m_left_distance_m;		// Measured left distance in metres, relative to path s
+		double m_right_distance_m;		// Measured right error in metres
+		double m_gyro_heading_deg;		// Measured gyro heading in degrees
+		double m_robot_position_x;	    // X coordinate of the position of the robot
+		double m_robot_position_y;	    // Y coordinate of the position of the robot
+	};
+
     //==========================================================================
     // Input Functions
 
@@ -209,7 +231,8 @@ private:
     //
     // move - returns the movement value between -1.0 and 1.0
     // rotate - returns the rotation value between -1.0 and 1.0
-    void GetMovementFromJoystick(double& move, double& rotate);
+    // sample - Sample to record log information in
+    void GetMovementFromJoystick(double& move, double& rotate, Sample& sample);
 
 
     //==========================================================================
@@ -219,12 +242,14 @@ private:
     //
     // move - Front/back proportional move value (+1 full forward to -1 full reverse)
     // rotate - Left/right proportional move value (-1 full left to +1 full right)
-    void ArcadeDrive(double move, double rotate);
+    // sample - Sample to record log information in
+    void ArcadeDrive(double move, double rotate, Sample& sample);
 
     // Calculate an adjusted rotation value to keep the robot driving in a straight lin``
     // move - Front/back proportional move value (+1 full forward to -1 full reverse)
     // rotate - Left/right proportional move value (-1 full left to +1 full right)
-    void CalculateDriveStraightAdjustment(double move, double& rotate);
+    // sample - Sample to record log information in
+    void CalculateDriveStraightAdjustment(double move, double& rotate, Sample& sample);
 
 
     void DriveToDistanceUltrasound();
@@ -275,6 +300,17 @@ private:
     // name - the name of this side of the of the drive base
     // log_value - whether to log values on this update
     void DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, const char* name, bool log_value);
+    //==========================================================================
+    // Manual Drive Logging
+
+ 	// Setup the recording of 'sample' data for testing
+	void SetupSampleRecording();
+
+	// Write the recorded test samples to a file. Does nothing if 'm_record_samples' is false.
+    //
+    // filename - Path of the file to write ot
+	void WriteTestSampleToFile(const char* filename);
+   
 
 
     //==========================================================================
@@ -313,6 +349,7 @@ private:
     VisionFindCube* m_find_cube_command;
 
     frc::Relay* m_vision_light_relay;
+    std::vector<Sample> m_sample_list;			    // List of data samples recorded during manual driving
 
     HapticController* m_haptic_controller;
 

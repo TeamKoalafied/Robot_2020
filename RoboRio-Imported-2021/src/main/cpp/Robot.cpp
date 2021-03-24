@@ -4,6 +4,8 @@
 
 #include "RobotConfiguration.h"
 
+#include "Commands/AutonomousCommand.h"
+#include "Commands/PathFollower/PurePursuitFollower.h"
 #include "Subsystems/DriveBase.h"
 #include "Subsystems/Manipulator.h"
 #include "Subsystems/Pneumatics.h"
@@ -38,6 +40,7 @@ public:
 		m_manipulator = NULL;
 		m_pneumatics = NULL;
 		m_vision_system = NULL;
+        m_autonomous_command = NULL;
 	}
 
 private:
@@ -62,15 +65,25 @@ private:
 
 		m_manipulator->Setup();
 
+        // Set up controls on the dashboard for choosing autonomous parameters
+    	AutonomousCommand::SetupDashboard();
+
 		// NICKTODO This code should be in DrivePathFollower with the test joystick stuff
 		frc::SmartDashboard::PutNumber("VisionTrackX", 3.0);
     	frc::SmartDashboard::PutNumber("VisionTrackY", 0.0);
     	frc::SmartDashboard::PutNumber("VisionTrackHeading", 0.0);
     	frc::SmartDashboard::PutNumber("AutoMaxV", 1.0);
+    	frc::SmartDashboard::PutNumber("AutoMaxVCurve", PurePursuitFollower::kMaxVelocityCurve);
     	frc::SmartDashboard::PutNumber("AutoMaxA", 0.5);
-    	frc::SmartDashboard::PutNumber("AutoP", 1.0);
+    	frc::SmartDashboard::PutNumber("AutoP", 0.3);
     	frc::SmartDashboard::PutNumber("AutoI", 0.0);
     	frc::SmartDashboard::PutNumber("AutoD", 0.0);
+    	frc::SmartDashboard::PutNumber("AutoLookAhead", PurePursuitFollower::kLookaheadDistanceDefault);
+    	frc::SmartDashboard::PutNumber("AutoLookAheadFactor", PurePursuitFollower::kLookaheadFactorDefault);
+    	frc::SmartDashboard::PutNumber("AutoPointSpacing", PurePursuitFollower::kPathPointSpacingDefault);
+	    frc::SmartDashboard::PutNumber("AutoLookaheadCurveGain", PurePursuitFollower::kLookaheadCurvatureGainDefault);
+        frc::SmartDashboard::PutNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
+
 
         // Values for VisionFindTarget pure vision feedback (open loop motor control)                                                         
         frc::SmartDashboard::PutNumber("VisionKp", 0.017);         // Start small and double until overshoot                                          
@@ -94,6 +107,11 @@ private:
         printf("AutonomousInit()\n");
 
         m_periodic_timer.Init();
+
+        // Create the autonomous command and start it
+        delete m_autonomous_command;
+        m_autonomous_command = AutonomousCommand::CreateAutonomousCommand();
+      	m_autonomous_command->Start();
 	}
 
 	void AutonomousPeriodic() override {
@@ -165,10 +183,13 @@ private:
 
     VisionSystem* m_vision_system;			// Vision subsystem - camera & processing thread
 	PeriodicTimer m_periodic_timer;         // Timer for monitoring response times
+
+    frc::Command* m_autonomous_command;     // Command to run in the autonomous period
+
 };
 
 
 //==============================================================================
-// Robot Definition
+// Robot Main Function
 //==============================================================================
 int main() { return frc::StartRobot<Robot>(); }

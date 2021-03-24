@@ -40,7 +40,6 @@ void PathfinderFollower::StartPath() {
 	double left_distance_m;
 	double right_distance_m;
     drive_base->GetWheelDistancesM(left_distance_m, right_distance_m);
-	// double gyro_heading_deg = drive_base->GetPigeonHeading();
 
 	// Record the start distances for the whole path
     m_path_start_left_distance_m = left_distance_m;
@@ -114,7 +113,6 @@ void PathfinderFollower::StartSegment() {
     m_path_controller = path_controller;
 
     // Calculate the encoder position from the distance
-   	// double encoder_to_distance = M_PI * 6.25 * 0.0254 / 4096.0;
    	double distance_to_encoder = 4096.0/ (M_PI * 6.25 * 0.0254);
     int left_encoder = left_distance_m * distance_to_encoder;
     int right_encoder = right_distance_m * distance_to_encoder;
@@ -136,7 +134,6 @@ void PathfinderFollower::FollowSegment() {
     Segment* right_segment = m_path_controller->GetRightSegment();
 
     // Calculate the encoder position from the distance
-   	// double encoder_to_distance = M_PI * 6.25 * 0.0254 / 4096.0;
    	double distance_to_encoder = 4096.0/ (M_PI * 6.25 * 0.0254);
     int left_encoder = left_distance_m * distance_to_encoder;
     int right_encoder = right_distance_m * distance_to_encoder;

@@ -11,7 +11,7 @@ class PathSegment;
 
 // PathFollower is a base class for controllers that follow a RobotPath.
 // This class handles following each of the PathSegments in the RobotPath in turn.
-// In particular, it deals with using dead reconning so that the when one path segment
+// In particular, it deals with using dead reckoning so that the when one path segment
 // does not finish in the exact correct location the following path is adjusted to
 // account for it. Classes derived from this one handle following each PathSegment.
 class PathFollower {

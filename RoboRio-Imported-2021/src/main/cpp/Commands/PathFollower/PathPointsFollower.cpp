@@ -29,7 +29,7 @@ PathPointsFollower::PathPointsFollower(RobotPath* robot_path, IPathDriveBase* dr
     m_follower_parameters.m_ki = 0.0;
     m_follower_parameters.m_kd = 0.0;
     m_follower_parameters.m_kv = 1.0/4.28;
-    m_follower_parameters.m_kv_offset = 1.0;
+    m_follower_parameters.m_kv_offset = 0.104;
     m_follower_parameters.m_ka =  1.0/18.29;
     m_follower_parameters.m_period_s = 0.02; // 20ms
     m_follower_parameters.m_wheelbase_width_m = 0.71;
@@ -48,7 +48,6 @@ void PathPointsFollower::StartPath() {
 	double left_distance_m;
 	double right_distance_m;
     drive_base->GetWheelDistancesM(left_distance_m, right_distance_m);
-	// double gyro_heading_deg = drive_base->GetPigeonHeading();
 
     m_path_start_left_distance_m = left_distance_m;
     m_path_start_right_distance_m = right_distance_m;
@@ -216,7 +215,7 @@ bool PathPointsFollower::IsSegmentFinished() {
     // The segment is finish when the path points have all been done and all the mechanism actions have been done
 	PathSegment& path_segment = GetPathSegment();
     return m_period_counter >= m_segment_points.GetTotalPoints() &&
-          (unsigned)m_mechanism_actions_done_count >= path_segment.m_mechanism_actions.size();
+           m_mechanism_actions_done_count >= (int)path_segment.m_mechanism_actions.size();
 }
 
 void PathPointsFollower::FinishSegment() {
@@ -231,8 +230,6 @@ void PathPointsFollower::FinishPath() {
 // Following Calculations
 
 double PathPointsFollower::FollowSide(FollowerState& follower_state, const RobotPathPoints::PathPoint& point, double distance_m, double& feed_forward) {
-	// NMBTODO Expand and comment FollowSide() calculation
-
 	// Calculate the error and accumulated total error
 	double error = point.m_distance - distance_m;
 	double total_error = follower_state.m_total_error + error;
@@ -265,33 +262,6 @@ double PathPointsFollower::FollowSide(FollowerState& follower_state, const Robot
 
 	// The require output is the sum of the feed forward and PID values
 	return feed_forward + pid_value;
-
-
-	// double calculated_value = m_follower_parameters.m_kp * error +
-	// 					      m_follower_parameters.m_ki * total_error * m_follower_parameters.m_period_s +
-	// 						  m_follower_parameters.m_kd * ((error - follower_state.m_last_error) / m_follower_parameters.m_period_s) +
-	// 						  (m_follower_parameters.m_kv * point.m_velocity +
-    //                            m_follower_parameters.m_ka * point.m_acceleration);
-    // if (point.m_velocity != 0.0) {
-    //     if (point.m_velocity > 0.0) {
-    //         calculated_value += m_follower_parameters.m_kv_offset;
-    //     } else {
-    //         calculated_value -= m_follower_parameters.m_kv_offset;
-    //     }
-
-    // }                   
-
-	// Steady state voltage response is
-	// 		velocity(ft/s) = 1.1757 * voltage(V) - 0.8069
-	// Hence
-	//		voltage(V) = (velocity(ft/s) + 0.8069)/1.1757
-	//
-	//		output = voltage/12
-	//             = (velocity(ft/s) + 0.8069)/14.1084             velocity(ft/s) = 3.2808*velocity(m/s)
-	//             = (3.2808*velocity(m/s) + 0.8069)/14.1084
-	//			   = 0.23254*velocity(m/s) + 0.05719
-
-//    	std::cout << "distance_covered" << distance_covered << " s.position " << s.position << "\n";
 }
 
 
@@ -361,7 +331,7 @@ void PathPointsFollower::WriteTestSampleToFile() {
 	// Write the desired path heading (same for left and right)
 	results_file << "\"Heading\"";
 	results_file << std::fixed;
-	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(2) << m_sample_list[i].m_left_point.m_heading_deg * 180.0 / M_PI;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(2) << m_sample_list[i].m_left_point.m_heading_deg;
 	results_file << std::defaultfloat;
 	results_file << "\n";
 

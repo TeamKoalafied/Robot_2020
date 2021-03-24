@@ -62,6 +62,20 @@ public:
     void RunIndexBack();
     void Shoot();
 
+   //==========================================================================
+   // Autonomous Control
+
+   void StartIntaking()
+   {
+       ChangeState(State::Intaking);
+   }
+
+   void StopIntaking()
+   {
+       ChangeState(State::Idle);
+   }
+
+
 private:
     //==========================================================================
     // Private Nested Types

@@ -43,6 +43,9 @@ public:
 	// Get the total time the path will take to complete
 	double GetTotalTime() const { return m_total_time; }
 
+	// Get the total length of the profile
+	double GetLength() const { return m_length; }
+
 private:
 	//==========================================================================
 	// Member Variables

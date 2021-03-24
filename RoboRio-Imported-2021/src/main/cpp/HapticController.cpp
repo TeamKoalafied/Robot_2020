@@ -3,9 +3,13 @@
 //==============================================================================
 
 #include "HapticController.h"
+
+#include "RobotConfiguration.h"
+
 #include <iostream>
 #include <iomanip>
 
+namespace RC = RobotConfiguration;
 
 
 //==============================================================================
@@ -60,4 +64,36 @@ void HapticController::DoContinuousFeedback(double time_s, double value) {
     for (int i = 0; i < length; i++) m_value_buffer[i] = value;
 
     DoFeedback(m_value_buffer.data(), length);
+}
+
+//==============================================================================
+// Testing
+
+void HapticController::DoJoystickTestControl()
+{
+    static int previous_pov_angle = 0;
+	int pov_angle = m_joystick->GetPOV(0);
+    if (pov_angle != previous_pov_angle) {
+        previous_pov_angle = pov_angle;
+        switch (pov_angle) {
+            case RC::kJoystickPovUp: {
+                DoContinuousFeedback(1.0, 1.0);
+                break;
+            }
+            case RC::kJoystickPovLeft: {
+                DoContinuousFeedback(1.0, 0.5);
+                break;
+            }
+            case RC::kJoystickPovDown: {
+                DoContinuousFeedback(1.0, 0.25);
+                break;
+            }
+            case RC::kJoystickPovRight: {
+                static double PATTERN[10] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
+                DoFeedback(PATTERN, 10);
+                break;
+            }
+        }
+    }
+
 }

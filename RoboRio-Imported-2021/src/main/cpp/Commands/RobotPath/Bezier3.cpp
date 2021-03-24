@@ -37,13 +37,31 @@ Point2D Bezier3::Derivative(double u) const
 	Point2D r1 = Point2D::Lerp(q1, q2, u);
 	Point2D r2 = Point2D::Lerp(q2, q3, u);
 
-	return (r2 - r1);
+	return 3.0*(r2 - r1);
+}
+
+Point2D Bezier3::Derivative2(double u) const
+{
+	Point2D q1 = Point2D::Lerp(m_point1, m_point2, u);
+	Point2D q2 = Point2D::Lerp(m_point2, m_point3, u);
+	Point2D q3 = Point2D::Lerp(m_point3, m_point4, u);
+
+	return 6.0*(q3 - 2.0*q2 + q1);
+}
+
+double Bezier3::Curvature(double u) const
+{
+    // https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/Bezier/bezier-der.html
+    // https://en.wikiversity.org/wiki/CAGD/B%C3%A9zier_Curves
+	Point2D d1 = Derivative(u);
+	Point2D d2 = Derivative2(u);
+
+    // NOTE: That this gives +ve curvature to the left
+	return (d1.x * d2.y - d1.y * d2.x)/pow(d1.x*d1.x + d1.y*d1.y, 1.5);
 }
 
 void Bezier3::Split(double u, Bezier3& bezier3_1, Bezier3& bezier3_2) const
 {
-	// double u_m_1 = 1.0 - u;
-
 	bezier3_1.m_point1 = m_point1;
 	bezier3_2.m_point4 = m_point4;
 

@@ -4,8 +4,6 @@
 
 #include "PathFollower.h"
 
-#include "PathfinderFollower.h"
-#include "../../Subsystems/DriveBase.h"
 #include "../RobotPath/Bezier3.h"
 #include "../RobotPath/IPathDriveBase.h"
 #include "../RobotPath/Point2D.h"
@@ -73,7 +71,7 @@ void PathFollower::Follow() {
 
 		// Advance to the next path segment
 		m_path_segment_index++;
-		if ((unsigned)m_path_segment_index < m_robot_path->m_path_segments.size()) {
+		if (m_path_segment_index < (int)m_robot_path->m_path_segments.size()) {
 			// If there is another segment then set it up and start following it
 			SetupPathSegment();
 			StartSegment();
@@ -89,7 +87,7 @@ void PathFollower::Follow() {
 
 bool PathFollower::IsTrajectoryFinished() {
     // The command is finished if the list of path segments is finished
-    return (unsigned)m_path_segment_index >= m_robot_path->m_path_segments.size();
+    return m_path_segment_index >= (int)m_robot_path->m_path_segments.size();
 }
 
 void PathFollower::Finish() {

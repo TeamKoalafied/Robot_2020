@@ -9,7 +9,6 @@
 #include <vector>
 
 
-
 #ifndef SRC_COMMANDS_TESTCHARACTERISEDRIVEBASE_H_
 #define SRC_COMMANDS_TESTCHARACTERISEDRIVEBASE_H_
 
@@ -21,20 +20,25 @@ public:
 
 	// The type of tests that can be performed
 	enum Type {
-		SteadyStateVoltage,				//
-		Acceleration,
-		QuasiStaticVoltage,
-		MinType = SteadyStateVoltage,	// Minimum UI settings
-		MaxType = QuasiStaticVoltage,	// Minimum UI settings
+		SteadyStateVoltage,				// Test of linear motion with a steady state voltage
+		SteadyStateVoltageRotation,	    // Test of rotation with a steady state voltage
+		PigeonDrift,					// Test of pigeon heading drift
+		MinType = SteadyStateVoltage,	// Minimum test type
+		MaxType = PigeonDrift,			// Maximum test type
 	};
+
 
     //==========================================================================
     // Construction
 
     // Constructor
     //
-    // type -
-	TestCharacteriseDriveBase(Type type, double voltage, double maximum_distance_feet);
+    // type - Type of test to perform
+	// voltage - Voltage for steady state tests (not used for Pigeon test)
+	// test_duration - Maximum duration to run the test for (feet/rotations/10s intervals)
+	TestCharacteriseDriveBase(Type type, double voltage, double test_duration);
+
+	// Destructor
 	virtual ~TestCharacteriseDriveBase();
 
 
@@ -65,10 +69,12 @@ private:
 	{
 		double m_time_s;		// Time in seconds the sample was taken at relative to the start of the test
 		double m_voltage;		// Current voltage to the motor as measured by the talon
-		double m_velocity_fps;	// Current velocity in feet per second
+		double m_velocity_fps;	// Current velocity in feet per 
+		double m_heading;		// Heading in degrees
+		double m_current;		// Total motor current (A)
 	};
 
-	// Possible settings that can set in the UI
+	// Possible settings that can be set in the UI
 	enum UISetting
 	{
 		TypeSetting,		// UI is setting the type of test to perform
@@ -104,10 +110,10 @@ private:
 	// voltage - The voltage to set. Will be clipped to the valid range.
 	static void SetVoltageSetting(double voltage);
 
-	// Set the maximum distance to go during a test in feet, and display the new values
+	// Set the maximum duration for the test, and display the new values
 	//
-	// distance_feet - Theaximum distance to go during a test in feet to set. Will be clipped to the valid range.
-	static void SetMaxDistanceFeetSetting(double distance_feet);
+	// test_duration -  Maximum duration to run the test for (feet/rotations/10s intervals)
+	static void SetTestDurationSetting(double distance_feet);
 
 	// Display the current configuration set in the UI
 	static void DisplayConfigInLog();
@@ -118,16 +124,16 @@ private:
 
 	Type m_type;            					// Type of test to perform
 	double m_voltage;				  			// Voltage to apply for the test
-	double m_maximum_distance_feet;				// Maximum distance to go during a test in feet
+	double m_test_duration;						// Maximum duration to run the test for (feet/rotations/10s intervals)
     frc::Timer m_timer;         				// A timer that measures elapsed time
     std::vector<Sample> m_sample_list;			// List of data samples recorded during the test
-
+	double m_initial_heading;					// Heading when the command starts (used for rotation test)
 
     static UISetting ms_ui_setting;				// What value the UI is currently changing
     static bool ms_pov_down;					// Whether the POV control is currently down on any value
     static Type ms_type_setting;	    		// Type of test as set by the user
     static double ms_voltage_setting;	    	// Voltage for the test set by the user
-    static double ms_max_distance_feet_setting;	// Maximum distance to go during a test in feet set by the user
+    static double ms_test_duration_setting;		// Maximum duration to run the test for (feet/rotations/10s intervals)
 
     static TestCharacteriseDriveBase* ms_command;
 };
