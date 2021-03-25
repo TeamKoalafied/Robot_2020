@@ -354,6 +354,7 @@ void DriveBase::DoCheezyDrive() {
 
     //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
     DrivePathFollower::DoJoystickTestControl(m_joystick);
+    
     // Record the sample
     GetWheelDistancesM(sample.m_left_distance_m, sample.m_right_distance_m);
     double robot_heading;
