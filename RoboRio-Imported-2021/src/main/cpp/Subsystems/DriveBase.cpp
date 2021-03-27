@@ -161,6 +161,7 @@ void DriveBase::Periodic() {
 void DriveBase::Setup() {
     m_joystick = new frc::Joystick(0);
     m_haptic_controller = new HapticController(m_joystick);
+    m_find_target_control = new FindTargetControl();
     m_pigen_imu = new PigeonIMU(RobotConfiguration::kPigeonImuId);
     m_pigen_imu->SetFusedHeading(0.0,kTalonTimeoutMs);
 
@@ -309,6 +310,8 @@ void DriveBase::Shutdown() {
     m_joystick = NULL;
     // delete m_pigen_imu;
     m_pigen_imu = NULL;
+    delete m_find_target_control;
+    m_find_target_control = NULL;
 
     // Delete the all the speed controllers
     delete m_left_master_speed_controller;
@@ -333,27 +336,29 @@ void DriveBase::ResetJoystickState() {
 void DriveBase::DoCheezyDrive() {
 	// DoTuningDrive();
 	// return;
-
-    // Get the movement and rotation values from the joystick, including any speed
-    // limiting and response curve shaping.
     Sample sample;
-    double move = 0.0;
-    double rotate = 0.0;
-    GetMovementFromJoystick(move, rotate, sample);
-    CalculateDriveStraightAdjustment(move, rotate, sample);
 
-    // Get the robot drive to do arcade driving with our rotate and move values
-    ArcadeDrive(move, rotate, sample);
+    if (m_find_target_control->DoFindTargetJoystick(m_joystick)) {
+        // Get the movement and rotation values from the joystick, including any speed
+        // limiting and response curve shaping.
+        double move = 0.0;
+        double rotate = 0.0;
+        GetMovementFromJoystick(move, rotate, sample);
+        CalculateDriveStraightAdjustment(move, rotate, sample);
 
-    //--------------------------------------------------------------------------
-    // NOTE: Extra testing code is often added here. This allows test operations
-    //       to be triggered by the driver's joystick, which is often very helpful.
-    //       However having the driver trigger test code accidentally is potentially
-    //       dangerous and you should not have any code active here when submitted
-    //       to the 'master' branch.
+        // Get the robot drive to do arcade driving with our rotate and move values
+        ArcadeDrive(move, rotate, sample);
 
-    //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
-    DrivePathFollower::DoJoystickTestControl(m_joystick);
+        //--------------------------------------------------------------------------
+        // NOTE: Extra testing code is often added here. This allows test operations
+        //       to be triggered by the driver's joystick, which is often very helpful.
+        //       However having the driver trigger test code accidentally is potentially
+        //       dangerous and you should not have any code active here when submitted
+        //       to the 'master' branch.
+
+        //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
+        DrivePathFollower::DoJoystickTestControl(m_joystick);
+    }
     
     // Record the sample
     GetWheelDistancesM(sample.m_left_distance_m, sample.m_right_distance_m);
