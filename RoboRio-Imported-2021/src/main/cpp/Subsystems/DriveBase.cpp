@@ -161,7 +161,7 @@ void DriveBase::Periodic() {
 void DriveBase::Setup() {
     m_joystick = new frc::Joystick(0);
     m_haptic_controller = new HapticController(m_joystick);
-    m_find_target_control = new FindTargetControl();
+    m_find_target_control = new FindTargetControl(*this);
     m_pigen_imu = new PigeonIMU(RobotConfiguration::kPigeonImuId);
     m_pigen_imu->SetFusedHeading(0.0,kTalonTimeoutMs);
 
@@ -338,7 +338,7 @@ void DriveBase::DoCheezyDrive() {
 	// return;
     Sample sample;
 
-    if (m_find_target_control->DoFindTargetJoystick(m_joystick)) {
+    if (m_find_target_control->DoFindTargetJoystick(m_joystick, m_haptic_controller)) {
         // Get the movement and rotation values from the joystick, including any speed
         // limiting and response curve shaping.
         double move = 0.0;
@@ -801,8 +801,6 @@ void DriveBase::ArcadeDrive(double move_value, double rotate_value, Sample& samp
         m_left_master_speed_controller->Set(ControlMode::Velocity, left_motor_velocity_native);
         m_right_master_speed_controller->Set(ControlMode::Velocity, -right_motor_velocity_native);
     }
-
-
 }
 
 void DriveBase::CalculateDriveStraightAdjustment(double move, double& rotate, Sample& sample) {
