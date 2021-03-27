@@ -65,6 +65,14 @@ public:
     // Shutdown the drive base
     void Shutdown();
 
+    // Initialise for autonomous operation
+    void AutonomousInit();
+
+    // Initialise for teleop operation
+    void TeleopInit();
+
+    // Initialise for disabled operation
+    void DisabledInit();
 
     //==========================================================================
     // Operation
@@ -307,9 +315,7 @@ private:
 	void SetupSampleRecording();
 
 	// Write the recorded test samples to a file. Does nothing if 'm_record_samples' is false.
-    //
-    // filename - Path of the file to write ot
-	void WriteTestSampleToFile(const char* filename);
+	void WriteTestSampleToFile();
    
 
 
@@ -349,6 +355,8 @@ private:
     VisionFindCube* m_find_cube_command;
 
     frc::Relay* m_vision_light_relay;
+
+    bool m_record_samples;                          // Whether to record information during manual driving
     std::vector<Sample> m_sample_list;			    // List of data samples recorded during manual driving
 
     HapticController* m_haptic_controller;
