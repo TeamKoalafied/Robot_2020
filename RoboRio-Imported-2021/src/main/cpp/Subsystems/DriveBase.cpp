@@ -55,6 +55,8 @@ DriveBase::DriveBase() :
     m_position_last_right_encoder = 0;
 
     m_log_counter = 0;
+
+    m_record_samples = false;
 }
 
 DriveBase::~DriveBase() {
@@ -304,11 +306,17 @@ void DriveBase::ClearState() {
 	ResetPigeonHeading();
 }
 
+// Ignore the warning about the ctre::phoenix::sensors::PigeonIMU destructor not being
+// virtual because it is not relevent, as we are deleting the most derived class.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
+
 void DriveBase::Shutdown() {
     // Delete the joystick and pigeon, and clear the pointers
     delete m_joystick;
     m_joystick = NULL;
-    // delete m_pigen_imu;
+
+    delete m_pigen_imu;
     m_pigen_imu = NULL;
     delete m_find_target_control;
     m_find_target_control = NULL;
@@ -323,6 +331,20 @@ void DriveBase::Shutdown() {
     delete m_right_slave_speed_controller;
     m_right_slave_speed_controller = NULL;
 }
+#pragma GCC diagnostic pop
+
+void DriveBase::AutonomousInit() {
+
+}
+
+void DriveBase::TeleopInit() {
+
+}
+
+void DriveBase::DisabledInit() {
+    WriteTestSampleToFile();
+}
+
 
 //==============================================================================
 // Operation
@@ -360,18 +382,19 @@ void DriveBase::DoCheezyDrive() {
         DrivePathFollower::DoJoystickTestControl(m_joystick);
     }
     
-    // Record the sample
-    GetWheelDistancesM(sample.m_left_distance_m, sample.m_right_distance_m);
-    double robot_heading;
-    GetPositionM(sample.m_robot_position_x, sample.m_robot_position_y, robot_heading);
-    sample.m_gyro_heading_deg = GetPigeonHeading();
-    m_sample_list.push_back(sample);
-
-    // If the B button is pressed write the samples to a file
-    if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {
-        const char* const RESULT_FILENAME = "/home/lvuser/DriveBase.csv";
-        WriteTestSampleToFile(RESULT_FILENAME);
-        SetupSampleRecording();
+    // Record the sample if required
+    if (m_record_samples) {
+        GetWheelDistancesM(sample.m_left_distance_m, sample.m_right_distance_m);
+        double robot_heading;
+        GetPositionM(sample.m_robot_position_x, sample.m_robot_position_y, robot_heading);
+        sample.m_gyro_heading_deg = GetPigeonHeading();
+        m_sample_list.push_back(sample);
+    
+        // If the B button is pressed write the samples to a file
+        if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {
+                WriteTestSampleToFile();
+            SetupSampleRecording();
+        }
     }
 
 	// If the 'B' button is pressed reset the drive base dead reckoning position
@@ -1028,12 +1051,20 @@ void DriveBase::DoTuningDriveSide(int joystick_axis, TalonFX* speed_controller, 
 
 void DriveBase::SetupSampleRecording()
 {
-	// Clear the list of samples
+	// Clear the list of samples. It is ok (and good) to do this even if not recording
 	m_sample_list.clear();
 }
 
-void DriveBase::WriteTestSampleToFile(const char* filename)
+void DriveBase::WriteTestSampleToFile()
 {
+    // Do nothing if not recording samples, or if there are none
+    if (!m_record_samples || m_sample_list.empty()) return;
+
+    // Just use a default filename
+    const char* const RESULT_FILENAME = "/home/lvuser/ManualDriving.csv";
+    const char* filename = RESULT_FILENAME;
+
+    // Open the log file for appending data
 	std::ofstream results_file;
 	results_file.open(filename, std::ios::out | std::ios::app);
 	if (results_file.fail()) {
@@ -1043,7 +1074,13 @@ void DriveBase::WriteTestSampleToFile(const char* filename)
 
 	// Write the parameters used for the test
 	results_file << "\"Test\",\"DriveBase\"\n";
-	//results_file << "\"max velocity\",\"" << m_follower_parameters.m_max_velocity << "\"\n";
+	results_file << "\"kDriveMotorNominalOutput\",\"" << RC::kDriveMotorNominalOutput << "\"\n";
+	results_file << "\"kMovePower\",\"" << RC::kMovePower << "\"\n";
+	results_file << "\"kRotatePower\",\"" << RC::kRotatePower << "\"\n";
+	results_file << "\"kRotateJoystickScale\",\"" << RC::kRotateJoystickScale << "\"\n";
+	results_file << "\"kJoystickDeadzone\",\"" << RC::kJoystickDeadzone << "\"\n";
+    double straight_gain = frc::SmartDashboard::GetNumber("Straight Gain", 0.01);
+	results_file << "\"Straight Gain\",\"" << straight_gain << "\"\n";
 
     // Write the recorded sample data for the test. Each sample parameter is on a separate line
 	int total_samples = m_sample_list.size();
@@ -1051,24 +1088,26 @@ void DriveBase::WriteTestSampleToFile(const char* filename)
 
 	// Write the raw and filtered move/rotate inputs
 	results_file << "\"Move Input\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_move_input;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_move_input;
 	results_file << "\n";
 	results_file << "\"Rotate Input\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_rotate_input;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_rotate_input;
 	results_file << "\n";
 	results_file << "\"Move\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_move;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_move;
 	results_file << "\n";
 	results_file << "\"Rotate\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_rotate;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_rotate;
 	results_file << "\n";
 
     // Write the drive straight data
 	results_file << "\"Stable Heading\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_stable_heading;
+	results_file << std::fixed;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(2) << m_sample_list[i].m_stable_heading;
+	results_file << std::defaultfloat;
 	results_file << "\n";
 	results_file << "\"Driving Straight\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_driving_straight;
+	for (int i = 0; i < total_samples; i++) results_file << ","<< std::setprecision(3) << m_sample_list[i].m_driving_straight;
 	results_file << "\n";
 	results_file << "\"Rotate Straight\"";
 	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_rotate_straight;
@@ -1082,10 +1121,10 @@ void DriveBase::WriteTestSampleToFile(const char* filename)
 	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_right_output;
 	results_file << "\n";
 	results_file << "\"Left Distance\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_left_distance_m;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_left_distance_m;
 	results_file << "\n";
 	results_file << "\"Right Distance\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_right_distance_m;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_right_distance_m;
 	results_file << "\n";
 	results_file << "\"Gyro Heading\"";
 	results_file << std::fixed;
@@ -1093,13 +1132,12 @@ void DriveBase::WriteTestSampleToFile(const char* filename)
 	results_file << std::defaultfloat;
 	results_file << "\n";
 	results_file << "\"RobotX\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_robot_position_x;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_robot_position_x;
 	results_file << "\n";
 	results_file << "\"RobotY\"";
-	for (int i = 0; i < total_samples; i++) results_file << "," << m_sample_list[i].m_robot_position_y;
+	for (int i = 0; i < total_samples; i++) results_file << "," << std::setprecision(3) << m_sample_list[i].m_robot_position_y;
 	results_file << "\n";
 
 	// Write a completely blank line to mark the end of this test
 	results_file << "\n";
-
 }

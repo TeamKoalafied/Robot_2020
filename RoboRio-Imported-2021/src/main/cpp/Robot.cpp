@@ -106,6 +106,7 @@ private:
         printf("==========================================================================\n");
         printf("AutonomousInit()\n");
 
+        m_drive_base->AutonomousInit();
         m_periodic_timer.Init();
 
         // Create the autonomous command and start it
@@ -133,7 +134,7 @@ private:
 	void TeleopInit() override {
         printf("==========================================================================\n");
         printf("TeleopInit()\n");
-
+        m_drive_base->TeleopInit();
         m_periodic_timer.Init();
 	}
 
@@ -168,6 +169,7 @@ private:
 	void DisabledInit() override {
         printf("==========================================================================\n");
         printf("DisabledInit()\n");
+        m_drive_base->DisabledInit();
 	}
 
     void DisabledPeriodic() override {
