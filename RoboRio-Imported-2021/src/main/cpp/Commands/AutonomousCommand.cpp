@@ -133,7 +133,8 @@ frc::Command* AutonomousCommand::CreateAutonomousCommand()
     }
 
     // Create the path follower and drive command from the path
-    PathFollower* path_follower = CreatePathPointsFollower(robot_path);
+//    PathFollower* path_follower = CreatePathPointsFollower(robot_path);
+    PathFollower* path_follower = DrivePathFollower::CreatePurePursuitFollower(robot_path, max_velocity, max_acceleration);
 	return new DrivePathFollower(path_follower);
 }
 

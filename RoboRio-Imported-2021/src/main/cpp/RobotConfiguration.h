@@ -195,7 +195,7 @@ const double kDriveBaseTraceWidth = 0.64;
 // Exponential power to apply to the joystick movement and rotation values. These
 // mean that there is finer control over slow speed and fine turning.
 const double kMovePower = 2.0;
-const double kRotatePower = 1.0;
+const double kRotatePower = 1.5;
 
 // Scaling factor applied to rotation when driving with the joystick. This makes rotation
 // slower and more controllable.

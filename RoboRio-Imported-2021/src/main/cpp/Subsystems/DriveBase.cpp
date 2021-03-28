@@ -56,7 +56,7 @@ DriveBase::DriveBase() :
 
     m_log_counter = 0;
 
-    m_record_samples = false;
+    //m_record_samples = true;
 }
 
 DriveBase::~DriveBase() {
@@ -338,11 +338,11 @@ void DriveBase::AutonomousInit() {
 }
 
 void DriveBase::TeleopInit() {
-
 }
 
 void DriveBase::DisabledInit() {
     WriteTestSampleToFile();
+    SetupSampleRecording();
 }
 
 
@@ -392,7 +392,7 @@ void DriveBase::DoCheezyDrive() {
     
         // If the B button is pressed write the samples to a file
         if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {
-                WriteTestSampleToFile();
+            WriteTestSampleToFile();
             SetupSampleRecording();
         }
     }
@@ -817,6 +817,7 @@ void DriveBase::ArcadeDrive(double move_value, double rotate_value, Sample& samp
         // never stop. This should not be necessary if we had I gain in the PID, but currently we don't.
         m_left_master_speed_controller->Set(ControlMode::PercentOutput, 0.0);
 	    m_right_master_speed_controller->Set(ControlMode::PercentOutput, 0.0);
+		//SetBrakeMode(true);
     } else {
         // Set the velocity of the left and right motors. Note that the right motor
         // velocity is negated as it faces in the opposite direction and so must rotate

@@ -44,7 +44,8 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
                     haptic_controller->DoContinuousFeedback(1.0, 1.0);
                 }
                 else {
-                    m_state != State::kRotatingToTarget;                    
+                    m_state = State::kRotatingToTarget;
+                    return false;                  
                 }
             }
         }
@@ -60,9 +61,11 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
     else {
         m_state = State::kIdle;
         if (m_target_valid && !old_target_valid) {
-            haptic_controller->DoContinuousFeedback(0.5, 1.0);
+            //haptic_controller->DoContinuousFeedback(0.5, 1.0);
         }
     }
+
+    return true;
 }
 
 void FindTargetControl::UpdateTargetHeading() {
@@ -132,7 +135,7 @@ bool FindTargetControl::RotateToTarget() {
         if (rotation < -maxRotation) rotation = -maxRotation;
 
         //std::cout << "Vision: offset " << offset << "rotation " << rotation << std::endl; //debug
-        m_drive_base.ArcadeDriveForVision(0.0, rotation);
+        m_drive_base.ArcadeDriveForVision(0.0, -rotation);
 
         return false;
     } else {

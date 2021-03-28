@@ -41,13 +41,13 @@ public:
 	// joystick - The joystick to query for user input
 	static void DoJoystickTestControl(frc::Joystick* joystick);
 
-private:
     //==========================================================================
 	// Static Joystick Testing Implementation Functions
 
 	static PathFollower* CreatePathfinderFollower(RobotPath* robot_path);
 	static PathFollower* CreatePathPointsFollower(RobotPath* robot_path);
 	static PathFollower* CreatePurePursuitFollower(RobotPath* robot_path, double max_velocity, double max_acceleration);
+private:
 
     // NOTE: These functions are broken, but left here until I ask what they are meant to be doing - Nick
 	// static void Rotate2Target(double max_velocity, double max_acceleration);

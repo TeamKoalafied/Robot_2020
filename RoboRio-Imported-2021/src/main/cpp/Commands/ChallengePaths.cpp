@@ -40,8 +40,10 @@ RobotPath* ChallengePaths::CreateTestPath(int pov_angle, double max_velocity, do
 			break;
 		}
 		case RC::kJoystickPovRight: {
-			std::cout << "Starting DrivePathFollower - ChallengePaths::CreateGalaticSearchPath\n";
-			robot_path = CreateGalaticSearchPath(max_velocity, max_acceleration);
+			// std::cout << "Starting DrivePathFollower - ChallengePaths::CreateGalaticSearchPath\n";
+			// robot_path = CreateGalaticSearchPath(max_velocity, max_acceleration);
+			std::cout << "Starting DrivePathFollower - ChallengePaths::CreateBouncePath\n";
+			robot_path = CreateBouncePath(max_velocity, max_acceleration);
 			break;
 		}
 
@@ -227,7 +229,7 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
 
     const double INCH = 0.0254;
     const double robot_length = 37 * INCH;
-    const double bump_distance = 10 * INCH;
+    const double bump_distance = 1 * INCH;
 
     // Forwards and turn to first bump
     PathSegment* path_segment1 = new PathSegment();
