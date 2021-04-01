@@ -97,13 +97,17 @@ void FindTargetControl::UpdateTargetHeading() {
     }
 
     // If at least half the headings are valid then regard the heading as valid
-    if (valid_heading_count > HEADING_HISTORY/2) {
+    if (valid_heading_count > HEADING_HISTORY/10) {
         m_target_valid = true;
         m_target_heading = total_target_heading / valid_heading_count;
     }
     else {
         m_target_valid = false;
     }
+
+    frc::SmartDashboard::PutNumber("FindTargetValidCount", valid_heading_count);
+    frc::SmartDashboard::PutNumber("FindTargetHeading", m_target_heading);
+    frc::SmartDashboard::PutNumber("FindTargetValid", m_target_valid);
 }
 
 bool FindTargetControl::RotateToTarget() {
@@ -135,7 +139,7 @@ bool FindTargetControl::RotateToTarget() {
         if (rotation < -maxRotation) rotation = -maxRotation;
 
         //std::cout << "Vision: offset " << offset << "rotation " << rotation << std::endl; //debug
-        m_drive_base.ArcadeDriveForVision(0.0, -rotation);
+        m_drive_base.ArcadeDriveForVision(0.0, rotation);
 
         return false;
     } else {

@@ -757,11 +757,11 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate, Sample& sa
     sample.m_rotate = rotate;
 
     // Display the joystick inputs and the move value we calculate from them
-    // frc::SmartDashboard::PutNumber("JoystickX", joystick_x);
-    // frc::SmartDashboard::PutNumber("LeftTrigger", left_trigger);
-    // frc::SmartDashboard::PutNumber("RightTrigger", right_trigger);
-    // frc::SmartDashboard::PutNumber("Rotate", rotate);
-    // frc::SmartDashboard::PutNumber("Move", move);
+    frc::SmartDashboard::PutNumber("JoystickX", joystick_x);
+    frc::SmartDashboard::PutNumber("LeftTrigger", left_trigger);
+    frc::SmartDashboard::PutNumber("RightTrigger", right_trigger);
+    frc::SmartDashboard::PutNumber("Rotate", rotate);
+    frc::SmartDashboard::PutNumber("Move", move);
 }
 
 

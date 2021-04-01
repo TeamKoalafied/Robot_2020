@@ -83,6 +83,8 @@ void Winch::Setup() {
         std::cout << "Configuration of the winch Talon failed with code:  " << error << "\n";
     }
 
+    m_winch_speed_controller->SetInverted(InvertType::InvertMotorOutput);
+
     // Perform non-configuration setup
     m_winch_speed_controller->SetSensorPhase(false); // Not reversed
     m_winch_speed_controller->EnableCurrentLimit(true);

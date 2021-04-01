@@ -35,7 +35,7 @@ private:
 
     bool RotateToTarget();
 
-    static const int HEADING_HISTORY = 10;     // Number heading recorded to get a stable result
+    static const int HEADING_HISTORY = 50;     // Number heading recorded to get a stable result
 
 
     DriveBase& m_drive_base;
