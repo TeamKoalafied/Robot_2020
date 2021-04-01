@@ -19,7 +19,6 @@ namespace TestPaths
 
 	RobotPath* CreateVisionPathFromDashBoard(double max_velocity, double max_acceleration);
 	RobotPath* CreateStraightPath(double max_velocity, double max_acceleration, double distance);
-	RobotPath* CreateCube1Path(double max_velocity, double max_acceleration);
-	RobotPath* CreateCube2Path(double max_velocity, double max_acceleration);
+	RobotPath* CreateTestCirclePath(double max_velocity, double max_acceleration);
 }
 

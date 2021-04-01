@@ -115,8 +115,8 @@ void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
 	// If the POV is pressed start one of the test paths
 	RobotPath* robot_path = NULL;
 	int pov_angle = joystick->GetPOV(0);
-	robot_path = ChallengePaths::CreateTestPath(pov_angle, max_velocity, max_acceleration);
-	//robot_path = TestPaths::CreateTestPath(pov_angle, max_velocity, max_acceleration);
+	//robot_path = ChallengePaths::CreateTestPath(pov_angle, max_velocity, max_acceleration);
+	robot_path = TestPaths::CreateTestPath(pov_angle, max_velocity, max_acceleration);
 
 	// If there is a path create a follower and a command to do it
 	if (robot_path != NULL) {
