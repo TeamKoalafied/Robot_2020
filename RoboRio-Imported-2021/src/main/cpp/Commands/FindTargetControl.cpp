@@ -17,6 +17,8 @@
 
 namespace RC = RobotConfiguration;
 
+//==============================================================================
+// Construction and Destruction
 
 FindTargetControl::FindTargetControl(DriveBase& drive_base) :
     m_drive_base(drive_base) {
@@ -27,29 +29,42 @@ FindTargetControl::FindTargetControl(DriveBase& drive_base) :
 }
 
 FindTargetControl::~FindTargetControl() {
-
 }
 
 
-bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticController* haptic_controller) {
+//==============================================================================
+// Operation
 
+bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticController* haptic_controller) {
+    // Update the information about the target heading
     bool old_target_valid = m_target_valid;
     UpdateTargetHeading();
 
+    // If the driver is pressing the Y button attempt to rotate to the target
     if (joystick->GetRawButton(RC::kJoystickYButton)) {
         if (m_target_valid) {
             if (m_state != State::kReachedTarget) {
+                // The target is valid and we have not reached it yet so perform the necessary
+                // rotation.
                 if (RotateToTarget()) {
-                    m_state = State::kReachedTarget;
+                    // The drivebase is now pointing at the target so do a long buzz of haptic
+                    // feedback to notify the driver.
                     haptic_controller->DoContinuousFeedback(1.0, 1.0);
+
+                    // Set the state to record that we reached the target. We won't rotate
+                    // anymore unless the driver releases the button and pushes it again.
+                    m_state = State::kReachedTarget;
                 }
                 else {
+                    // Record that we ar rotating to the target and return false so that
+                    // normal driver control is NOT performed
                     m_state = State::kRotatingToTarget;
                     return false;                  
                 }
             }
         }
         else {
+            // The target is not valid, so do a double buzz of haptic feedback to notify the driver.
             if (m_state != State::kSignalNoTarget) {
                 static double PATTERN[10] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
                 haptic_controller->DoFeedback(PATTERN, 10);
@@ -59,14 +74,24 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
         }
     }
     else {
+        // Driver is not is not pressing the button so reset to the idle state
         m_state = State::kIdle;
+
+        // If the target has just become valid do a short buzz of haptic feedback to indicate
+        // that we have a lock on the target.
         if (m_target_valid && !old_target_valid) {
             //haptic_controller->DoContinuousFeedback(0.5, 1.0);
         }
     }
 
+    // We are not rotating the drivebase to the target so return true so that
+    // normal driver control is performed
     return true;
 }
+
+
+//==============================================================================
+// Implementation
 
 void FindTargetControl::UpdateTargetHeading() {
 	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("pivision");
