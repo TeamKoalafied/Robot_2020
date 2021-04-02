@@ -53,31 +53,6 @@ const AutoModeMapping kAutoModes[] = {
 // Compute the number of entries so we can create the string array for populating the default dashboard
 const int kAutoModeCount = sizeof(kAutoModes) / sizeof(AutoModeMapping);
 
-PathFollower* CreatePathPointsFollower(RobotPath* robot_path) {
-	double p_gain = frc::SmartDashboard::GetNumber("AutoP", 1.0);
-	if (p_gain < 0.5) p_gain = 0.5;
-	if (p_gain > 3.0) p_gain = 3.0;
-	double i_gain = frc::SmartDashboard::GetNumber("AutoI", 0.0);
-	if (i_gain < 0.0) i_gain = 0.0;
-	if (i_gain > 3.0) i_gain = 3.0;
-	double d_gain = frc::SmartDashboard::GetNumber("AutoD", 0.0);
-	if (d_gain < 0.0) d_gain = 0.0;
-	if (d_gain > 3.0) d_gain = 3.0;
-
-
-	DriveBase& drive_base = DriveBase::GetInstance();
-	PathPointsFollower* path_follower = new PathPointsFollower(robot_path, &drive_base, new MechanismController2020, true);
-	path_follower->GetFollowerParameters().m_kp = p_gain;
-	path_follower->GetFollowerParameters().m_ki = i_gain;
-	path_follower->GetFollowerParameters().m_kd = d_gain;
-	path_follower->GetFollowerParameters().m_kv = 1.0/4.28;
-	path_follower->GetFollowerParameters().m_kv_offset = 0.104; // 0.05719;
-	path_follower->GetFollowerParameters().m_ka = 1.0/18.29;
-	path_follower->GetFollowerParameters().m_wheelbase_width_m = 0.64;
-	path_follower->GetFollowerParameters().m_period_s = 0.02;
-	return path_follower;
-}
-
 }
 
 
@@ -118,22 +93,21 @@ frc::Command* AutonomousCommand::CreateAutonomousCommand()
             robot_path = ChallengePaths::CreateBouncePath(max_velocity, max_acceleration);
             break;
         case Strategy::kGalacticSearchARed:
-            robot_path = ChallengePaths::CreateGalaticSearchPath(max_velocity, max_acceleration);
+            robot_path = ChallengePaths::CreateGalaticSearchPathARed(max_velocity, max_acceleration);
             break;
         case Strategy::kGalacticSearchABlue:
-            robot_path = ChallengePaths::CreateGalaticSearchPath(max_velocity, max_acceleration);
+            robot_path = ChallengePaths::CreateGalaticSearchPathABlue(max_velocity, max_acceleration);
             break;
         case Strategy::kGalacticSearchBRed:
-            robot_path = ChallengePaths::CreateGalaticSearchPath(max_velocity, max_acceleration);
+            robot_path = ChallengePaths::CreateGalaticSearchPathBRed(max_velocity, max_acceleration);
             break;
         case Strategy::kGalacticSearchBBlue:
-            robot_path = ChallengePaths::CreateGalaticSearchPath(max_velocity, max_acceleration);
+            robot_path = ChallengePaths::CreateGalaticSearchPathBBlue(max_velocity, max_acceleration);
             break;
 
     }
 
     // Create the path follower and drive command from the path
-//    PathFollower* path_follower = CreatePathPointsFollower(robot_path);
     PathFollower* path_follower = DrivePathFollower::CreatePurePursuitFollower(robot_path, max_velocity, max_acceleration);
 	return new DrivePathFollower(path_follower);
 }

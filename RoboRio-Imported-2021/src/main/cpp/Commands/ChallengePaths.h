@@ -27,7 +27,10 @@ public:
 	static RobotPath* CreateBouncePath(double max_velocity, double max_acceleration);
     static RobotPath* CreateBouncePathReversing(double max_velocity, double max_acceleration);
 	static RobotPath* CreateTestPath(double max_velocity, double max_acceleration);
-	static RobotPath* CreateGalaticSearchPath(double max_velocity, double max_acceleration);
+	static RobotPath* CreateGalaticSearchPathARed(double max_velocity, double max_acceleration);
+	static RobotPath* CreateGalaticSearchPathABlue(double max_velocity, double max_acceleration);
+	static RobotPath* CreateGalaticSearchPathBRed(double max_velocity, double max_acceleration);
+	static RobotPath* CreateGalaticSearchPathBBlue(double max_velocity, double max_acceleration);
 
    	//==========================================================================
 	// Path Building
