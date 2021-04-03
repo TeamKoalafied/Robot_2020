@@ -239,7 +239,7 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
     robot_path->m_path_segments.push_back(path_segment1);
     AddStraight(path_segment1, robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
     AddTurnLeft(path_segment1, 30*INCH);
-    AddStraight(path_segment1, 30*INCH + bump_distance);
+    AddStraight(path_segment1, 30*INCH - robot_length/2 + bump_distance);
 
     // Reverse to second bump
     PathSegment* path_segment2 = new PathSegment();
@@ -249,13 +249,13 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
     robot_path->m_path_segments.push_back(path_segment2);
     Point2D start;
     Point2D direction;
-       GetCurrent(path_segment1, start, direction);
+    GetCurrent(path_segment1, start, direction);
     direction = -direction;
-    AddStraight(path_segment2, 30*INCH + bump_distance, start, direction);
+    AddStraight(path_segment2, 30*INCH - robot_length/2 + bump_distance, start, direction);
     AddSlalomLeft(path_segment2, 60*INCH, 30*INCH, 0.5);
     AddTurnLeft(path_segment2, 30*INCH);
     AddTurnLeft(path_segment2, 30*INCH);
-    AddStraight(path_segment2, 60*INCH + 30*INCH + bump_distance);
+    AddStraight(path_segment2, 60*INCH + 30*INCH - robot_length/2 + bump_distance);
 
     // Forwards to third bump
     PathSegment* path_segment3 = new PathSegment();
@@ -263,13 +263,13 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
     path_segment3->m_motion_profile.Setup(max_velocity, max_acceleration);
     path_segment3->m_reverse = false;
     robot_path->m_path_segments.push_back(path_segment3);
-       GetCurrent(path_segment2, start, direction);
+    GetCurrent(path_segment2, start, direction);
     direction = -direction;
-    AddStraight(path_segment3, 60*INCH + 30*INCH + bump_distance, start, direction);
+    AddStraight(path_segment3, 60*INCH + 30*INCH - robot_length/2 + bump_distance, start, direction);
     AddTurnLeft(path_segment3, 30*INCH);
     AddStraight(path_segment3, 30*INCH);
     AddTurnLeft(path_segment3, 30*INCH);
-    AddStraight(path_segment3, 60*INCH + 30*INCH + bump_distance);
+    AddStraight(path_segment3, 60*INCH + 30*INCH - robot_length/2 + bump_distance);
 
     // Reverse to finish
     PathSegment* path_segment4 = new PathSegment();
@@ -277,9 +277,9 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
     path_segment4->m_motion_profile.Setup(max_velocity, max_acceleration);
     path_segment4->m_reverse = true;
     robot_path->m_path_segments.push_back(path_segment4);
-       GetCurrent(path_segment3, start, direction);
+    GetCurrent(path_segment3, start, direction);
     direction = -direction;
-    AddStraight(path_segment4, 30*INCH + bump_distance, start, direction);
+    AddStraight(path_segment4, 30*INCH - robot_length/2 + bump_distance, start, direction);
     AddTurnLeft(path_segment4, 30*INCH);
     AddStraight(path_segment4, robot_length);
 
