@@ -204,6 +204,11 @@ const double kRotateJoystickScale = 0.4;
 // Scaling factor applied to rotate and move when driving with the climbing arm raised
 const double kClimbingArmRaisedMovementScale = 0.5;
 
+// Minimum move value to ever user for manual control
+const double kMoveMinimum = 0.04;
+
+// Minimum absolute rotate value to ever user for manual control
+const double kRotateMinimum = 0.03;
 
 //==============================================================================
 //  MANIPULATOR CONFIGURATION

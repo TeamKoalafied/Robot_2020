@@ -150,10 +150,10 @@ RobotPath* TestPaths::CreateTestCirclePath(double max_velocity, double max_accel
     double radius = frc::SmartDashboard::GetNumber("TestPathsRadiusM", 1.0);
     frc::SmartDashboard::PutNumber("TestPathsRadiusM", radius); 
 
-    // Forwards 1m
+    // Forwards 2m
     // Circle right with give radius
     // Forwards 1m
-	ChallengePaths::AddStraight(path_segment, 1.0, Point2D(0, 0), Point2D(1.0, 0.0));
+	ChallengePaths::AddStraight(path_segment, 2.0, Point2D(0, 0), Point2D(1.0, 0.0));
 	ChallengePaths::AddTurnRight(path_segment, radius);
 	ChallengePaths::AddTurnRight(path_segment, radius);
 	ChallengePaths::AddTurnRight(path_segment, radius);

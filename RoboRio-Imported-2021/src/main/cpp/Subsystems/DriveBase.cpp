@@ -56,7 +56,7 @@ DriveBase::DriveBase() :
 
     m_log_counter = 0;
 
-    //m_record_samples = true;
+    m_record_samples = false;
 }
 
 DriveBase::~DriveBase() {
@@ -717,14 +717,14 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate, Sample& sa
         //       a problem (stalling). That was incorrect so it should be tried again to see if
         //       it helps
 
-        // // Adjust so that the rotation starts smoothly at the edge of the deadzone, rather
-        // // than starting with a step change.
-        // if (rotate < 0) {
-        //     rotate += RobotConfiguration::kJoystickDeadzone;
-        // }
-        // else {
-        //     rotate -= RobotConfiguration::kJoystickDeadzone;
-        // }
+        // Adjust so that the rotation starts smoothly at the edge of the deadzone, rather
+        // than starting with a step change.
+        if (rotate < 0) {
+            rotate += RobotConfiguration::kJoystickDeadzone;
+        }
+        else {
+            rotate -= RobotConfiguration::kJoystickDeadzone;
+        }
     }
 
     // Forward movement is controlled by the right trigger and backwards
@@ -753,10 +753,15 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate, Sample& sa
     if (!m_joystick->GetRawButton(RobotConfiguration::kJoystickYButton)) {
     	rotate *= RobotConfiguration::kRotateJoystickScale;
     }
-    sample.m_move = move;
-    sample.m_rotate = rotate;
+
+    
+
+    if (fabs(move) < RC::kMoveMinimum) move = 0.0;
+    if (fabs(rotate) < RC::kRotateMinimum) rotate = 0.0;
 
     // Display the joystick inputs and the move value we calculate from them
+    sample.m_move = move;
+    sample.m_rotate = rotate;
     frc::SmartDashboard::PutNumber("JoystickX", joystick_x);
     frc::SmartDashboard::PutNumber("LeftTrigger", left_trigger);
     frc::SmartDashboard::PutNumber("RightTrigger", right_trigger);
