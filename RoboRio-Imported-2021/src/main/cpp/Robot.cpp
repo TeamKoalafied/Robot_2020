@@ -83,7 +83,7 @@ private:
     	frc::SmartDashboard::PutNumber("AutoPointSpacing", PurePursuitFollower::kPathPointSpacingDefault);
 	    frc::SmartDashboard::PutNumber("AutoLookaheadCurveGain", PurePursuitFollower::kLookaheadCurvatureGainDefault);
         frc::SmartDashboard::PutNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
-
+		frc::SmartDashboard::PutNumber("dRPM", 4000.0);
 
         // Values for VisionFindTarget pure vision feedback (open loop motor control)                                                         
         frc::SmartDashboard::PutNumber("VisionKp", 0.003);         // Start small and double until overshoot                                          

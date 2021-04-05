@@ -218,7 +218,9 @@ RobotPath* ChallengePaths::CreateBarrelRacingPathRightAngles(double max_velocity
     // Left 1/2 turn around the third barrel and back to the finish zone
 	AddTurnLeft(path_segment, radius);
 	AddTurnLeft(path_segment, radius);
-	AddStraight(path_segment, (300 - 60)*INCH + robot_length);
+	//AddStraight(path_segment, (300 - 60)*INCH + robot_length);
+    const double SLALOM_FACTOR = 0.7;
+	AddSlalomRight(path_segment, (300 - 60)*INCH + robot_length, 10*INCH, SLALOM_FACTOR);
 
 	return robot_path;
 }
