@@ -219,6 +219,9 @@ RobotPath* ChallengePaths::CreateBarrelRacingPathRightAngles(double max_velocity
 	AddTurnLeft(path_segment, radius);
 	AddTurnLeft(path_segment, radius);
 	//AddStraight(path_segment, (300 - 60)*INCH + robot_length);
+	// HACK: For some reason the robot was loosing its position and hitting the side markers
+	// when it returned to the finish position (it thought it was perfectly on the path).
+	// This slalom corrected for that.
     const double SLALOM_FACTOR = 0.7;
 	AddSlalomRight(path_segment, (300 - 60)*INCH + robot_length, 10*INCH, SLALOM_FACTOR);
 
