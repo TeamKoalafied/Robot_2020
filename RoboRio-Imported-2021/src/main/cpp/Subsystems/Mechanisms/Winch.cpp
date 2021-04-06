@@ -71,17 +71,19 @@ void Winch::Setup() {
     winch_configuration.reverseSoftLimitThreshold = 0;
     std::cout << "forwardSoftLimitThreshold = " << winch_configuration.forwardSoftLimitThreshold << "\n";
  
-    winch_configuration.forwardSoftLimitEnable = true;
-    winch_configuration.reverseSoftLimitEnable = true;
+//    winch_configuration.forwardSoftLimitEnable = true;
+//    winch_configuration.reverseSoftLimitEnable = true;
 
     // Limit switches
-    winch_configuration.clearPositionOnLimitF = true;
+ //   winch_configuration.clearPositionOnLimitF = true;
 
     // Do all configuration and log if it fails
     int error = m_winch_speed_controller->ConfigAllSettings(winch_configuration, RC::kTalonTimeoutMs);
     if (error != 0) {
         std::cout << "Configuration of the winch Talon failed with code:  " << error << "\n";
     }
+
+    m_winch_speed_controller->SetInverted(InvertType::InvertMotorOutput);
 
     // Perform non-configuration setup
     m_winch_speed_controller->SetSensorPhase(false); // Not reversed

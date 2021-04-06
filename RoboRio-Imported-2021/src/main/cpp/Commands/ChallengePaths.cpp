@@ -40,8 +40,10 @@ RobotPath* ChallengePaths::CreateTestPath(int pov_angle, double max_velocity, do
 			break;
 		}
 		case RC::kJoystickPovRight: {
-			std::cout << "Starting DrivePathFollower - ChallengePaths::CreateGalaticSearchPath\n";
-			robot_path = CreateGalaticSearchPath(max_velocity, max_acceleration);
+			// std::cout << "Starting DrivePathFollower - ChallengePaths::CreateGalaticSearchPath\n";
+			// robot_path = CreateGalaticSearchPath(max_velocity, max_acceleration);
+			std::cout << "Starting DrivePathFollower - ChallengePaths::CreateBouncePath\n";
+			robot_path = CreateBouncePath(max_velocity, max_acceleration);
 			break;
 		}
 
@@ -216,7 +218,12 @@ RobotPath* ChallengePaths::CreateBarrelRacingPathRightAngles(double max_velocity
     // Left 1/2 turn around the third barrel and back to the finish zone
 	AddTurnLeft(path_segment, radius);
 	AddTurnLeft(path_segment, radius);
-	AddStraight(path_segment, (300 - 60)*INCH + robot_length);
+	//AddStraight(path_segment, (300 - 60)*INCH + robot_length);
+	// HACK: For some reason the robot was loosing its position and hitting the side markers
+	// when it returned to the finish position (it thought it was perfectly on the path).
+	// This slalom corrected for that.
+    const double SLALOM_FACTOR = 0.7;
+	AddSlalomRight(path_segment, (300 - 60)*INCH + robot_length, 10*INCH, SLALOM_FACTOR);
 
 	return robot_path;
 }
@@ -227,7 +234,7 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
 
     const double INCH = 0.0254;
     const double robot_length = 37 * INCH;
-    const double bump_distance = 10 * INCH;
+    const double bump_distance = 1 * INCH;
 
     // Forwards and turn to first bump
     PathSegment* path_segment1 = new PathSegment();
@@ -237,7 +244,7 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
     robot_path->m_path_segments.push_back(path_segment1);
     AddStraight(path_segment1, robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
     AddTurnLeft(path_segment1, 30*INCH);
-    AddStraight(path_segment1, 30*INCH + bump_distance);
+    AddStraight(path_segment1, 30*INCH - robot_length/2 + bump_distance);
 
     // Reverse to second bump
     PathSegment* path_segment2 = new PathSegment();
@@ -247,13 +254,13 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
     robot_path->m_path_segments.push_back(path_segment2);
     Point2D start;
     Point2D direction;
-       GetCurrent(path_segment1, start, direction);
+    GetCurrent(path_segment1, start, direction);
     direction = -direction;
-    AddStraight(path_segment2, 30*INCH + bump_distance, start, direction);
+    AddStraight(path_segment2, 30*INCH - robot_length/2 + bump_distance, start, direction);
     AddSlalomLeft(path_segment2, 60*INCH, 30*INCH, 0.5);
     AddTurnLeft(path_segment2, 30*INCH);
     AddTurnLeft(path_segment2, 30*INCH);
-    AddStraight(path_segment2, 60*INCH + 30*INCH + bump_distance);
+    AddStraight(path_segment2, 60*INCH + 30*INCH - robot_length/2 + bump_distance);
 
     // Forwards to third bump
     PathSegment* path_segment3 = new PathSegment();
@@ -261,13 +268,13 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
     path_segment3->m_motion_profile.Setup(max_velocity, max_acceleration);
     path_segment3->m_reverse = false;
     robot_path->m_path_segments.push_back(path_segment3);
-       GetCurrent(path_segment2, start, direction);
+    GetCurrent(path_segment2, start, direction);
     direction = -direction;
-    AddStraight(path_segment3, 60*INCH + 30*INCH + bump_distance, start, direction);
+    AddStraight(path_segment3, 60*INCH + 30*INCH - robot_length/2 + bump_distance, start, direction);
     AddTurnLeft(path_segment3, 30*INCH);
     AddStraight(path_segment3, 30*INCH);
     AddTurnLeft(path_segment3, 30*INCH);
-    AddStraight(path_segment3, 60*INCH + 30*INCH + bump_distance);
+    AddStraight(path_segment3, 60*INCH + 30*INCH - robot_length/2 + bump_distance);
 
     // Reverse to finish
     PathSegment* path_segment4 = new PathSegment();
@@ -275,9 +282,9 @@ RobotPath* ChallengePaths::CreateBouncePath(double max_velocity, double max_acce
     path_segment4->m_motion_profile.Setup(max_velocity, max_acceleration);
     path_segment4->m_reverse = true;
     robot_path->m_path_segments.push_back(path_segment4);
-       GetCurrent(path_segment3, start, direction);
+    GetCurrent(path_segment3, start, direction);
     direction = -direction;
-    AddStraight(path_segment4, 30*INCH + bump_distance, start, direction);
+    AddStraight(path_segment4, 30*INCH - robot_length/2 + bump_distance, start, direction);
     AddTurnLeft(path_segment4, 30*INCH);
     AddStraight(path_segment4, robot_length);
 
@@ -385,7 +392,7 @@ RobotPath* ChallengePaths::CreateTestPath(double max_velocity, double max_accele
 }
 
 
-RobotPath* ChallengePaths::CreateGalaticSearchPath(double max_velocity, double max_acceleration)
+RobotPath* ChallengePaths::CreateGalaticSearchPathARed(double max_velocity, double max_acceleration)
 {
 	static MechanismAction START_INTAKE[] = {
 			{ "StartIntaking",     MechanismAction::TimeSpecification::Start, 0.5, 0 }
@@ -393,28 +400,124 @@ RobotPath* ChallengePaths::CreateGalaticSearchPath(double max_velocity, double m
 
 	RobotPath* robot_path = new RobotPath();
 
-	robot_path->m_name = "GalaticSearch1";
+	robot_path->m_name = "GalaticSearchARed";
 	PathSegment* path_segment = new PathSegment();
-	path_segment->m_name = "GalaticSearch1";
+	path_segment->m_name = "GalaticSearchARed";
 	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
 	path_segment->m_reverse = false;
 	robot_path->m_path_segments.push_back(path_segment);
 
 	path_segment->m_mechanism_actions.assign(START_INTAKE, START_INTAKE +  sizeof(START_INTAKE)/sizeof(START_INTAKE[0]));
 
-
 	const double INCH = 0.0254;
 	const double radius = 30 * INCH;
 	const double robot_length = 37 * INCH;
-
+    const double SLALOM_FACTOR = 0.7;
 
 	AddStraight(path_segment, (90 - 30)*INCH + robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
-	AddSlalomRight(path_segment, (150 - 90)*INCH, 30 * INCH, 0.5);
+	AddSlalomRight(path_segment, (150 - 90)*INCH, 30 * INCH, SLALOM_FACTOR);
 	AddTurnLeft(path_segment, radius);
 	AddStraight(path_segment, 60 * INCH);
 	AddTurnRight(path_segment, radius);
 	AddStraight(path_segment, (360 - 180) * INCH - radius);
 
+	return robot_path;
+}
+
+RobotPath* ChallengePaths::CreateGalaticSearchPathABlue(double max_velocity, double max_acceleration)
+{
+	static MechanismAction START_INTAKE[] = {
+			{ "StartIntaking",     MechanismAction::TimeSpecification::Start, 0.5, 0 }
+	};
+
+	RobotPath* robot_path = new RobotPath();
+
+	robot_path->m_name = "GalaticSearchARed";
+	PathSegment* path_segment = new PathSegment();
+	path_segment->m_name = "GalaticSearchARed";
+	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment);
+
+	path_segment->m_mechanism_actions.assign(START_INTAKE, START_INTAKE +  sizeof(START_INTAKE)/sizeof(START_INTAKE[0]));
+
+	const double INCH = 0.0254;
+	const double radius = 30 * INCH;
+	const double robot_length = 37 * INCH;
+    const double SLALOM_FACTOR = 0.7;
+
+	AddStraight(path_segment, robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddSlalomRight(path_segment, 150*INCH, 60 * INCH, SLALOM_FACTOR);
+	AddTurnLeft(path_segment, 30 * INCH);
+	AddStraight(path_segment, 60 * INCH);
+	AddTurnRight(path_segment, 30 * INCH);
+	AddTurnRight(path_segment, 30 * INCH);
+	AddStraight(path_segment, 30 * INCH);
+	AddTurnLeft(path_segment, 30 * INCH);
+	AddStraight(path_segment, 30 * INCH + robot_length);
+
+	return robot_path;
+}
+
+RobotPath* ChallengePaths::CreateGalaticSearchPathBRed(double max_velocity, double max_acceleration)
+{
+	static MechanismAction START_INTAKE[] = {
+			{ "StartIntaking",     MechanismAction::TimeSpecification::Start, 0.5, 0 }
+	};
+
+	RobotPath* robot_path = new RobotPath();
+
+	robot_path->m_name = "GalaticSearchARed";
+	PathSegment* path_segment = new PathSegment();
+	path_segment->m_name = "GalaticSearchARed";
+	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment);
+
+	path_segment->m_mechanism_actions.assign(START_INTAKE, START_INTAKE +  sizeof(START_INTAKE)/sizeof(START_INTAKE[0]));
+
+	const double INCH = 0.0254;
+	const double robot_length = 37 * INCH;
+    const double SLALOM_FACTOR = 0.7;
+
+	AddStraight(path_segment, robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddSlalomLeft(path_segment, 60*INCH, 30 * INCH, SLALOM_FACTOR);
+	AddTurnRight(path_segment, 60*INCH);
+	AddTurnLeft(path_segment, 30 * INCH);
+	AddTurnLeft(path_segment, 30 * INCH);
+	AddStraight(path_segment, 60 * INCH);
+	AddTurnRight(path_segment, 30 * INCH);
+	AddStraight(path_segment, 90 * INCH + robot_length);
+	return robot_path;
+}
+
+
+RobotPath* ChallengePaths::CreateGalaticSearchPathBBlue(double max_velocity, double max_acceleration)
+{
+	static MechanismAction START_INTAKE[] = {
+			{ "StartIntaking",     MechanismAction::TimeSpecification::Start, 0.5, 0 }
+	};
+
+	RobotPath* robot_path = new RobotPath();
+
+	robot_path->m_name = "GalaticSearchARed";
+	PathSegment* path_segment = new PathSegment();
+	path_segment->m_name = "GalaticSearchARed";
+	path_segment->m_motion_profile.Setup(max_velocity, max_acceleration);
+	path_segment->m_reverse = false;
+	robot_path->m_path_segments.push_back(path_segment);
+
+	path_segment->m_mechanism_actions.assign(START_INTAKE, START_INTAKE +  sizeof(START_INTAKE)/sizeof(START_INTAKE[0]));
+
+	const double INCH = 0.0254;
+	const double robot_length = 37 * INCH;
+    const double SLALOM_FACTOR = 0.7;
+
+	AddStraight(path_segment, robot_length/2, Point2D(0, 0), Point2D(1.0, 0.0));
+	AddSlalomRight(path_segment, 150*INCH, 30 * INCH, SLALOM_FACTOR);
+	AddSlalomLeft(path_segment, 60*INCH, 60 * INCH, SLALOM_FACTOR);
+	AddSlalomRight(path_segment, 60*INCH, 30 * INCH, SLALOM_FACTOR);
+	AddStraight(path_segment, 30 * INCH + robot_length);
 	return robot_path;
 }
 

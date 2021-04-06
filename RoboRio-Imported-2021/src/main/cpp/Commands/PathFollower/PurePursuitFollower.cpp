@@ -41,7 +41,7 @@ PurePursuitFollower::PurePursuitFollower(RobotPath* robot_path, IPathDriveBase* 
     m_follower_parameters.m_lookahead_factor = 1.5;
     m_follower_parameters.m_lookahead_curvature_gain = 1.0;
     m_follower_parameters.m_path_curvature_gain = 1.0;
-    m_follower_parameters.m_lookalong_time = 0.1;
+    m_follower_parameters.m_lookalong_time = 0.0;
 }
 
 PurePursuitFollower::~PurePursuitFollower() {
@@ -559,9 +559,20 @@ Point2D PurePursuitFollower::GetClosestPoint(Point2D robot_position, double& pat
         }
     }
 
-    //
+    // If we are closest to a point on the 'extension' segment then we are passed the 
+    // end of the path and so we are done
     if (closest_index == (int)m_path_points.size() - 2) {
         m_segment_finished = true;
+    }
+
+    // If we are on the last segment that is part of the actual path test for being
+    // very close to the end because sometimes we stop alittle bit short
+    if (closest_index == (int)m_path_points.size() - 3) {
+        const Point2D& end_point = m_path_points[closest_index + 1].m_position;
+        const double STOP_TOLERANCE_M = 0.05; // 5cm tolerance for reaching the end point
+        if ((closest_point - end_point).Length() < STOP_TOLERANCE_M) {
+            m_segment_finished = true;
+        }
     }
 
     // Return the closest point

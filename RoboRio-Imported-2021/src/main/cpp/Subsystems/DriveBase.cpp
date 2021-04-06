@@ -163,6 +163,7 @@ void DriveBase::Periodic() {
 void DriveBase::Setup() {
     m_joystick = new frc::Joystick(0);
     m_haptic_controller = new HapticController(m_joystick);
+    m_find_target_control = new FindTargetControl(*this);
     m_pigen_imu = new PigeonIMU(RobotConfiguration::kPigeonImuId);
     m_pigen_imu->SetFusedHeading(0.0,kTalonTimeoutMs);
 
@@ -317,6 +318,8 @@ void DriveBase::Shutdown() {
 
     delete m_pigen_imu;
     m_pigen_imu = NULL;
+    delete m_find_target_control;
+    m_find_target_control = NULL;
 
     // Delete the all the speed controllers
     delete m_left_master_speed_controller;
@@ -335,11 +338,11 @@ void DriveBase::AutonomousInit() {
 }
 
 void DriveBase::TeleopInit() {
-
 }
 
 void DriveBase::DisabledInit() {
     WriteTestSampleToFile();
+    SetupSampleRecording();
 }
 
 
@@ -355,31 +358,30 @@ void DriveBase::ResetJoystickState() {
 void DriveBase::DoCheezyDrive() {
 	// DoTuningDrive();
 	// return;
-
-    // Get the movement and rotation values from the joystick, including any speed
-    // limiting and response curve shaping.
     Sample sample;
-    double move = 0.0;
-    double rotate = 0.0;
-    GetMovementFromJoystick(move, rotate, sample);
-    CalculateDriveStraightAdjustment(move, rotate, sample);
 
-    // Get the robot drive to do arcade driving with our rotate and move values
-    ArcadeDrive(move, rotate, sample);
+    if (m_find_target_control->DoFindTargetJoystick(m_joystick, m_haptic_controller)) {
+        // Get the movement and rotation values from the joystick, including any speed
+        // limiting and response curve shaping.
+        double move = 0.0;
+        double rotate = 0.0;
+        GetMovementFromJoystick(move, rotate, sample);
+        CalculateDriveStraightAdjustment(move, rotate, sample);
 
-    //--------------------------------------------------------------------------
-    // NOTE: Extra testing code is often added here. This allows test operations
-    //       to be triggered by the driver's joystick, which is often very helpful.
-    //       However having the driver trigger test code accidentally is potentially
-    //       dangerous and you should not have any code active here when submitted
-    //       to the 'master' branch.
+        // Get the robot drive to do arcade driving with our rotate and move values
+        ArcadeDrive(move, rotate, sample);
 
-    //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
-    DrivePathFollower::DoJoystickTestControl(m_joystick);
-    //TestCommunicationStress::DoJoystickControl(m_joystick, m_left_slave_speed_controller);
-    //Leds::DoJoystickTestControl(m_joystick);
+        //--------------------------------------------------------------------------
+        // NOTE: Extra testing code is often added here. This allows test operations
+        //       to be triggered by the driver's joystick, which is often very helpful.
+        //       However having the driver trigger test code accidentally is potentially
+        //       dangerous and you should not have any code active here when submitted
+        //       to the 'master' branch.
 
-
+        //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
+        DrivePathFollower::DoJoystickTestControl(m_joystick);
+    }
+    
     // Record the sample if required
     if (m_record_samples) {
         GetWheelDistancesM(sample.m_left_distance_m, sample.m_right_distance_m);
@@ -390,7 +392,7 @@ void DriveBase::DoCheezyDrive() {
     
         // If the B button is pressed write the samples to a file
         if (m_joystick->GetRawButtonPressed(RobotConfiguration::kJoystickBButton)) {
-                WriteTestSampleToFile();
+            WriteTestSampleToFile();
             SetupSampleRecording();
         }
     }
@@ -715,14 +717,14 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate, Sample& sa
         //       a problem (stalling). That was incorrect so it should be tried again to see if
         //       it helps
 
-        // // Adjust so that the rotation starts smoothly at the edge of the deadzone, rather
-        // // than starting with a step change.
-        // if (rotate < 0) {
-        //     rotate += RobotConfiguration::kJoystickDeadzone;
-        // }
-        // else {
-        //     rotate -= RobotConfiguration::kJoystickDeadzone;
-        // }
+        // Adjust so that the rotation starts smoothly at the edge of the deadzone, rather
+        // than starting with a step change.
+        if (rotate < 0) {
+            rotate += RobotConfiguration::kJoystickDeadzone;
+        }
+        else {
+            rotate -= RobotConfiguration::kJoystickDeadzone;
+        }
     }
 
     // Forward movement is controlled by the right trigger and backwards
@@ -751,15 +753,20 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate, Sample& sa
     if (!m_joystick->GetRawButton(RobotConfiguration::kJoystickYButton)) {
     	rotate *= RobotConfiguration::kRotateJoystickScale;
     }
-    sample.m_move = move;
-    sample.m_rotate = rotate;
+
+    
+
+    if (fabs(move) < RC::kMoveMinimum) move = 0.0;
+    if (fabs(rotate) < RC::kRotateMinimum) rotate = 0.0;
 
     // Display the joystick inputs and the move value we calculate from them
-    // frc::SmartDashboard::PutNumber("JoystickX", joystick_x);
-    // frc::SmartDashboard::PutNumber("LeftTrigger", left_trigger);
-    // frc::SmartDashboard::PutNumber("RightTrigger", right_trigger);
-    // frc::SmartDashboard::PutNumber("Rotate", rotate);
-    // frc::SmartDashboard::PutNumber("Move", move);
+    sample.m_move = move;
+    sample.m_rotate = rotate;
+    frc::SmartDashboard::PutNumber("JoystickX", joystick_x);
+    frc::SmartDashboard::PutNumber("LeftTrigger", left_trigger);
+    frc::SmartDashboard::PutNumber("RightTrigger", right_trigger);
+    frc::SmartDashboard::PutNumber("Rotate", rotate);
+    frc::SmartDashboard::PutNumber("Move", move);
 }
 
 
@@ -815,6 +822,7 @@ void DriveBase::ArcadeDrive(double move_value, double rotate_value, Sample& samp
         // never stop. This should not be necessary if we had I gain in the PID, but currently we don't.
         m_left_master_speed_controller->Set(ControlMode::PercentOutput, 0.0);
 	    m_right_master_speed_controller->Set(ControlMode::PercentOutput, 0.0);
+		//SetBrakeMode(true);
     } else {
         // Set the velocity of the left and right motors. Note that the right motor
         // velocity is negated as it faces in the opposite direction and so must rotate
@@ -822,8 +830,6 @@ void DriveBase::ArcadeDrive(double move_value, double rotate_value, Sample& samp
         m_left_master_speed_controller->Set(ControlMode::Velocity, left_motor_velocity_native);
         m_right_master_speed_controller->Set(ControlMode::Velocity, -right_motor_velocity_native);
     }
-
-
 }
 
 void DriveBase::CalculateDriveStraightAdjustment(double move, double& rotate, Sample& sample) {

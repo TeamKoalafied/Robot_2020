@@ -15,6 +15,7 @@
 // Include in header because it uses many nested namespaces which are difficult for forward declaration.
 #include <ctre/Phoenix.h>
 #include "../Commands/AutonomousCommand.h"
+#include "../Commands/FindTargetControl.h"
 #include "../Commands/VisionFindCube.h"
 #include "../Commands/VisionFindTarget.h"
 
@@ -360,6 +361,7 @@ private:
     std::vector<Sample> m_sample_list;			    // List of data samples recorded during manual driving
 
     HapticController* m_haptic_controller;
+    FindTargetControl* m_find_target_control;
 
     //==========================================================================
     // Contants

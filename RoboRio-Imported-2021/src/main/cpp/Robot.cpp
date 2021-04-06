@@ -83,12 +83,12 @@ private:
     	frc::SmartDashboard::PutNumber("AutoPointSpacing", PurePursuitFollower::kPathPointSpacingDefault);
 	    frc::SmartDashboard::PutNumber("AutoLookaheadCurveGain", PurePursuitFollower::kLookaheadCurvatureGainDefault);
         frc::SmartDashboard::PutNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
-
+		frc::SmartDashboard::PutNumber("dRPM", 4000.0);
 
         // Values for VisionFindTarget pure vision feedback (open loop motor control)                                                         
-        frc::SmartDashboard::PutNumber("VisionKp", 0.017);         // Start small and double until overshoot                                          
-        frc::SmartDashboard::PutNumber("VisionMinRotation", 0.33); // Experiments results 0.25 for wood, 0.33 carpet                                  
-        frc::SmartDashboard::PutNumber("VisionMaxRotation", 0.7);  // Use to limit max speed when error is large                                      
+        frc::SmartDashboard::PutNumber("VisionKp", 0.003);         // Start small and double until overshoot                                          
+        frc::SmartDashboard::PutNumber("VisionMinRotation", 0.0); // Experiments results 0.25 for wood, 0.33 carpet                                  
+        frc::SmartDashboard::PutNumber("VisionMaxRotation", 0.3);  // Use to limit max speed when error is large                                      
 
 
         printf("RobotInit() finished\n");

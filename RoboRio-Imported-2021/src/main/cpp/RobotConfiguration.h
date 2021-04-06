@@ -195,7 +195,7 @@ const double kDriveBaseTraceWidth = 0.64;
 // Exponential power to apply to the joystick movement and rotation values. These
 // mean that there is finer control over slow speed and fine turning.
 const double kMovePower = 2.0;
-const double kRotatePower = 1.0;
+const double kRotatePower = 1.5;
 
 // Scaling factor applied to rotation when driving with the joystick. This makes rotation
 // slower and more controllable.
@@ -204,6 +204,11 @@ const double kRotateJoystickScale = 0.4;
 // Scaling factor applied to rotate and move when driving with the climbing arm raised
 const double kClimbingArmRaisedMovementScale = 0.5;
 
+// Minimum move value to ever user for manual control
+const double kMoveMinimum = 0.04;
+
+// Minimum absolute rotate value to ever user for manual control
+const double kRotateMinimum = 0.03;
 
 //==============================================================================
 //  MANIPULATOR CONFIGURATION
