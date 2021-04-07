@@ -183,7 +183,7 @@ const double kRotatePower = 1.0;
 
 // Scaling factor applied to rotation when driving with the joystick. This makes rotation
 // slower and more controllable.
-const double kRotateJoystickScale = 0.8;
+const double kRotateJoystickScale = 0.5;
 
 
 //==============================================================================

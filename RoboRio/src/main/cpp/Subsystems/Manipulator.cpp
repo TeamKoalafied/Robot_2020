@@ -352,6 +352,8 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::BallInKicker:
             // If we are on target, up to speed and there is a ball in the kicker then kick it!
             if (m_shooter->ShooterAtSpeed(required_rpm)) {
+                std::cout << "Desired " << required_rpm << std::endl;
+                std::cout << "Actual " << m_shooter->getRPM() << std::endl;
                 m_kicker->SetShoot();
                 m_shooting_state = ShootingState::KickingBall;
                 LogEnterShootingState(ShootingState::KickingBall);

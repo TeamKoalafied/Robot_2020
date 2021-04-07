@@ -70,8 +70,6 @@ public:
     //
     // joystick - Joystick to use
     void TestDriveShooter(frc::Joystick* joystick);
-
-
 private:
 
     //==========================================================================

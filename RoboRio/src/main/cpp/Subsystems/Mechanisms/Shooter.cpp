@@ -46,6 +46,10 @@ void Shooter::Setup() {
     shooter_configuration.peakOutputReverse = -1.0f;
     shooter_configuration.peakOutputForward = +1.0f;
 
+    // ramp rate needs to be longerto prevent massive voltage drop
+    shooter_configuration.closedloopRamp = 1;
+    shooter_configuration.openloopRamp = 1;
+
     shooter_configuration.forwardSoftLimitEnable = false;
     shooter_configuration.reverseSoftLimitEnable = false;
 
