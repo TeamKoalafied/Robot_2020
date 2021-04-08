@@ -27,7 +27,7 @@ FindTargetControl::FindTargetControl(DriveBase& drive_base) :
     m_target_history_index = 0;
     for (int i = 0; i < HISTORY_LENGTH; i++) {
         m_target_headings[i] = kErrorHeading;
-        m_target_distances[i] = kErrorDistance;
+        m_target_distances_m[i] = kErrorDistance;
     }
 }
 
@@ -93,7 +93,7 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
 }
 
 bool FindTargetControl::GetTargetDistance(double& distance) const {
-    distance = m_target_distance;
+    distance = m_target_distance_m;
     return  m_target_valid;
 }
 
@@ -116,11 +116,11 @@ void FindTargetControl::UpdateTargetHeading() {
     }
 
     // Calculate the current distance of the target
-    double target_distance = target_found ? ty : kErrorDistance;
+    double target_distance_m = target_found ? ty : kErrorDistance;
 
     // Record the current heading and distance in the circular buffers
     m_target_headings[m_target_history_index] = target_heading;
-    m_target_distances[m_target_history_index] = target_distance;
+    m_target_distances_m[m_target_history_index] = target_distance_m;
     m_target_history_index++;
     if (m_target_history_index == HISTORY_LENGTH) m_target_history_index = 0;
 
@@ -130,7 +130,7 @@ void FindTargetControl::UpdateTargetHeading() {
     int valid_count = 0;
     for (int i = 0; i < HISTORY_LENGTH; i++) {
         double heading = m_target_headings[i];
-        double distance = m_target_distances[i];
+        double distance = m_target_distances_m[i];
         if (heading != kErrorHeading) {
             total_target_heading += heading;
             total_target_distance += distance;
@@ -142,7 +142,7 @@ void FindTargetControl::UpdateTargetHeading() {
     if (valid_count > HISTORY_LENGTH/10) {
         m_target_valid = true;
         m_target_heading = total_target_heading / valid_count;
-        m_target_distance = total_target_distance / valid_count;
+        m_target_distance_m = total_target_distance / valid_count;
     }
     else {
         m_target_valid = false;
@@ -150,7 +150,7 @@ void FindTargetControl::UpdateTargetHeading() {
 
     frc::SmartDashboard::PutNumber("FindTargetValidCount", valid_count);
     frc::SmartDashboard::PutNumber("FindTargetHeading", m_target_heading);
-    frc::SmartDashboard::PutNumber("FindTargetDistance", m_target_distance);
+    frc::SmartDashboard::PutNumber("FindTargetDistanceM", m_target_distance_m);
     frc::SmartDashboard::PutNumber("FindTargetValid", m_target_valid);
 }
 

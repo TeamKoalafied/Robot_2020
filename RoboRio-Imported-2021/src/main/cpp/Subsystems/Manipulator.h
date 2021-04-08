@@ -132,6 +132,7 @@ private:
     void EnterShootingState();
     void LeaveShootingState();
     void UpdateShootingState();
+    double GetShooterWheelTargetRpm();
 
     //==========================================================================
     // Climbing State

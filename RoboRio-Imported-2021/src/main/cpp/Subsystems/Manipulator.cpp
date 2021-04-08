@@ -315,10 +315,13 @@ void Manipulator::UpdateShootingState() {
     // If we need to turn to the target do that
 
     // Calculate the rpm required for the current distance to target
-    double target_shooter_wheel_rpm = (frc::SmartDashboard::GetNumber("Shooter RPM", 6000.0));
-    m_shooter->DriveShooterClosedLoop(target_shooter_wheel_rpm);
+    // TODO Just use the dashboard for now so we can experiment
+//    double target_shooter_wheel_rpm = GetShooterWheelTargetRpm();
+    double target_shooter_wheel_rpm = frc::SmartDashboard::GetNumber("Shooter RPM", 6000.0);
+    frc::SmartDashboard::PutNumber("Shooter Target RPM", target_shooter_wheel_rpm);
 
-
+ 
+    // Update depending on the state of the shooter
     switch (m_shooting_state) {
         case ShootingState::BallInKicker: {
             // If we are on target, up to speed and there is a ball in the kicker then kick it!
@@ -375,6 +378,54 @@ void Manipulator::UpdateShootingState() {
                 m_shoot_timer.Reset();
             }
             break;
+    }
+}
+
+double Manipulator::GetShooterWheelTargetRpm() {
+    // Table of shooter wheel speeds in rpm for different target distances in metres
+    double SPEED_TABLE[][2] = {
+        1.0, 6000.0,        // 1m 6000rpm
+        2.0, 6000.0,        // 2m 6000rpm
+        3.0, 6000.0,        // 3m 6000rpm
+        4.0, 6000.0,        // 4m 6000rpm
+        5.0, 6000.0,        // 5m 6000rpm
+    };
+    int SPEED_TABLE_SIZE = sizeof(SPEED_TABLE)/sizeof(SPEED_TABLE[0]);
+
+    // Get the distance to the target from the vision
+    double target_m;
+    if (m_find_target_control->GetTargetDistance(target_m)) {
+        // Look up the shooter speed for the target distance in the table
+        if (target_m < SPEED_TABLE[0][0]) {
+            // If the distance is less than the first entry in the table, then use the speed for the first entry
+            return SPEED_TABLE[0][1];
+        }
+        else if (target_m >= SPEED_TABLE[SPEED_TABLE_SIZE - 1][0]) {
+            // If the distance is greater than the last entry in the table, then use the speed for the last entry
+            return SPEED_TABLE[SPEED_TABLE_SIZE - 1][1];
+        }
+        else {
+            // Search the table for the index of the end of the table segment to use
+            int table_index = 1;
+            while (target_m < SPEED_TABLE[table_index][0]) {
+                table_index++;
+                if (table_index >= SPEED_TABLE_SIZE) return SPEED_TABLE[SPEED_TABLE_SIZE - 1][1];
+            }
+
+            // Get the distance and speed and the beginning and end of the table segment to use
+            double distance0_m = SPEED_TABLE[table_index - 1][0];
+            double distance1_m = SPEED_TABLE[table_index][0];
+            double speed0_rpm = SPEED_TABLE[table_index - 1][1];
+            double speed1_rpm = SPEED_TABLE[table_index][1];
+
+            // Calculate the shooter speed for our exact distance using linear interpolation
+            double fraction = (target_m - distance0_m)/(distance1_m - distance0_m); 
+            return speed0_rpm * (1.0 - fraction) + speed1_rpm * fraction;
+        }
+    }
+    else {
+        // Distance to the target is not valid. Just use the speed from the dashboard
+        return frc::SmartDashboard::GetNumber("Shooter RPM", 6000.0);
     }
 }
 

@@ -39,10 +39,10 @@ public:
 
     // Get the distance to the target
     //
-    // distance - Returns the distance to the target
+    // distance - Returns the distance to the target in metres
     //
     // Returns whether the distance is valid
-    bool GetTargetDistance(double& distance) const;
+    bool GetTargetDistance(double& distance_m) const;
 
 private:
     //==========================================================================
@@ -78,11 +78,11 @@ private:
     DriveBase& m_drive_base;                    // Drive base being controlled
     State m_state;                              // Current state of finding the target
     double m_target_headings[HISTORY_LENGTH];   // Circular buffer of target headings 
-    double m_target_distances[HISTORY_LENGTH];  // Circular buffer of target distances 
+    double m_target_distances_m[HISTORY_LENGTH];// Circular buffer of target distances in metres
     int m_target_history_index;                 // Index to insert the enxt entry into the buffer
     bool m_target_valid;                        // Whether the target distance is currently valid
     double m_target_heading;                    // Current heading of the target in drive base pigeon degrees, may not be valid
-    double m_target_distance;                   // Current distance to the target in , may not be valid
+    double m_target_distance_m;                 // Current distance to the target in metres, may not be valid
 
     static constexpr double kErrorHeading = 999.0;
     static constexpr double kErrorDistance = 0.0;

@@ -120,7 +120,7 @@ void Shooter::DriveShooterClosedLoop(double shooter_wheel_rpm) {
 
     // Convert the speed to native units and pass to the speed controller
     double motor_speed_native = KoalafiedUtilities::TalonFXVelocityRpmToNative(motor_rpm);
-    m_shooter_master_speed_controller->Set(ControlMode::Velocity, motor_speed_native);
+    m_shooter_master_speed_controller->Set(ControlMode::Velocity, -motor_speed_native);
 
     // Display the closed loop error
     double closed_loop_error_native = m_shooter_master_speed_controller->GetClosedLoopError(RC::kTalonPidIdx);
