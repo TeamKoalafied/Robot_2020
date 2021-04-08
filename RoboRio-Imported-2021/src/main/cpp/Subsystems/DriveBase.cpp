@@ -57,6 +57,9 @@ DriveBase::DriveBase() :
     m_log_counter = 0;
 
     m_record_samples = false;
+
+    m_haptic_controller = NULL;
+    m_find_target_control = NULL;
 }
 
 DriveBase::~DriveBase() {

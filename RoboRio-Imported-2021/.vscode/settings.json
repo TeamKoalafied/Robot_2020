@@ -18,6 +18,7 @@
   "files.associations": {
     "string_view": "cpp",
     "random": "cpp",
-    "new": "cpp"
-  }
+    "new": "cpp",
+    "iostream": "cpp"
+}
 }

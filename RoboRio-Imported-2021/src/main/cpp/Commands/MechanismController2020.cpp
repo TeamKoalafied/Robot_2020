@@ -19,7 +19,7 @@ void MechanismController2020::DoAction(const std::string& action) {
     else if (action == "RetractIntake") manipulator.RetractIntake();
 	else if (action == "RunIndexForward") manipulator.RunIndexForward();
 	else if (action == "RunIndexBack") manipulator.RunIndexBack();
-	else if (action == "Shoot") manipulator.Shoot();
+//	else if (action == "Shoot") manipulator.Shoot();
 	else if (action == "StartIntaking") manipulator.StartIntaking();
 	else if (action == "StopIntaking") manipulator.StopIntaking();
     else {

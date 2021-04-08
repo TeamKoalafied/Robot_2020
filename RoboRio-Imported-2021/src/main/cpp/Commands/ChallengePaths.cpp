@@ -442,7 +442,6 @@ RobotPath* ChallengePaths::CreateGalaticSearchPathABlue(double max_velocity, dou
 	path_segment->m_mechanism_actions.assign(START_INTAKE, START_INTAKE +  sizeof(START_INTAKE)/sizeof(START_INTAKE[0]));
 
 	const double INCH = 0.0254;
-	const double radius = 30 * INCH;
 	const double robot_length = 37 * INCH;
     const double SLALOM_FACTOR = 0.7;
 

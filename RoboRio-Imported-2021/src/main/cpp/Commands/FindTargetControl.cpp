@@ -24,8 +24,11 @@ FindTargetControl::FindTargetControl(DriveBase& drive_base) :
     m_drive_base(drive_base) {
 
     m_state = State::kIdle;
-    m_target_heading_index = 0;
-    for (int i = 0; i < HEADING_HISTORY; i++) m_target_headings[i] = kErrorHeading;
+    m_target_history_index = 0;
+    for (int i = 0; i < HISTORY_LENGTH; i++) {
+        m_target_headings[i] = kErrorHeading;
+        m_target_distances[i] = kErrorDistance;
+    }
 }
 
 FindTargetControl::~FindTargetControl() {
@@ -89,6 +92,11 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
     return true;
 }
 
+bool FindTargetControl::GetTargetDistance(double& distance) const {
+    distance = m_target_distance;
+    return  m_target_valid;
+}
+
 
 //==============================================================================
 // Implementation
@@ -96,42 +104,53 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
 void FindTargetControl::UpdateTargetHeading() {
 	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("pivision");
 	float tx = table->GetNumber("tx", 0.0);  // degrees (-27 to 27 for limelight1)
-	bool object_found = (0.0f != table->GetNumber("tv", 0.0));  // 0.0 unless the target is detected
+	float ty = table->GetNumber("ty", 0.0);  // 
+	bool target_found = (0.0f != table->GetNumber("tv", 0.0));  // 0.0 unless the target is detected
 
 	double heading = m_drive_base.GetPigeonHeading();  // positive tx is clockwise, so flip sign here
 
     // Calculate the current heading of the target
     double target_heading = kErrorHeading;
-    if (object_found && heading != DriveBase::kHeadingError) {
+    if (target_found && heading != DriveBase::kHeadingError) {
         target_heading = heading - tx;
     }
 
-    // Record the current heading in the circular heading buffer
-    m_target_headings[m_target_heading_index++] = target_heading;
-    if (m_target_heading_index == HEADING_HISTORY) m_target_heading_index = 0;
+    // Calculate the current distance of the target
+    double target_distance = target_found ? ty : kErrorDistance;
+
+    // Record the current heading and distance in the circular buffers
+    m_target_headings[m_target_history_index] = target_heading;
+    m_target_distances[m_target_history_index] = target_distance;
+    m_target_history_index++;
+    if (m_target_history_index == HISTORY_LENGTH) m_target_history_index = 0;
 
     // Get the sum and count of all the valid heading in the buffer
     double total_target_heading = 0.0;
-    int valid_heading_count = 0;
-    for (int i = 0; i < HEADING_HISTORY; i++) {
+    double total_target_distance = 0.0;
+    int valid_count = 0;
+    for (int i = 0; i < HISTORY_LENGTH; i++) {
         double heading = m_target_headings[i];
+        double distance = m_target_distances[i];
         if (heading != kErrorHeading) {
             total_target_heading += heading;
-            valid_heading_count++;
+            total_target_distance += distance;
+            valid_count++;
         }
     }
 
     // If at least half the headings are valid then regard the heading as valid
-    if (valid_heading_count > HEADING_HISTORY/10) {
+    if (valid_count > HISTORY_LENGTH/10) {
         m_target_valid = true;
-        m_target_heading = total_target_heading / valid_heading_count;
+        m_target_heading = total_target_heading / valid_count;
+        m_target_distance = total_target_distance / valid_count;
     }
     else {
         m_target_valid = false;
     }
 
-    frc::SmartDashboard::PutNumber("FindTargetValidCount", valid_heading_count);
+    frc::SmartDashboard::PutNumber("FindTargetValidCount", valid_count);
     frc::SmartDashboard::PutNumber("FindTargetHeading", m_target_heading);
+    frc::SmartDashboard::PutNumber("FindTargetDistance", m_target_distance);
     frc::SmartDashboard::PutNumber("FindTargetValid", m_target_valid);
 }
 

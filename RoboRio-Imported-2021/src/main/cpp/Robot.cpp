@@ -63,7 +63,7 @@ private:
 //    	m_vision_system = new VisionSystem();
 //    	m_vision_system->Setup();
 
-		m_manipulator->Setup();
+		m_manipulator->Setup(m_drive_base->GetFindTargetControl());
 
         // Set up controls on the dashboard for choosing autonomous parameters
     	AutonomousCommand::SetupDashboard();
@@ -83,7 +83,6 @@ private:
     	frc::SmartDashboard::PutNumber("AutoPointSpacing", PurePursuitFollower::kPathPointSpacingDefault);
 	    frc::SmartDashboard::PutNumber("AutoLookaheadCurveGain", PurePursuitFollower::kLookaheadCurvatureGainDefault);
         frc::SmartDashboard::PutNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
-		frc::SmartDashboard::PutNumber("dRPM", 4000.0);
 
         // Values for VisionFindTarget pure vision feedback (open loop motor control)                                                         
         frc::SmartDashboard::PutNumber("VisionKp", 0.003);         // Start small and double until overshoot                                          

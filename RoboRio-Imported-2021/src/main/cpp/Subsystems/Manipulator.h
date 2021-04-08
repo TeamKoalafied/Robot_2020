@@ -5,8 +5,10 @@
 #ifndef Manipulator_H
 #define Manipulator_H
 
-#include "../TSingleton.h"
 #include "JoystickSubsystem.h"
+#include "../HapticController.h"
+#include "../TSingleton.h"
+#include "../Commands/FindTargetControl.h"
 #include <ctre/Phoenix.h>
 #include <frc/Timer.h>
 
@@ -18,7 +20,14 @@ class Kicker;
 
 class DistanceSensor;
 
-// The Manipulator subsystem controls the ???.
+// The Manipulator subsystem controls all the operator parts of the robot. It consists of the
+// following mechanisms.
+//
+//  - Intake
+//  - Indexer
+//  - Kicker
+//  - Shooter
+//  - Winch
 class Manipulator : public TSingleton<Manipulator>, public JoystickSubsystem {
 public:
     //==========================================================================
@@ -47,10 +56,12 @@ public:
     //==========================================================================
     // Setup and Shutdown
 
-    // Setup the pneumatics for operation
-    void Setup();
+    // Setup the manipulator subsystem for operation
+    //
+    // find_target_control - Controller for targeting
+    void Setup(const FindTargetControl* find_target_control);
 
-    // Shutdown the pneumatics
+    // Shutdown the manipulator subsystem
     void Shutdown();
 
 
@@ -60,18 +71,15 @@ public:
     void RetractIntake();
     void RunIndexForward();
     void RunIndexBack();
-    void Shoot();
 
    //==========================================================================
    // Autonomous Control
 
-   void StartIntaking()
-   {
+   void StartIntaking() {
        ChangeState(State::Intaking);
    }
 
-   void StopIntaking()
-   {
+   void StopIntaking() {
        ChangeState(State::Idle);
    }
 
@@ -149,6 +157,10 @@ private:
     frc::Timer m_shoot_timer;       // Timer used to time events during shooting
     ShootingState m_shooting_state; // State in the shooting state machine
 
+    HapticController* m_haptic_controller;          // Haptic controller for operator joystick
+    const FindTargetControl* m_find_target_control; // Targeting controller
+
+
     static const double kIndexerDriveUpVelocity;      // Relative velocity for driving the balls up the indexer when shooting
     static const double kIndexerDriveBackVelocity;    // Relative velocity for driving the balls back down the indexer when shooting
     static const double kKickerShootTimeS;            // Time to wait for the kicker to push the ball into the shooter in seconds
@@ -156,6 +168,7 @@ private:
     static const double kDriveUpTimeMaxS;             // Maximum time to drive balls up the indexer when shooting in seconds
     static const double kDriveBackTimeS;              // Time to drive the balls back down the indexer when shooting in seconds
     static const double kShootBallDetectInches;       // Distance in inches that indicates a ball is detected in the shooter
+    static const double kShootErrorPercentage;        // Maximum prcentage shooter speed error for shooting
 
     static constexpr double kTestVelocityFactor = 0.5;      // Ratio to slow down movement by when testing
     
