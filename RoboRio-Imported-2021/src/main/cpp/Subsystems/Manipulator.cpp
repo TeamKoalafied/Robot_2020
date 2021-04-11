@@ -109,6 +109,7 @@ void Manipulator::Setup(const FindTargetControl* find_target_control) {
  
 
 	frc::SmartDashboard::PutNumber("Shooter RPM", 6000.0);
+    std::cout << "Jr;;perh" << std::endl;
 
     // Setup all the mechanisms
     m_shooter->Setup();
@@ -319,7 +320,7 @@ void Manipulator::UpdateShootingState() {
 //    double target_shooter_wheel_rpm = GetShooterWheelTargetRpm();
     double target_shooter_wheel_rpm = frc::SmartDashboard::GetNumber("Shooter RPM", 6000.0);
     frc::SmartDashboard::PutNumber("Shooter Target RPM", target_shooter_wheel_rpm);
-
+    m_shooter->DriveShooterClosedLoop(target_shooter_wheel_rpm);
  
     // Update depending on the state of the shooter
     switch (m_shooting_state) {
@@ -447,6 +448,7 @@ void Manipulator::UpdateClimbingState() {
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
     joystick_value *= 0.5;
     // temporarily change direction - Phil
+//    frc::SmartDashboard::PutNumber("Winch Joystick", joystick_value);
     m_winch->ManualDriveWinch(-joystick_value);
 }
 

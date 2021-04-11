@@ -83,7 +83,7 @@ void Winch::Setup() {
         std::cout << "Configuration of the winch Talon failed with code:  " << error << "\n";
     }
 
-    m_winch_speed_controller->SetInverted(InvertType::InvertMotorOutput);
+    //m_winch_speed_controller->SetInverted(InvertType::InvertMotorOutput);
 
     // Perform non-configuration setup
     m_winch_speed_controller->SetSensorPhase(false); // Not reversed
@@ -119,6 +119,8 @@ void Winch::Periodic()
 
     bool forward_limit = m_winch_speed_controller->GetSensorCollection().IsFwdLimitSwitchClosed();
     frc::SmartDashboard::PutBoolean("Winch FHardLimit", forward_limit);
+    bool reverse_limit = m_winch_speed_controller->GetSensorCollection().IsRevLimitSwitchClosed();
+    frc::SmartDashboard::PutBoolean("Winch RHardLimit", reverse_limit);
    
     frc::SmartDashboard::PutBoolean("Winch Brake", !m_brake_solenoid->Get());
 

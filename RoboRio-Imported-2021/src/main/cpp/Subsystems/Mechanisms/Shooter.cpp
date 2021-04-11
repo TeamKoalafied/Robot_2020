@@ -95,11 +95,7 @@ void Shooter::Periodic() {
     // Report some shooter parameters to the dashboard
     frc::SmartDashboard::PutNumber("Shooter Current", m_shooter_master_speed_controller->GetOutputCurrent());            
     frc::SmartDashboard::PutNumber("Shooter Output", m_shooter_master_speed_controller->GetMotorOutputPercent());              
-
-    double shooter_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
-    double shooter_speed_rpm =  KoalafiedUtilities::TalonFXVelocityNativeToRpm(shooter_speed_native) * RC::kShooterMotorGearRatio;
-
-    frc::SmartDashboard::PutNumber("Shooter Speed RPM", shooter_speed_rpm);
+    frc::SmartDashboard::PutNumber("Shooter Speed RPM", GetShooterRPM());
 }
 
 
@@ -107,7 +103,7 @@ void Shooter::Periodic() {
 // Operations
 
 void Shooter::DriveShooterOpenLoop(double percentage_speed) {
-    m_shooter_master_speed_controller->Set(ControlMode::PercentOutput, percentage_speed);
+    m_shooter_master_speed_controller->Set(ControlMode::PercentOutput, -percentage_speed);
 }
 
 void Shooter::DriveShooterClosedLoop(double shooter_wheel_rpm) {
@@ -129,7 +125,7 @@ void Shooter::DriveShooterClosedLoop(double shooter_wheel_rpm) {
 
 int Shooter::GetShooterRPM() {
     // Get the motor speed in native units and convert it to shooter wheel rpm
-    double motor_speed_native = m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
+    double motor_speed_native = -m_shooter_master_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
     double motor_speed_rpm = KoalafiedUtilities::TalonFXVelocityNativeToRpm(motor_speed_native);
     double shooter_wheel_rpm = motor_speed_rpm * RC::kShooterMotorGearRatio;
     return shooter_wheel_rpm;
