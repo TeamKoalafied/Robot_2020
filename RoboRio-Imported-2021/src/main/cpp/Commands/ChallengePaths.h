@@ -1,12 +1,33 @@
+//==============================================================================
 // ChallengePaths.h
+//==============================================================================
+
+#ifndef ChallengePaths_H
+#define ChallengePaths_H
+
 #include <frc/Joystick.h>
 class PathSegment;
 class Point2D;
 class RobotPath;
+namespace frc { class Command; }
 
+
+// Class for creating autonomous paths for the 2021 At Home Challenges
 class ChallengePaths
 {
 public:
+    //==========================================================================
+	// Dashboard Setup
+
+	// Set up controls on the dashboard for choosing autonomous parameters
+	static void SetupAutonomousDashboard();
+
+    // Create the autonomous command to run the currently selected option
+    //
+    // Returns the command. Ownership is taken by the caller.
+    static frc::Command* CreateAutonomousCommand();
+
+
     //==========================================================================
 	// Static Joystick Testing Control Functions
 
@@ -64,3 +85,5 @@ public:
 	// Get a direction vector rotated 90 degrees to the right
 	static Point2D TurnRight(const Point2D& direction);
 };
+
+#endif

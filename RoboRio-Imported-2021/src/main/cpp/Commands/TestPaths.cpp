@@ -35,10 +35,10 @@ RobotPath* TestPaths::CreateTestPath(int pov_angle, double max_velocity, double 
 			std::cout << "Starting TestPaths - CreateTestCirclePath\n";
 			return CreateTestCirclePath(max_velocity, max_acceleration);
 		}
-		case RC::kJoystickPovDown: {
-			std::cout << "Starting TestPaths - Cube2\n";
-			//return CreateCube2Path(max_velocity, max_acceleration);
-		}
+		// case RC::kJoystickPovDown: {
+		// 	std::cout << "Starting TestPaths - Cube2\n";
+		// 	//return CreateCube2Path(max_velocity, max_acceleration);
+		// }
 		case RC::kJoystickPovRight: {
 			std::cout << "Starting TestPaths - From Dashboard\n";
 			return CreateVisionPathFromDashBoard(max_velocity, max_acceleration);
@@ -145,7 +145,6 @@ RobotPath* TestPaths::CreateTestCirclePath(double max_velocity, double max_accel
 	path_segment->m_reverse = false;
 	robot_path->m_path_segments.push_back(path_segment);
 
-	const double INCH = 0.0254;
 
     double radius = frc::SmartDashboard::GetNumber("TestPathsRadiusM", 1.0);
     frc::SmartDashboard::PutNumber("TestPathsRadiusM", radius); 

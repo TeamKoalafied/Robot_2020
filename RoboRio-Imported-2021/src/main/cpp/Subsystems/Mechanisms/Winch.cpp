@@ -100,7 +100,6 @@ void Winch::Shutdown() {
 
 void Winch::Periodic()
 {
-
     frc::SmartDashboard::PutNumber("Winch Current", m_winch_speed_controller->GetOutputCurrent());        
     frc::SmartDashboard::PutNumber("Winch Output", m_winch_speed_controller->GetMotorOutputPercent());         
     double winch_speed_native = m_winch_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);

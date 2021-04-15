@@ -67,10 +67,10 @@ public:
 
     //==========================================================================
     // Mechanism Access
-    void ExtendIntake();
-    void RetractIntake();
-    void RunIndexForward();
-    void RunIndexBack();
+    // void ExtendIntake();
+    // void RetractIntake();
+    // void RunIndexForward();
+    // void RunIndexBack();
 
    //==========================================================================
    // Autonomous Control
@@ -82,6 +82,17 @@ public:
    void StopIntaking() {
        ChangeState(State::Idle);
    }
+
+   void StartShooter() {
+       m_ball_shoot_count = 0;
+       ChangeState(State::Shooting);
+   }
+
+   void StopShooter() {
+       ChangeState(State::Idle);
+   }
+
+   int BallShootCount() { return m_ball_shoot_count; }
 
 
 private:
@@ -157,6 +168,7 @@ private:
     // Shooting State
     frc::Timer m_shoot_timer;       // Timer used to time events during shooting
     ShootingState m_shooting_state; // State in the shooting state machine
+    int m_ball_shoot_count;         // Count of balls shot. Used for autonomous.
 
     HapticController* m_haptic_controller;          // Haptic controller for operator joystick
     const FindTargetControl* m_find_target_control; // Targeting controller

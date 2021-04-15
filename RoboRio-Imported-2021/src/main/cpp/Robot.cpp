@@ -66,7 +66,7 @@ private:
 		m_manipulator->Setup(m_drive_base->GetFindTargetControl());
 
         // Set up controls on the dashboard for choosing autonomous parameters
-    	AutonomousCommand::SetupDashboard();
+    	AutonomousCommand::SetupAutonomousDashboard();
 
 		// NICKTODO This code should be in DrivePathFollower with the test joystick stuff
 		frc::SmartDashboard::PutNumber("VisionTrackX", 3.0);
@@ -95,6 +95,7 @@ private:
     }
 
     void RobotPeriodic() {
+        AutonomousCommand::UpdateDashboard();    
     }
 
 

@@ -14,4 +14,7 @@ public:
     //
     // action - the action to implement
     virtual void DoAction(const std::string& action) = 0;
+
+    // Get whether all actions have been completed
+    virtual bool AreAllActionsDone() = 0;
 };

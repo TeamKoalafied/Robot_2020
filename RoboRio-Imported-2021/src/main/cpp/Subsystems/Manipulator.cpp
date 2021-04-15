@@ -136,21 +136,21 @@ void Manipulator::Shutdown() {
 
 //==========================================================================
 // Mechanism Access
-void Manipulator::ExtendIntake() {
-    m_intake->Extend();
-}
+// void Manipulator::ExtendIntake() {
+//     m_intake->Extend();
+// }
 
-void Manipulator::RetractIntake() {
-    m_intake->Retract();
-}
+// void Manipulator::RetractIntake() {
+//     m_intake->Retract();
+// }
 
-void Manipulator::RunIndexForward() {
-    m_indexer->VelocityDriveIndexer(0.09);
-}
+// void Manipulator::RunIndexForward() {
+//     m_indexer->VelocityDriveIndexer(0.09);
+// }
 
-void Manipulator::RunIndexBack() {
-    m_indexer->VelocityDriveIndexer(-0.065);
-}
+// void Manipulator::RunIndexBack() {
+//     m_indexer->VelocityDriveIndexer(-0.065);
+// }
 
 
 //==========================================================================
@@ -369,6 +369,8 @@ void Manipulator::UpdateShootingState() {
 
                 m_shooting_state = ShootingState::KickerReturn;
                 m_shoot_timer.Reset();
+                
+                m_ball_shoot_count++;
             }
             break;
         case ShootingState::KickerReturn:
