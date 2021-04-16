@@ -547,9 +547,11 @@ int main(int argc, char* argv[]) {
             midx = tx / count;
             midy = ty / count;
             printf("Mid = (%lf,%lf)\n", midx, midy);
+            // For raw data collection and calculations for measuring distance
+            // see KoalafiedShare google drive under software/2020/Data collection...
             degreetx = (midx-cx) * (38.0/160.0);
             double theta = ( 18 - ((cy - 120) + midy - 25) /4.2) * (pi/180.0);
-            distancety = 46.0 / (tan (theta) );
+            distancety = (83.25 - cameraheight) / (tan (theta) );
             printf("The degree from the goal is %lf\n",degreetx);
             printf("The distance when the degree is 0 is %lf\n\n",distancety);
             dashboard->PutNumber("tx", degreetx);
