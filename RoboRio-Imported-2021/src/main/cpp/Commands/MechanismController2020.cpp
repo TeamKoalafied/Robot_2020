@@ -21,7 +21,10 @@ void MechanismController2020::DoAction(const std::string& action) {
 
     Manipulator& manipulator = Manipulator::GetInstance();
 
-    if (action == "Shoot") manipulator.StartShooter();
+    if (action == "Shoot") {
+        manipulator.StartShooter();
+        m_shooting = true;
+    }
 	else if (action == "StartIntaking") manipulator.StartIntaking();
 	else if (action == "StopIntaking") manipulator.StopIntaking();
 	else if (action == "StopIntaking") manipulator.StopIntaking();
@@ -35,7 +38,9 @@ void MechanismController2020::DoAction(const std::string& action) {
 bool MechanismController2020::AreAllActionsDone() {
     if (m_shooting) {
         Manipulator& manipulator = Manipulator::GetInstance();
-        return manipulator.BallShootCount() >= 3;
+        bool shooting_complete = manipulator.BallShootCount() >= 3;
+        if (shooting_complete) m_shooting = false;
+        return shooting_complete;
     }
     return true;
 }

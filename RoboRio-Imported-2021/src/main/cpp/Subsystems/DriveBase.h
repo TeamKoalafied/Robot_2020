@@ -124,6 +124,8 @@ public:
     // brake - Whether to set to brake (true) or cruise (false)
     void SetBrakeMode(bool brake);
 
+    virtual bool DoPathAction(const std::string& action);
+
     // Get the controller for targetting
     const FindTargetControl* GetFindTargetControl() { return m_find_target_control; }
 

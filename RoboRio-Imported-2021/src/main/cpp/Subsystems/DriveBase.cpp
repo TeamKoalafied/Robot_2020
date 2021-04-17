@@ -382,7 +382,7 @@ void DriveBase::DoCheezyDrive() {
         //       to the 'master' branch.
 
         //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
-        DrivePathFollower::DoJoystickTestControl(m_joystick);
+        //DrivePathFollower::DoJoystickTestControl(m_joystick);
     }
     
     // Record the sample if required
@@ -507,6 +507,13 @@ void DriveBase::SetBrakeMode(bool brake) {
 	m_left_slave_speed_controller->SetNeutralMode(neutral_mode);
 	m_right_master_speed_controller->SetNeutralMode(neutral_mode);
 	m_right_slave_speed_controller->SetNeutralMode(neutral_mode);
+}
+
+bool DriveBase::DoPathAction(const std::string& action)  {
+    if (action == "RotateToTarget") {
+        return m_find_target_control->AutoRotateToTarget();
+    }
+    return true;
 }
 
 

@@ -92,6 +92,18 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
     return true;
 }
 
+bool FindTargetControl::AutoRotateToTarget() {
+    UpdateTargetHeading();
+    if (m_target_valid) {
+        if (RotateToTarget()) {
+            // The drivebase is now pointing at the target so do a long buzz of haptic
+            // feedback to notify the driver.
+            return true;
+        }
+    }
+    return false;
+}
+
 bool FindTargetControl::GetTargetDistance(double& distance) const {
     distance = m_target_distance_m;
     return  m_target_valid;

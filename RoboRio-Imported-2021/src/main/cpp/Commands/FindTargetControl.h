@@ -37,6 +37,11 @@ public:
     // Returns whether normal driving operation should be performed in this period update.
     bool DoFindTargetJoystick(frc::Joystick* joystick, HapticController* haptic_controller);
 
+    // Rotate to find the target if possible
+    //
+    // Returns true if the target is found and the robot has rotated to face it
+    bool AutoRotateToTarget();
+
     // Get the distance to the target
     //
     // distance - Returns the distance to the target in metres

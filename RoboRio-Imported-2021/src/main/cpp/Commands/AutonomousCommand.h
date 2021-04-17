@@ -82,5 +82,10 @@ namespace AutonomousCommand {
     //
     // robot_path - Path to add the segment to
     void AddShootSegment(RobotPath* robot_path);
+
+    // Add a segment to the given robot path to rotate to the target
+    //
+    // robot_path - Path to add the segment to
+    void AddRotateToTargetSegment(RobotPath* robot_path);
 }
 #endif  // AutonomousCommand_H

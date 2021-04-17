@@ -152,7 +152,7 @@ RobotPath* AutonomousCommand::CreateShootPath(double delay_s, double trench_offs
     RobotPath* robot_path = new RobotPath();
     robot_path->m_name = "Shoot";
 
-    // All the initial delay, if any, and shooting of the initial 3 balls 
+    // Add the initial delay, if any, and shooting of the initial 3 balls 
     AddDelaySegment(robot_path, delay_s);
     AddShootSegment(robot_path);
 
@@ -165,13 +165,14 @@ RobotPath* AutonomousCommand::CreateShootAndMoveBackwardPath(double delay_s, dou
     RobotPath* robot_path = new RobotPath();
     robot_path->m_name = "ShootAndMoveBackwards";
 
-    // All the initial delay, if any, and shooting of the initial 3 balls 
+    // Add the initial delay, if any, and shooting of the initial 3 balls 
     AddDelaySegment(robot_path, delay_s);
     AddShootSegment(robot_path);
 
+    // Add a segment to move the robot backwards 8 feet. This is towards the target, which
+    // is 10 feet from the start line.
     const double INCH = 0.0254;
     const double FOOT = 12*INCH;
-
     Bezier3 path;
     path.m_point1.Set(0.0, 0.0);
     path.m_point2.Set(-2*FOOT, 0.0);
@@ -189,26 +190,57 @@ RobotPath* AutonomousCommand::CreateShootAndMoveBackwardPath(double delay_s, dou
 RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double trench_offset_inch) {
     // Create and name the robot path
     RobotPath* robot_path = new RobotPath();
-    robot_path->m_name = "Shoot";
+    robot_path->m_name = "ShootAndTrench";
 
-    // All the initial delay, if any, and shooting of the initial 3 balls 
+    // Add the initial delay, if any, and shooting of the initial 3 balls 
     AddDelaySegment(robot_path, delay_s);
     AddShootSegment(robot_path);
 
+    // See Layout and Markings Diagram page 5 https://firstfrc.blob.core.windows.net/frc2021/PlayingField/2021LayoutMarkingDiagram.pdf
+
+    //                  Trench Balls
+    //     |             o    o    o     66.91" - Distance sideways from robot at centre of target   
+    //     |             122.62"   194.62"      - Distance from initiation line
+    //   > * Robot
+    //     | Initiation Line
+    //
+    // Robot starts on the initiation line with its back bumper just over the initiation line (most
+    // of the robot further way from the target).
 
     const double INCH = 0.0254;
-    const double FOOT = 12*INCH;
+	const double ROBOT_LENGTH = 37 * INCH;
+    const double SLALOM_FACTOR = 0.7;
 
-    Bezier3 path;
-    path.m_point1.Set(0.0, 0.0);
-    path.m_point2.Set(-2*FOOT, 0.0);
-    path.m_point3.Set(-6*FOOT, 0.0);
-    path.m_point4.Set(-8*FOOT, 0.0);	
-    PathSegment* path_segment = new PathSegment();
-    path_segment->m_name = "Straight";
-    path_segment->m_path_definition.push_back(path);
-    path_segment->m_reverse = true;
-    robot_path->m_path_segments.push_back(path_segment);
+    const double BALL1_DISTANCE = 122.62 * INCH;
+    const double BALL3_DISTANCE = 194.62 * INCH;
+    const double TRENCH_DISTANCE = 66.91 * INCH;
+
+    // Slalon left to the first ball, then forwards to pick up the three balls
+    PathSegment* pickup_segment = new PathSegment();
+    pickup_segment->m_name = "Straight";
+    pickup_segment->m_reverse = false;
+    robot_path->m_path_segments.push_back(pickup_segment);
+    ChallengePaths::AddSlalomLeft(pickup_segment, BALL1_DISTANCE - ROBOT_LENGTH, TRENCH_DISTANCE, SLALOM_FACTOR,
+                                  Point2D(0, 0), Point2D(1, 0));
+    ChallengePaths::AddStraight(pickup_segment, BALL3_DISTANCE - BALL1_DISTANCE);
+    pickup_segment->m_mechanism_actions.push_back(MechanismAction("StartIntaking", 0.0));
+
+    PathSegment* return_segment = new PathSegment();
+    return_segment->m_name = "Straight";
+    return_segment->m_reverse = true;
+    robot_path->m_path_segments.push_back(return_segment);
+
+    // Drive back to the position of the first ball to be closer to the target
+    Point2D start;
+    Point2D direction;
+    ChallengePaths::GetCurrent(pickup_segment, start, direction);
+    direction = -direction;
+    ChallengePaths::AddStraight(return_segment, BALL3_DISTANCE - BALL1_DISTANCE, start, direction);
+    return_segment->m_mechanism_actions.push_back(MechanismAction("StopIntaking", 0.0));
+
+    // Rotate to face the target and shoot the balls
+    AddRotateToTargetSegment(robot_path);
+    AddShootSegment(robot_path);
 
     return robot_path;
 }
@@ -258,4 +290,12 @@ void AutonomousCommand::AddShootSegment(RobotPath* robot_path) {
     delay_segment->m_reverse = false;
     delay_segment->m_mechanism_actions.push_back(MechanismAction("Shoot", 0.0));
     robot_path->m_path_segments.push_back(delay_segment);
+}
+
+void AutonomousCommand::AddRotateToTargetSegment(RobotPath* robot_path) {
+    PathSegment* find_segment = new PathSegment();
+    find_segment->m_name = "RotateToTarget";
+    find_segment->m_reverse = false;
+    find_segment->m_drivebase_action = "RotateToTarget";
+    robot_path->m_path_segments.push_back(find_segment);
 }

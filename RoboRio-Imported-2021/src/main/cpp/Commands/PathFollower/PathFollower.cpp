@@ -57,14 +57,14 @@ void PathFollower::Follow() {
 	if (IsSegmentFinished()) {
 		// Log how far from the desired position we ended up
 		// NMBTODO Remove this logging
-  		double position_x_m;
-		double position_y_m;
-		double heading_degrees;
-	    m_drive_base->GetPositionM(position_x_m, position_y_m, heading_degrees);
-		Point2D& last_point = m_robot_path->m_path_segments.back()->m_path_definition.back().m_point4;
-		std::cout << "Segment " << m_path_segment_index <<
-					 ": Final Position (" << position_x_m << ", " << position_y_m << ") " <<
-					 "Target Position (" << last_point.x << ", " << last_point.y << ")\n";
+  		// double position_x_m;
+		// double position_y_m;
+		// double heading_degrees;
+	    // m_drive_base->GetPositionM(position_x_m, position_y_m, heading_degrees);
+		// Point2D& last_point = m_robot_path->m_path_segments.back()->m_path_definition.back().m_point4;
+		// std::cout << "Segment " << m_path_segment_index <<
+		// 			 ": Final Position (" << position_x_m << ", " << position_y_m << ") " <<
+		// 			 "Target Position (" << last_point.x << ", " << last_point.y << ")\n";
 
 		// Tell the path follower the segment is finished
 		FinishSegment();
@@ -115,8 +115,17 @@ void PathFollower::SetupPathSegment() {
 	if (m_path_segment_index == 0) {
 		// For the first path segment we reset the dead reckoning position in the drivebase so
 		// that it tracks the position along the path.
-		const Point2D start_point  = path_segment.m_path_definition[0].m_point1;
-		const Point2D second_point = path_segment.m_path_definition[0].m_point2;
+        // It is possible to have path segments with no path definition (robot is stationary
+        // for the segment) so skip over those for the first segment that hase a path.
+        int segment_index = m_path_segment_index;
+        while (segment_index < (int)m_robot_path->m_path_segments.size() && 
+               m_robot_path->m_path_segments[segment_index]->m_path_definition.empty()) {
+            segment_index++;
+        }
+        if (segment_index >= (int)m_robot_path->m_path_segments.size()) return;
+
+		const Point2D start_point  = path_segment.m_path_definition[segment_index].m_point1;
+		const Point2D second_point = path_segment.m_path_definition[segment_index].m_point2;
 		double heading_degrees = (second_point - start_point).AngleDegrees();
 		if (path_segment.m_reverse) {
 			heading_degrees += 180; 
@@ -132,6 +141,9 @@ void PathFollower::SetupPathSegment() {
 }
 
 void PathFollower::AdjustPathSegmentStart(PathSegment& path_segment) {
+    // Nothing to adjust if there is no path definition (robot is stationary for the segment)
+    if (path_segment.m_path_definition.empty()) return;
+
 	// Get the current position from the drive base
 	double position_x_m;
 	double position_y_m;
