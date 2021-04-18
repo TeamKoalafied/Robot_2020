@@ -91,7 +91,11 @@ void PurePursuitFollower::StartSegment() {
 	// Calculate an offset from the gyro heading to the heading at the start of the path. This offset
 	// will be added to all gyro values to get the heading. This means that the initial angle of
 	// the robot is assumed to be correct.
-	m_gyro_heading_offset_deg = m_path_points[0].m_heading_degrees - gyro_heading_deg;
+    if (m_path_points.empty()) {
+        m_gyro_heading_offset_deg = 0;
+    } else {
+    	m_gyro_heading_offset_deg = m_path_points[0].m_heading_degrees - gyro_heading_deg;
+    }
 
 	// Initialise the counter for mechanism actions
     m_mechanism_actions_done_count = 0;
@@ -232,6 +236,7 @@ void PurePursuitFollower::GenerateSegmentPathPoints() {
 		segment_lengths[i] = path_segment.m_path_definition[i].Length();
 		total_length += segment_lengths[i];
 	}
+    if (total_beziers == 0) return;
 
     // Calculate the total number of points for the required spacing and create space
     // for them, plus the 'extension' point.

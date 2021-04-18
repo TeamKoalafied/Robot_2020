@@ -327,7 +327,7 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::BallInKicker: {
             // If we are on target, up to speed and there is a ball in the kicker then kick it!
             double current_shooter_wheel_rpm = m_shooter->GetShooterRPM();
-            double shooter_error_percent = fabs((current_shooter_wheel_rpm - target_shooter_wheel_rpm)/target_shooter_wheel_rpm);
+            double shooter_error_percent = 100.0*fabs((current_shooter_wheel_rpm - target_shooter_wheel_rpm)/target_shooter_wheel_rpm);
 
             if (shooter_error_percent < kShootErrorPercentage) {
                 std::cout << "Desired Shooter RPM: " << target_shooter_wheel_rpm << std::endl;
@@ -371,6 +371,7 @@ void Manipulator::UpdateShootingState() {
                 m_shoot_timer.Reset();
                 
                 m_ball_shoot_count++;
+                std::cout << "Ball shot " << m_ball_shoot_count << "\n";
             }
             break;
         case ShootingState::KickerReturn:
@@ -385,7 +386,7 @@ void Manipulator::UpdateShootingState() {
 }
 
 double Manipulator::GetShooterWheelTargetRpm() {
-    // Table of shooter wheel speeds in rpm for different target distances in metres
+    // Table of shooter wheel speeds in rpm for different target distances
     double SPEED_TABLE[][2] = {
         1.0, 6000.0,        // 1m 6000rpm
         2.0, 6000.0,        // 2m 6000rpm

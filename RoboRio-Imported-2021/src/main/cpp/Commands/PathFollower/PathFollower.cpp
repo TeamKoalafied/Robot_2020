@@ -124,8 +124,8 @@ void PathFollower::SetupPathSegment() {
         }
         if (segment_index >= (int)m_robot_path->m_path_segments.size()) return;
 
-		const Point2D start_point  = path_segment.m_path_definition[segment_index].m_point1;
-		const Point2D second_point = path_segment.m_path_definition[segment_index].m_point2;
+		const Point2D start_point  = m_robot_path->m_path_segments[segment_index]->m_path_definition[0].m_point1;
+		const Point2D second_point = m_robot_path->m_path_segments[segment_index]->m_path_definition[0].m_point2;
 		double heading_degrees = (second_point - start_point).AngleDegrees();
 		if (path_segment.m_reverse) {
 			heading_degrees += 180; 
