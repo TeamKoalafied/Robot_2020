@@ -9,9 +9,12 @@
             "width": 320,
             "height": 240,
             "fps": 30,
-            "brightness": 30,
-            "white balance": 5600,
-            "properties": [],
+            "properties": [
+                {
+                    "name": "brightness",
+                    "value": 30
+                }
+            ],
             "stream": {
                 "properties": []
             }
@@ -23,9 +26,12 @@
             "width": 320,
             "height": 240,
             "fps": 30,
-            "brightness": 50,
-            "white balance": 5600,
-            "properties": [],
+            "properties": [
+                {
+                    "name": "brightness",
+                    "value": 50
+                }
+            ],
             "stream": {
                 "properties": []
             }
