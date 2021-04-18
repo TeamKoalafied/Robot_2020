@@ -556,10 +556,11 @@ int main(int argc, char* argv[]) {
             distancety = (83.25 - cameraheight) / (tan (theta) );
 #else
             // New approach because old one was not working (probably old robot):
-            // View top is 79cm above view centre when distance is 150cm, so theta = atan(79/150)
+            // View top is 79cm above view centre when distance is 150cm, so slope = 79/150
+            // Centre is 120 pixels down from top, so we scale by height_in_pixels/120
             // So:
-            //   theta = atan(((cy - midy)/120) * (79/150)
-            // If the top was the target height (th) then th/distance = 79/150
+            //   slope = ((cy - midy)/120) * (79/150)
+            // If the top was the target height (h) then h/distancety = 79/150
             degreetx = (midx-cx) * (38.0/160.0);
             double slope = ((cy - midy)/120.0) * (79.0/150.0);
             distancety = (83.25 - cameraheight) / slope;
