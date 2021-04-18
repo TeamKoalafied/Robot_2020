@@ -387,12 +387,14 @@ void Manipulator::UpdateShootingState() {
 
 double Manipulator::GetShooterWheelTargetRpm() {
     // Table of shooter wheel speeds in rpm for different target distances
+    const double INCH = 0.0254;
+    const double FOOT = 12*INCH;
     double SPEED_TABLE[][2] = {
-        1.0, 6000.0,        // 1m 6000rpm
-        2.0, 6000.0,        // 2m 6000rpm
-        3.0, 6000.0,        // 3m 6000rpm
-        4.0, 6000.0,        // 4m 6000rpm
-        5.0, 6000.0,        // 5m 6000rpm
+        10*FOOT, 6000.0,        // 10feet 6000rpm
+        13*FOOT, 5700.0,        // 13feet 5700rpm
+        16*FOOT, 5700.0,        // 16feet 5700rpm
+        18*FOOT, 5700.0,        // 18feet 5700rpm
+        21*FOOT, 5700.0,        // 21feet 5700rpm
     };
     int SPEED_TABLE_SIZE = sizeof(SPEED_TABLE)/sizeof(SPEED_TABLE[0]);
 
