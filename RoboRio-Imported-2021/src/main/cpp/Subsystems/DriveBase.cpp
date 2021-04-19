@@ -346,6 +346,8 @@ void DriveBase::TeleopInit() {
 void DriveBase::DisabledInit() {
     WriteTestSampleToFile();
     SetupSampleRecording();
+
+    SetBrakeMode(false);
 }
 
 
