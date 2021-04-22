@@ -85,7 +85,7 @@ private:
         frc::SmartDashboard::PutNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
 
         // Values for VisionFindTarget pure vision feedback (open loop motor control)                                                         
-        frc::SmartDashboard::PutNumber("VisionKp", 0.003);         // Start small and double until overshoot                                          
+        frc::SmartDashboard::PutNumber("VisionKp", 0.006);         // Start small and double until overshoot                                          
         frc::SmartDashboard::PutNumber("VisionMinRotation", 0.0); // Experiments results 0.25 for wood, 0.33 carpet                                  
         frc::SmartDashboard::PutNumber("VisionMaxRotation", 0.3);  // Use to limit max speed when error is large                                      
 
