@@ -150,7 +150,7 @@ private:
 
     void EnterClimbingState();
     void LeaveClimbingState();
-    void UpdateClimbingState();
+    void UpdateClimbingState(bool climb_only = false);
 
 
     //==========================================================================

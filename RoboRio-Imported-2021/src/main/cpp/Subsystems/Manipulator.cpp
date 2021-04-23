@@ -182,6 +182,11 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
         ChangeState(new_state);
     }
 
+    if (m_state == State::Idle) {
+        UpdateClimbingState(true);
+   }
+
+/* TODO This is all for debugging and should probably be permanently removed
     // If in the idle state allow special override controls
     if (m_state == State::Idle) {
 
@@ -218,6 +223,7 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
             m_kicker->SetShoot();
         }
     }
+    */
 }
 
 
@@ -447,13 +453,19 @@ void Manipulator::LeaveClimbingState() {
     m_winch->BrakeOn();
 }
 
-void Manipulator::UpdateClimbingState() {
+void Manipulator::UpdateClimbingState(bool climb_only) {
     // Drive the winch with the right Y axis, applying a normal dead zone and a 50% speed limit
+    // Up on the joystick (-ve) extended the climber.
     double joystick_value = GetJoystick()->GetRawAxis(RC::kJoystickRightYAxis);
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
     joystick_value *= 0.5;
+
+    // If we are only allowed to climb then do nothing if the operator is trying to extend the climber
+    if (climb_only && joystick_value < 0) return;
     // temporarily change direction - Phil
 //    frc::SmartDashboard::PutNumber("Winch Joystick", joystick_value);
+
+    // Drive the climber. +ve is extending the climber so we must reverse the sign.
     m_winch->ManualDriveWinch(-joystick_value);
 }
 
