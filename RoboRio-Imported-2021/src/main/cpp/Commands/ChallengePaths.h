@@ -61,6 +61,7 @@ public:
 	static void AddTurnRight(PathSegment* path_segment, double radius);
 	static void AddSlalomLeft(PathSegment* path_segment, double length, double width, double fraction);
 	static void AddSlalomRight(PathSegment* path_segment, double length, double width, double fraction);
+	static void AddSegment(PathSegment* path_segment, const Point2D& end, double end_heading);
 
 	// Get the current position and direction from the last Bezier curve in a given path segment
 	//
@@ -74,6 +75,7 @@ public:
 	static void AddTurnRight(PathSegment* path_segment, double radius, const Point2D& start, const Point2D& direction);
 	static void AddSlalomLeft(PathSegment* path_segment, double length, double width, double fraction, const Point2D& start, const Point2D& direction);
 	static void AddSlalomRight(PathSegment* path_segment, double length, double width, double fraction, const Point2D& start, const Point2D& direction);
+	static void AddSegment(PathSegment* path_segment, const Point2D& end, double end_heading, const Point2D& start, const Point2D& direction);
 
 
    	//==========================================================================

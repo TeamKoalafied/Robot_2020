@@ -216,21 +216,33 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
 
     const double INCH = 0.0254;
 	const double ROBOT_LENGTH = 37 * INCH;
-    const double SLALOM_FACTOR = 0.7;
+    //const double SLALOM_FACTOR = 0.7;
 
     const double BALL1_DISTANCE = 122.62 * INCH;
     const double BALL3_DISTANCE = 194.62 * INCH;
     const double TRENCH_DISTANCE = 66.91 * INCH;
 
-    // Slalon left to the first ball, then forwards to pick up the three balls
+    // Create a segment for picking up the balls
     PathSegment* pickup_segment = new PathSegment();
     pickup_segment->m_name = "Straight";
     pickup_segment->m_reverse = false;
     robot_path->m_path_segments.push_back(pickup_segment);
-    ChallengePaths::AddSlalomLeft(pickup_segment, BALL1_DISTANCE - ROBOT_LENGTH, TRENCH_DISTANCE, SLALOM_FACTOR,
-                                  Point2D(0, 0), Point2D(1, 0));
+
+    // Curve left to the first ball, then forwards to pick up the three balls
+    Point2D start;
+    Point2D direction;
+    GetStartPosition(trench_offset_inch, start, direction);
+    Point2D end(BALL1_DISTANCE - ROBOT_LENGTH, TRENCH_DISTANCE); // End of curve is the position of the first ball
+    double end_heading = 0; // Pointing down the field along the line of balls 
+    ChallengePaths::AddSegment(pickup_segment, end, end_heading, start, direction);
     ChallengePaths::AddStraight(pickup_segment, BALL3_DISTANCE - BALL1_DISTANCE);
     pickup_segment->m_mechanism_actions.push_back(MechanismAction("StartIntaking", 0.0));
+
+    // Slalon left to the first ball, then forwards to pick up the three balls
+    // ChallengePaths::AddSlalomLeft(pickup_segment, BALL1_DISTANCE - ROBOT_LENGTH, TRENCH_DISTANCE, SLALOM_FACTOR,
+    //                               Point2D(0, 0), Point2D(1, 0));
+    // ChallengePaths::AddStraight(pickup_segment, BALL3_DISTANCE - BALL1_DISTANCE);
+    // pickup_segment->m_mechanism_actions.push_back(MechanismAction("StartIntaking", 0.0));
 
     PathSegment* return_segment = new PathSegment();
     return_segment->m_name = "Straight";
@@ -238,8 +250,6 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     robot_path->m_path_segments.push_back(return_segment);
 
     // Drive back to the position of the first ball to be closer to the target
-    Point2D start;
-    Point2D direction;
     ChallengePaths::GetCurrent(pickup_segment, start, direction);
     direction = -direction;
     ChallengePaths::AddStraight(return_segment, BALL3_DISTANCE - BALL1_DISTANCE, start, direction);
@@ -305,4 +315,16 @@ void AutonomousCommand::AddRotateToTargetSegment(RobotPath* robot_path) {
     find_segment->m_reverse = false;
     find_segment->m_drivebase_action = "RotateToTarget";
     robot_path->m_path_segments.push_back(find_segment);
+}
+
+void AutonomousCommand::GetStartPosition(double trench_offset_inch, Point2D& start, Point2D& direction) {
+    const double INCH = 0.0254;
+
+    const double INNER_PORT_DEPTH = 29.25 * INCH;  // 2ft. 5¼ in. ref 3.4.1.3
+    const double INITIATION_LINE_DISTANCE = 120 * INCH;  // 10ft.  ref 3.2
+    const double INNER_PORT_DISTANCE = INNER_PORT_DEPTH + INITIATION_LINE_DISTANCE;
+
+    start.Set(0, trench_offset_inch * INCH);
+    double start_heading_degrees = ::atan2(trench_offset_inch * INCH, INNER_PORT_DISTANCE);
+    direction = Point2D::UnitVectorDegrees(start_heading_degrees);
 }

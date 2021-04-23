@@ -7,6 +7,7 @@
 
 namespace frc { class Command; }
 class RobotPath;
+class Point2D;
 
 
 // Namespace with functions for setting up the command runs the autonomous period for the robot.
@@ -75,7 +76,7 @@ namespace AutonomousCommand {
     // Add a segment to the given robot path to delay for ta given time
     //
     // robot_path - Path to add the segment to
-    //  delay_s - Delay in seconds
+    // delay_s - Delay in seconds
     void AddDelaySegment(RobotPath* robot_path, double delay_s);
 
     // Add a segment to the given robot path to shoot the 3 balls
@@ -87,5 +88,15 @@ namespace AutonomousCommand {
     //
     // robot_path - Path to add the segment to
     void AddRotateToTargetSegment(RobotPath* robot_path);
+
+    // Get the starting position and offset of the robot from the trench offset, assuming that the
+    // robot is pointed towards the centre of the inner port.
+    //
+    //  trench_offset_inch - Offset of the robot from directly in front of the target.
+    //      Towards the trench is positive.
+    // start - Returns the starting position of the robot. Origin is directly in front of the power port
+    //      on the initiation line. Heading 0 is directly away from the power port.
+    // direction - Returns the direction vector of the robot, in the same coordinates as 'start' 
+    void GetStartPosition(double trench_offset_inch, Point2D& start, Point2D& direction);
 }
 #endif  // AutonomousCommand_H

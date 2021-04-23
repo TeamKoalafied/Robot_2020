@@ -667,8 +667,14 @@ void ChallengePaths::AddSlalomRight(PathSegment* path_segment, double length, do
 	Point2D start;
 	Point2D direction;
 	GetCurrent(path_segment, start, direction);
-    AddSlalomRight(path_segment, length, width, fraction, start, direction
-	);
+    AddSlalomRight(path_segment, length, width, fraction, start, direction);
+}
+
+void ChallengePaths::AddSegment(PathSegment* path_segment, const Point2D& end, double end_heading) {
+	Point2D start;
+	Point2D direction;
+	GetCurrent(path_segment, start, direction);
+    AddSegment(path_segment, end, end_heading, start, direction);
 }
 
 void ChallengePaths::GetCurrent(PathSegment* path_segment, Point2D& position, Point2D& direction)
@@ -760,15 +766,33 @@ void ChallengePaths::AddSlalomRight(PathSegment* path_segment, double length, do
 	path_segment->m_path_definition.push_back(path);
 }
 
+void ChallengePaths::AddSegment(PathSegment* path_segment, const Point2D& end, double end_heading,
+                              const Point2D& start, const Point2D& direction) {
+    Point2D unit_direction = direction;
+    unit_direction.Normalize();
+
+    double distance = (end - start).Length();
+    double fraction = kBezierCircleC;
+
+    Point2D end_direction = Point2D::UnitVectorDegrees(end_heading);
+
+    Bezier3 path;
+    path.m_point1 = start;
+    path.m_point2 = start + unit_direction * (distance * fraction);
+    path.m_point3 = end - end_direction * (distance * fraction);;
+    path.m_point4 = end;
+
+    path_segment->m_path_definition.push_back(path);
+}
+
+
 //==============================================================================
 // Utility Helpers
 
-Point2D ChallengePaths::TurnLeft(const Point2D& direction)
-{
+Point2D ChallengePaths::TurnLeft(const Point2D& direction) {
 	return Point2D(-direction.y, direction.x);
 }
 
-Point2D ChallengePaths::TurnRight(const Point2D& direction)
-{
+Point2D ChallengePaths::TurnRight(const Point2D& direction) {
 	return Point2D(direction.y, -direction.x);
 }
