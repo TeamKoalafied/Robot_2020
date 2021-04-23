@@ -49,6 +49,14 @@ public:
     // Returns whether the distance is valid
     bool GetTargetDistance(double& distance_m) const;
 
+
+    //==========================================================================
+    // Dashboard Setup
+
+    // Setup the dashboard for vision control parameters. Called when robot is initialised.
+    static void SetupDashboard();
+
+
 private:
     //==========================================================================
     // Private Nested Types

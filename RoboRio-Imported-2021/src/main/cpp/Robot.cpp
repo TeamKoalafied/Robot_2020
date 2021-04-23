@@ -5,7 +5,7 @@
 #include "RobotConfiguration.h"
 
 #include "Commands/AutonomousCommand.h"
-#include "Commands/PathFollower/PurePursuitFollower.h"
+#include "Commands/DrivePathFollower.h"
 #include "Subsystems/DriveBase.h"
 #include "Subsystems/Manipulator.h"
 #include "Subsystems/Pneumatics.h"
@@ -15,7 +15,6 @@
 #include <frc/TimedRobot.h>
 #include <frc/commands/Scheduler.h>
 #include <frc/smartdashboard/SmartDashboard.h>
-// #include <frc/WPILib.h>
 
 #include <stdio.h>
 
@@ -67,28 +66,8 @@ private:
 
         // Set up controls on the dashboard for choosing autonomous parameters
     	AutonomousCommand::SetupAutonomousDashboard();
-
-		// NICKTODO This code should be in DrivePathFollower with the test joystick stuff
-		frc::SmartDashboard::PutNumber("VisionTrackX", 3.0);
-    	frc::SmartDashboard::PutNumber("VisionTrackY", 0.0);
-    	frc::SmartDashboard::PutNumber("VisionTrackHeading", 0.0);
-    	frc::SmartDashboard::PutNumber("AutoMaxV", 1.0);
-    	frc::SmartDashboard::PutNumber("AutoMaxVCurve", PurePursuitFollower::kMaxVelocityCurve);
-    	frc::SmartDashboard::PutNumber("AutoMaxA", 0.5);
-    	frc::SmartDashboard::PutNumber("AutoP", 0.3);
-    	frc::SmartDashboard::PutNumber("AutoI", 0.0);
-    	frc::SmartDashboard::PutNumber("AutoD", 0.0);
-    	frc::SmartDashboard::PutNumber("AutoLookAhead", PurePursuitFollower::kLookaheadDistanceDefault);
-    	frc::SmartDashboard::PutNumber("AutoLookAheadFactor", PurePursuitFollower::kLookaheadFactorDefault);
-    	frc::SmartDashboard::PutNumber("AutoPointSpacing", PurePursuitFollower::kPathPointSpacingDefault);
-	    frc::SmartDashboard::PutNumber("AutoLookaheadCurveGain", PurePursuitFollower::kLookaheadCurvatureGainDefault);
-        frc::SmartDashboard::PutNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
-
-        // Values for VisionFindTarget pure vision feedback (open loop motor control)                                                         
-        frc::SmartDashboard::PutNumber("VisionKp", 0.006);         // Start small and double until overshoot                                          
-        frc::SmartDashboard::PutNumber("VisionMinRotation", 0.0); // Experiments results 0.25 for wood, 0.33 carpet                                  
-        frc::SmartDashboard::PutNumber("VisionMaxRotation", 0.3);  // Use to limit max speed when error is large                                      
-
+        DrivePathFollower::SetupDashboard();
+        FindTargetControl::SetupDashboard();
 
         printf("RobotInit() finished\n");
         printf("==========================================================================\n");
@@ -187,7 +166,6 @@ private:
 	PeriodicTimer m_periodic_timer;         // Timer for monitoring response times
 
     frc::Command* m_autonomous_command;     // Command to run in the autonomous period
-
 };
 
 

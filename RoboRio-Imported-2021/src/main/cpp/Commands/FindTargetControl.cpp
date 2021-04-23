@@ -111,6 +111,21 @@ bool FindTargetControl::GetTargetDistance(double& distance) const {
 
 
 //==============================================================================
+// Dashboard Setup
+
+void FindTargetControl::SetupDashboard() {
+    // Values for VisionFindTarget pure vision feedback (open loop motor control)                                                         
+    // TODO I don't think these are used anymore
+    // frc::SmartDashboard::PutNumber("VisionTrackX", 3.0);
+    // frc::SmartDashboard::PutNumber("VisionTrackY", 0.0);
+    // frc::SmartDashboard::PutNumber("VisionTrackHeading", 0.0);
+    frc::SmartDashboard::PutNumber("VisionKp", 0.006);         // Start small and double until overshoot                                          
+    frc::SmartDashboard::PutNumber("VisionMinRotation", 0.0); // Experiments results 0.25 for wood, 0.33 carpet                                  
+    frc::SmartDashboard::PutNumber("VisionMaxRotation", 0.3);  // Use to limit max speed when error is large                                      
+}
+
+
+//==============================================================================
 // Implementation
 
 void FindTargetControl::UpdateTargetHeading() {

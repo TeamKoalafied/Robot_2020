@@ -100,10 +100,27 @@ void DrivePathFollower::Interrupted() {
 
 
 //==========================================================================
+// Dashboard Setup
+
+void DrivePathFollower::SetupDashboard() {
+    frc::SmartDashboard::PutNumber("AutoMaxV", 1.0);
+    frc::SmartDashboard::PutNumber("AutoMaxVCurve", PurePursuitFollower::kMaxVelocityCurve);
+    frc::SmartDashboard::PutNumber("AutoMaxA", 0.5);
+    frc::SmartDashboard::PutNumber("AutoP", 0.3);
+    frc::SmartDashboard::PutNumber("AutoI", 0.0);
+    frc::SmartDashboard::PutNumber("AutoD", 0.0);
+    frc::SmartDashboard::PutNumber("AutoLookAhead", PurePursuitFollower::kLookaheadDistanceDefault);
+    frc::SmartDashboard::PutNumber("AutoLookAheadFactor", PurePursuitFollower::kLookaheadFactorDefault);
+    frc::SmartDashboard::PutNumber("AutoPointSpacing", PurePursuitFollower::kPathPointSpacingDefault);
+    frc::SmartDashboard::PutNumber("AutoLookaheadCurveGain", PurePursuitFollower::kLookaheadCurvatureGainDefault);
+    frc::SmartDashboard::PutNumber("AutoPathCurveGain", PurePursuitFollower::kPathCurvatureGainDefault);
+}
+
+
+//==========================================================================
 // Static Joystick Testing Control Functions
 
-void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick)
-{
+void DrivePathFollower::DoJoystickTestControl(frc::Joystick* joystick) {
 	// Get the maximum velocity and acceleration from the dashboard
 	double max_velocity = frc::SmartDashboard::GetNumber("AutoMaxV", 1.0);
 	if (max_velocity < 0.1) max_velocity = 0.1;
@@ -239,91 +256,3 @@ PathFollower* DrivePathFollower::CreatePathfinderFollower(RobotPath* robot_path)
 
 	return new PathfinderFollower(robot_path, &drive_base, new MechanismController2020, true, encode_config);
 }
-
-//==============================================================================
-// NOTE: These functions are broken, but left here until I ask what they are meant to be doing - Nick
-
-// void DrivePathFollower::Rotate2Target(double max_velocity, double max_acceleration) {
-// 	DriveBase& drive_base = DriveBase::GetInstance();
-
-// 	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
-// 	double rotateSpeed = 0.0;
-// 	double targetOffsetAngle_Horizontal = table->GetNumber("tx",0.0);
-	
-// 	while (targetOffsetAngle_Horizontal > 1.0 || targetOffsetAngle_Horizontal < -1.0){
-// 		targetOffsetAngle_Horizontal = table->GetNumber("tx",0.0);
-// 		if (targetOffsetAngle_Horizontal > 1.0)
-// 		rotateSpeed = -0.5;
-// 		if (targetOffsetAngle_Horizontal < -1.0)
-// 		rotateSpeed = 0.5;
-// 		drive_base.ArcadeDriveForVision(0.0, rotateSpeed);
-		
-// 	}
-// }
-
-// void DrivePathFollower::Rotate2Target2(double max_velocity, double max_acceleration) {
-
-// 	// Modified from docs.limelightvision.io/en/latest/cs_aiming.html to fix errors
-
-// 	double rotation = 0.0f;
-// 	DriveBase& drive_base = DriveBase::GetInstance();
-	
-// 	//if (max_rotation > max_velocity)
-// 	//	max_rotation = max_velocity;
-
-// 	// Proportional constant Kp: Reduce from 1.0 until slight overshoot
-// 	float kp = frc::SmartDashboard::GetNumber("VisionKp", 0.016);
-// 	// Minimum rotation speed: Adjust so it is not quite enough to turn the robot
-// 	// Test results: Use 0.25 wood or 0.33 for carpet tiles
-// 	float minRotation = frc::SmartDashboard::GetNumber("VisionMinRotation", 0.25);
-// 	// Maximum rotation speed - just to make sure we don't rotate too fast
-// 	float maxRotation = frc::SmartDashboard::GetNumber("VisionMaxRotation", 1.0);
-
-// 	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
-// 	float tx = -table->GetNumber("tx", 0.0);  // degrees (-27 to 27 for limelight1)
-// 	float tv = table->GetNumber("tv", 0.0);  // 0.0 unless the target is detected
-
-// 	// Only turn if the target is detected
-// 	if (tv != 0.0f) {
-
-// 		// Give motors a little power even if error is small
-// 		if (tx > 0.0)
-// 			rotation = kp*tx + minRotation;
-// 		else
-// 			rotation = kp*tx - minRotation;
-
-// 		// Clip the maximum rotation for safety!
-// 		if (rotation > maxRotation)
-// 			rotation = maxRotation;
-
-// 		if (rotation < -maxRotation)
-// 			rotation = -maxRotation;
-
-// 		drive_base.ArcadeDriveForVision(0.0, rotation);
-// 		// drive_base.Drive(0.0, rotation);
-// 		// drive_base.Drive(0.0, 0.5);
-// 		//rotation = 1.0;  // min = 0.2, max = 1.0?
-// 		//drive_base.ArcadeDriveForVision(0.0, rotation);
-// 	}
-// }
-
-// void DrivePathFollower::rotateForSkew(double max_velocity, double max_acceleration) {
-// 	DriveBase& drive_base = DriveBase::GetInstance();
-
-// 	std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
-// 	double rotateSpeed = 0.0;
-// 	double targetOffsetSkew = table->GetNumber("ts",0.0);
-// 	std::cout << "Offset Skew" << targetOffsetSkew << std::endl;
-// 	while (targetOffsetSkew > -4.5 || targetOffsetSkew < -5.5){
-// 		targetOffsetSkew = table->GetNumber("ts",0.0);
-// 		if (targetOffsetSkew < -70 && table->GetNumber("tx", 0.0) > 2){
-// 			targetOffsetSkew = targetOffsetSkew +90;
-// 		}
-// 		if (targetOffsetSkew > -4.5)
-// 			rotateSpeed = -0.5;
-// 		if (targetOffsetSkew < -6.5)
-// 			rotateSpeed = 0.5;
-
-// 		drive_base.ArcadeDriveForVision(0.0, rotateSpeed);
-// 	}
-// }
