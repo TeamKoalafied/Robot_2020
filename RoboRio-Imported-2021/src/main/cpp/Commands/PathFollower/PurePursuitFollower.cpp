@@ -227,6 +227,11 @@ void PurePursuitFollower::TestGeneratePathToFile(const char* filename)
 // Pure Pursuit Calculations
 
 void PurePursuitFollower::GenerateSegmentPathPoints() {
+    // Initialise state (even if there is no path)
+    m_closest_index = 0;
+    m_lookahead_index = 0;
+    m_segment_finished = false;
+
 	// Get the lengths of all the beziers in the current path segment
 	PathSegment& path_segment = GetPathSegment();
 	int total_beziers = path_segment.m_path_definition.size();
@@ -365,10 +370,6 @@ void PurePursuitFollower::GenerateSegmentPathPoints() {
             // Note: the position and max velocity stay the same
         }
     }
-
-    m_closest_index = 0;
-    m_lookahead_index = 0;
-    m_segment_finished = false;
 }
 
 void PurePursuitFollower::CalculatePurePursuitDrive(double& left_output, double& right_output, Sample &sample) {
