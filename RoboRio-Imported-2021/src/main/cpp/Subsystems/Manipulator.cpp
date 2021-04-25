@@ -327,8 +327,8 @@ void Manipulator::UpdateShootingState() {
 
     // Calculate the rpm required for the current distance to target
     // TODO Just use the dashboard for now so we can experiment
-//    double target_shooter_wheel_rpm = GetShooterWheelTargetRpm();
-    double target_shooter_wheel_rpm = frc::SmartDashboard::GetNumber("Shooter RPM", 6000.0);
+   double target_shooter_wheel_rpm = GetShooterWheelTargetRpm();
+    // double target_shooter_wheel_rpm = frc::SmartDashboard::GetNumber("Shooter RPM", 6000.0);
     frc::SmartDashboard::PutNumber("Shooter Target RPM", target_shooter_wheel_rpm);
     m_shooter->DriveShooterClosedLoop(target_shooter_wheel_rpm);
  
