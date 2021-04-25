@@ -176,7 +176,7 @@ RobotPath* AutonomousCommand::CreateShootAndMoveBackwardPath(double delay_s, dou
     const double INCH = 0.0254;
     const double FOOT = 12*INCH;
     Bezier3 path;
-    path.m_point1.Set(0.0, 0.0);
+    path.m_point1.Set(-0.0, 0.0); // FIRST ONE HAS TO BE A NEGATIVE ZERO
     path.m_point2.Set(-2*FOOT, 0.0);
     path.m_point3.Set(-6*FOOT, 0.0);
     path.m_point4.Set(-8*FOOT, 0.0);	
@@ -187,8 +187,8 @@ RobotPath* AutonomousCommand::CreateShootAndMoveBackwardPath(double delay_s, dou
     PathSegment* path_segment = new PathSegment();
     path_segment->m_name = "Straight";
     path_segment->m_path_definition.push_back(path);
-   path_segment->m_reverse = true;
-    // path_segment->m_reverse = false;
+    path_segment->m_reverse = true;
+//     path_segment->m_reverse = false;
     robot_path->m_path_segments.push_back(path_segment);
 
     return robot_path;
