@@ -364,7 +364,8 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::SettlingBallsBack:
             // After 100ms of driving back we are ready to shoot
             if (m_shoot_timer.Get() > kDriveBackTimeS) {
-                m_indexer->VelocityDriveIndexer(-0.065); // SHOULD BE 0 surely?
+                // m_indexer->VelocityDriveIndexer(-0.065); // SHOULD BE 0 surely?
+                m_indexer->ManualDriveIndexer(0); // Open loop control so we don't get weird oscillations
                 m_shooting_state = ShootingState::BallInKicker;
             }
             break;
