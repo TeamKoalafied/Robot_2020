@@ -184,6 +184,10 @@ void Manipulator::DoManualJoystickControl(frc::Joystick* joystick) {
 
     if (m_state == State::Idle) {
         UpdateClimbingState(true);
+
+        double leftYAxisJoystickValue = joystick->GetRawAxis(RC::kJoystickLeftYAxis);
+        if (fabs(leftYAxisJoystickValue) < RC::kJoystickDeadzone) leftYAxisJoystickValue = 0.0;
+        m_indexer->VelocityDriveIndexer(leftYAxisJoystickValue * 0.4);
    }
 
 /* TODO This is all for debugging and should probably be permanently removed
@@ -331,6 +335,8 @@ void Manipulator::UpdateShootingState() {
     // Update depending on the state of the shooter
     switch (m_shooting_state) {
         case ShootingState::BallInKicker: {
+            m_indexer->ManualDriveIndexer(0); // Open loop control so we don't get weird oscillations
+
             // If we are on target, up to speed and there is a ball in the kicker then kick it!
             double current_shooter_wheel_rpm = m_shooter->GetShooterRPM();
             double shooter_error_percent = 100.0*fabs((current_shooter_wheel_rpm - target_shooter_wheel_rpm)/target_shooter_wheel_rpm);
@@ -364,8 +370,7 @@ void Manipulator::UpdateShootingState() {
         case ShootingState::SettlingBallsBack:
             // After 100ms of driving back we are ready to shoot
             if (m_shoot_timer.Get() > kDriveBackTimeS) {
-                // m_indexer->VelocityDriveIndexer(-0.065); // SHOULD BE 0 surely?
-                m_indexer->ManualDriveIndexer(0); // Open loop control so we don't get weird oscillations
+                m_indexer->VelocityDriveIndexer(-0.065); // SHOULD BE 0 surely?
                 m_shooting_state = ShootingState::BallInKicker;
             }
             break;

@@ -168,27 +168,27 @@ RobotPath* AutonomousCommand::CreateShootAndMoveBackwardPath(double delay_s, dou
 // TODO This path wsa hacked during debugging.
 
     // Add the initial delay, if any, and shooting of the initial 3 balls 
-//    AddDelaySegment(robot_path, delay_s);
-//    AddShootSegment(robot_path);
+   AddDelaySegment(robot_path, delay_s);
+   AddShootSegment(robot_path);
 
     // Add a segment to move the robot backwards 8 feet. This is towards the target, which
     // is 10 feet from the start line.
     const double INCH = 0.0254;
     const double FOOT = 12*INCH;
     Bezier3 path;
-    // path.m_point1.Set(0.0, 0.0);
-    // path.m_point2.Set(-2*FOOT, 0.0);
-    // path.m_point3.Set(-6*FOOT, 0.0);
-    // path.m_point4.Set(-8*FOOT, 0.0);	
     path.m_point1.Set(0.0, 0.0);
-    path.m_point2.Set(2*FOOT, 0.0);
-    path.m_point3.Set(6*FOOT, 0.0);
-    path.m_point4.Set(8*FOOT, 0.0);	
+    path.m_point2.Set(-2*FOOT, 0.0);
+    path.m_point3.Set(-6*FOOT, 0.0);
+    path.m_point4.Set(-8*FOOT, 0.0);	
+    // path.m_point1.Set(0.0, 0.0);
+    // path.m_point2.Set(2*FOOT, 0.0);
+    // path.m_point3.Set(6*FOOT, 0.0);
+    // path.m_point4.Set(8*FOOT, 0.0);	
     PathSegment* path_segment = new PathSegment();
     path_segment->m_name = "Straight";
     path_segment->m_path_definition.push_back(path);
-//    path_segment->m_reverse = true;
-    path_segment->m_reverse = false;
+   path_segment->m_reverse = true;
+    // path_segment->m_reverse = false;
     robot_path->m_path_segments.push_back(path_segment);
 
     return robot_path;
