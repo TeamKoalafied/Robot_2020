@@ -65,6 +65,8 @@ void PurePursuitFollower::StartPath() {
 }
 
 void PurePursuitFollower::StartSegment() {
+    std::cout << "Starting Segment " << GetPathSegment().m_name << "\n";
+
 	// Get the current path segment and the current drive base distances and heading
 	PathSegment& path_segment = GetPathSegment();
 	IPathDriveBase* drive_base = GetDriveBase();
@@ -202,6 +204,8 @@ bool PurePursuitFollower::IsSegmentFinished() {
 }
 
 void PurePursuitFollower::FinishSegment() {
+    std::cout << "Finishing Segment " << GetPathSegment().m_name << "\n";
+
     // Copy all the path point from the vector for this segment to the overall vector for the
     // whole path so that they can be logged
     m_total_path_points.insert(m_total_path_points.end(), m_path_points.begin(), m_path_points.end());

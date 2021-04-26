@@ -201,7 +201,7 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
 
     // Add the initial delay, if any, and shooting of the initial 3 balls 
     AddDelaySegment(robot_path, delay_s);
-    AddShootSegment(robot_path);
+    //AddShootSegment(robot_path);
 
     // See Layout and Markings Diagram page 5 https://firstfrc.blob.core.windows.net/frc2021/PlayingField/2021LayoutMarkingDiagram.pdf
 
@@ -222,9 +222,12 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     const double BALL3_DISTANCE = 194.62 * INCH;
     const double TRENCH_DISTANCE = 66.91 * INCH;
 
+    const double EXTRA_PICKUP_DISTANCE = 10 * INCH;
+
+
     // Create a segment for picking up the balls
     PathSegment* pickup_segment = new PathSegment();
-    pickup_segment->m_name = "Straight";
+    pickup_segment->m_name = "Pickup Balls";
     pickup_segment->m_reverse = false;
     robot_path->m_path_segments.push_back(pickup_segment);
 
@@ -232,7 +235,7 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     Point2D start;
     Point2D direction;
     GetStartPosition(trench_offset_inch, start, direction);
-    Point2D end(BALL1_DISTANCE - ROBOT_LENGTH, TRENCH_DISTANCE); // End of curve is the position of the first ball
+    Point2D end(BALL1_DISTANCE - ROBOT_LENGTH + EXTRA_PICKUP_DISTANCE, TRENCH_DISTANCE); // End of curve is the position of the first ball
     double end_heading = 0; // Pointing down the field along the line of balls 
     ChallengePaths::AddSegment(pickup_segment, end, end_heading, start, direction);
     ChallengePaths::AddStraight(pickup_segment, BALL3_DISTANCE - BALL1_DISTANCE);
@@ -245,7 +248,7 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     // pickup_segment->m_mechanism_actions.push_back(MechanismAction("StartIntaking", 0.0));
 
     PathSegment* return_segment = new PathSegment();
-    return_segment->m_name = "Straight";
+    return_segment->m_name = "GoToShooting";
     return_segment->m_reverse = true;
     robot_path->m_path_segments.push_back(return_segment);
 
@@ -253,11 +256,15 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     ChallengePaths::GetCurrent(pickup_segment, start, direction);
     direction = -direction;
     ChallengePaths::AddStraight(return_segment, BALL3_DISTANCE - BALL1_DISTANCE, start, direction);
-    return_segment->m_mechanism_actions.push_back(MechanismAction("StopIntaking", 0.0));
+    return_segment->m_mechanism_actions.push_back(MechanismAction("StopIntaking", 1.5));
+    return_segment->m_mechanism_actions.push_back(MechanismAction("PrepareShooter", 1.6));
 
     // Rotate to face the target and shoot the balls
     AddRotateToTargetSegment(robot_path);
     AddShootSegment(robot_path);
+
+	frc::SmartDashboard::PutNumber("Shooter RPM", 4000.0);
+
 
     return robot_path;
 }
@@ -325,6 +332,6 @@ void AutonomousCommand::GetStartPosition(double trench_offset_inch, Point2D& sta
     const double INNER_PORT_DISTANCE = INNER_PORT_DEPTH + INITIATION_LINE_DISTANCE;
 
     start.Set(0, trench_offset_inch * INCH);
-    double start_heading_degrees = ::atan2(trench_offset_inch * INCH, INNER_PORT_DISTANCE);
+    double start_heading_degrees = ::atan2(trench_offset_inch * INCH, INNER_PORT_DISTANCE) * 180 / M_PI;
     direction = Point2D::UnitVectorDegrees(start_heading_degrees);
 }

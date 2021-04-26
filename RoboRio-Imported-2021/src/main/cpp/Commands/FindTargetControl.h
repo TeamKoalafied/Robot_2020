@@ -29,6 +29,10 @@ public:
     //==========================================================================
     // Operation
 
+    // Update the information about the target heading. This function must be called
+    // every robot period so that the target information is up to date.
+    void UpdateTargetHeading();
+
     // Perform finding and rotating to the target under joystick control
     //
     // joystick - Joystick being used for drivebase control
@@ -73,9 +77,6 @@ private:
     //==========================================================================
     // Implementation
 
-    // Update the information about the target heading
-    void UpdateTargetHeading();
-
     // Rotate the drivebase towards the target
     //
     // Returns
@@ -85,15 +86,19 @@ private:
     //==========================================================================
     // Constants and Member Variables
 
-    // Number heading and distance sampels recorded in the buffers
-    static const int HISTORY_LENGTH = 50;
+    // Number heading/distance samples recorded in the buffers
+//    static const int HISTORY_LENGTH = 50;
+    static const int HISTORY_LENGTH = 25;
+
+    // Number of valid heading/distance samples required for the target to be valid     
+    static const int HISTORY_COUNT_FOR_VALID = 5;
 
     DriveBase& m_drive_base;                    // Drive base being controlled
     State m_state;                              // Current state of finding the target
     double m_target_headings[HISTORY_LENGTH];   // Circular buffer of target headings 
     double m_target_distances_m[HISTORY_LENGTH];// Circular buffer of target distances in metres
     int m_target_history_index;                 // Index to insert the enxt entry into the buffer
-    bool m_target_valid;                        // Whether the target distance is currently valid
+    bool m_target_valid;                        // Whether the target heading/distance is currently valid
     double m_target_heading;                    // Current heading of the target in drive base pigeon degrees, may not be valid
     double m_target_distance_m;                 // Current distance to the target in metres, may not be valid
 

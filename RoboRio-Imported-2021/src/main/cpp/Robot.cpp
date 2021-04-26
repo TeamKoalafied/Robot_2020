@@ -149,6 +149,12 @@ private:
         printf("==========================================================================\n");
         printf("DisabledInit()\n");
         m_drive_base->DisabledInit();
+
+		if (m_autonomous_command) {
+			m_autonomous_command->Cancel();
+			delete m_autonomous_command;
+			m_autonomous_command = NULL;
+		}
 	}
 
     void DisabledPeriodic() override {

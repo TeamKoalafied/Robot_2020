@@ -65,6 +65,7 @@ void Manipulator::Periodic() {
     switch (m_state) {
         case State::Intaking: UpdateIntakingState(); break;
         case State::Shooting: UpdateShootingState(); break;
+        case State::PrepareShooting: UpdateShootingState(true); break;
         case State::Climbing: UpdateClimbingState(); break;
         case State::Idle: break;
     }    
@@ -83,7 +84,7 @@ void Manipulator::JoystickControlStarted() {
 void Manipulator::DoJoystickControl() {
     frc::Joystick* joystick = GetJoystick();
 
-    // IMPORTANT: Only one of thes following lines should ever be uncommented at a time
+    // IMPORTANT: Only one of the following lines should ever be uncommented at a time
     DoManualJoystickControl(joystick);
     
     // m_shooter->TestDriveShooter(joystick);
@@ -242,6 +243,7 @@ void Manipulator::ChangeState(State new_state) {
     switch (m_state) {
         case State::Intaking: LeaveIntakingState(); break;
         case State::Shooting: LeaveShootingState(); break;
+        case State::PrepareShooting: LeaveShootingState(true); break;
         case State::Climbing: LeaveClimbingState(); break;
         case State::Idle: break;
     }
@@ -253,6 +255,7 @@ void Manipulator::ChangeState(State new_state) {
     switch (m_state) {
         case State::Intaking: EnterIntakingState(); break;
         case State::Shooting: EnterShootingState(); break;
+        case State::PrepareShooting: EnterShootingState(true); break;
         case State::Climbing: EnterClimbingState(); break;
         case State::Idle: break;
     }
@@ -261,6 +264,7 @@ void Manipulator::ChangeState(State new_state) {
     switch (m_state) {
         case State::Intaking: frc::SmartDashboard::PutString("m_state", "Intaking"); break;
         case State::Shooting: frc::SmartDashboard::PutString("m_state", "Shooting"); break;
+        case State::PrepareShooting: frc::SmartDashboard::PutString("m_state", "PrepareShooting"); break;
         case State::Climbing: frc::SmartDashboard::PutString("m_state", "Climbing"); break;
         case State::Idle:     frc::SmartDashboard::PutString("m_state", "Idle");     break;
     }
@@ -277,6 +281,7 @@ void Manipulator::EnterIntakingState() {
 void Manipulator::LeaveIntakingState() {
     m_intake->Retract();
     m_intake->Stop();
+    m_indexer->ManualDriveIndexer(0);    
 }
 
 void Manipulator::UpdateIntakingState() {
@@ -305,7 +310,7 @@ const double Manipulator::kShootBallDetectInches = 3.5;
 const double Manipulator::kShootErrorPercentage = 2.0;
 
 
-void Manipulator::EnterShootingState() {
+void Manipulator::EnterShootingState(bool prepare) {
 
     // TODO at the start of the game we should start assuming there is a ball in the kicker and
     // maybe at other times too.
@@ -316,12 +321,15 @@ void Manipulator::EnterShootingState() {
     m_shoot_timer.Reset();
 }
 
-void Manipulator::LeaveShootingState() {
-    m_shooter->DriveShooterOpenLoop(0);
+void Manipulator::LeaveShootingState(bool prepare) {
+    // Stop all the mechanisms we have been using, except that we do not
+    // stop the shooter if we have been preparing to shoot.
+    if (!prepare) m_shooter->DriveShooterOpenLoop(0);
     m_kicker->SetStop();
+    m_indexer->ManualDriveIndexer(0);    
 }
 
-void Manipulator::UpdateShootingState() {
+void Manipulator::UpdateShootingState(bool prepare) {
 
     // If we need to turn to the target do that
 

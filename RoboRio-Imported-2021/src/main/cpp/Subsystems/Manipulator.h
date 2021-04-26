@@ -88,6 +88,10 @@ public:
        ChangeState(State::Shooting);
    }
 
+   void StartPrepareShooter() {
+       ChangeState(State::PrepareShooting);
+   }
+
    void StopShooter() {
        ChangeState(State::Idle);
    }
@@ -104,7 +108,8 @@ private:
         Idle,
         Intaking,
         Shooting,
-        Climbing
+        PrepareShooting,
+        Climbing,
     };
 
     // State of the current shooting operation
@@ -140,9 +145,9 @@ private:
     //==========================================================================
     // Shooting State
 
-    void EnterShootingState();
-    void LeaveShootingState();
-    void UpdateShootingState();
+    void EnterShootingState(bool prepare = false);
+    void LeaveShootingState(bool prepare = false);
+    void UpdateShootingState(bool prepare = false);
     double GetShooterWheelTargetRpm();
 
     //==========================================================================

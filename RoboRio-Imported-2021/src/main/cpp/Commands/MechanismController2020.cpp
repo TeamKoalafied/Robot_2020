@@ -26,6 +26,7 @@ void MechanismController2020::DoAction(const std::string& action) {
         m_shooting = true;
         std::cout << "Starting shooter\n";
     }
+	else if (action == "PrepareShooter") manipulator.StartPrepareShooter();
 	else if (action == "StartIntaking") manipulator.StartIntaking();
 	else if (action == "StopIntaking") manipulator.StopIntaking();
 	else if (action == "StopIntaking") manipulator.StopIntaking();

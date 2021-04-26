@@ -1128,6 +1128,50 @@
               "_source0": "network_table:///SmartDashboard/TestPathsRadiusM",
               "_title": "/SmartDashboard/TestPathsRadiusM"
             }
+          },
+          "9,3": {
+            "size": [
+              5,
+              2
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Autonomous Delay Sec",
+              "_title": "SmartDashboard/Autonomous Delay Sec"
+            }
+          },
+          "9,5": {
+            "size": [
+              5,
+              2
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Autonomous Trench Offset Inch",
+              "_title": "/SmartDashboard/Autonomous Trench Offset Inch"
+            }
+          },
+          "9,7": {
+            "size": [
+              6,
+              2
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Autonomous Setting",
+              "_title": "SmartDashboard/Autonomous Setting"
+            }
+          },
+          "22,0": {
+            "size": [
+              4,
+              2
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Heading",
+              "_title": "/SmartDashboard/Heading"
+            }
           }
         }
       }
