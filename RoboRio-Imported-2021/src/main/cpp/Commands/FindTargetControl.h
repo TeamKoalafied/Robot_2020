@@ -37,9 +37,10 @@ public:
     //
     // joystick - Joystick being used for drivebase control
     // haptic_controller - Controller for doing haptic feedback to the driver
+    // haptic_controller2 - Controller for doing haptic feedback to the operator
     //
     // Returns whether normal driving operation should be performed in this period update.
-    bool DoFindTargetJoystick(frc::Joystick* joystick, HapticController* haptic_controller);
+    bool DoFindTargetJoystick(frc::Joystick* joystick, HapticController* haptic_controller, HapticController* haptic_controller2);
 
     // Rotate to find the target if possible
     //

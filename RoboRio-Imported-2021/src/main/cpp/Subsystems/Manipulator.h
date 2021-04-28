@@ -64,6 +64,9 @@ public:
     // Shutdown the manipulator subsystem
     void Shutdown();
 
+    // Haptic controller for operator joystick
+    HapticController* GetHapticController() { return m_haptic_controller; }
+
 
     //==========================================================================
     // Mechanism Access

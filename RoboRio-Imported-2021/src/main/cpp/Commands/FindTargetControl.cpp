@@ -91,7 +91,8 @@ void FindTargetControl::UpdateTargetHeading() {
     frc::SmartDashboard::PutNumber("FindTargetValid", m_target_valid);
 }
 
-bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticController* haptic_controller) {
+bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticController* haptic_controller,
+                                             HapticController* haptic_controller2) {
     // Update the information about the target heading
 //    bool old_target_valid = m_target_valid;
 //    UpdateTargetHeading();
@@ -104,8 +105,9 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
                 // rotation.
                 if (RotateToTarget()) {
                     // The drivebase is now pointing at the target so do a long buzz of haptic
-                    // feedback to notify the driver.
+                    // feedback to notify the driver and operator.
                     haptic_controller->DoContinuousFeedback(1.0, 1.0);
+                    haptic_controller2->DoContinuousFeedback(1.0, 1.0);
 
                     // Set the state to record that we reached the target. We won't rotate
                     // anymore unless the driver releases the button and pushes it again.
@@ -120,10 +122,11 @@ bool FindTargetControl::DoFindTargetJoystick(frc::Joystick* joystick, HapticCont
             }
         }
         else {
-            // The target is not valid, so do a double buzz of haptic feedback to notify the driver.
+            // The target is not valid, so do a double buzz of haptic feedback to notify the driver and operator
             if (m_state != State::kSignalNoTarget) {
                 static double PATTERN[10] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
                 haptic_controller->DoFeedback(PATTERN, 10);
+                haptic_controller2->DoFeedback(PATTERN, 10);
 
                 m_state = State::kSignalNoTarget;
             }

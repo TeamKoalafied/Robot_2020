@@ -5,9 +5,7 @@
 
 #include "DriveBase.h"
 
-#include "math.h"
-// #include "frc/WPILib.h"
-
+#include "Manipulator.h"
 #include "../RobotConfiguration.h"
 #include "../KoalafiedUtilities.h"
 #include "../Commands/DriveWithJoystick.h"
@@ -21,10 +19,9 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-
+#include <math.h>
 
 namespace RC = RobotConfiguration;
-
 
 
 //==============================================================================
@@ -366,9 +363,12 @@ void DriveBase::ResetJoystickState() {
 void DriveBase::DoCheezyDrive() {
 	// DoTuningDrive();
 	// return;
-    Sample sample;
 
-    if (m_find_target_control->DoFindTargetJoystick(m_joystick, m_haptic_controller)) {
+    // Check if the find target controller should be turning the drive base. If it returns true
+    // then we should do normal driver control.
+    Sample sample;
+    Manipulator& manipulator = Manipulator::GetInstance();
+    if (m_find_target_control->DoFindTargetJoystick(m_joystick, m_haptic_controller, manipulator.GetHapticController())) {
         // Get the movement and rotation values from the joystick, including any speed
         // limiting and response curve shaping.
         double move = 0.0;
