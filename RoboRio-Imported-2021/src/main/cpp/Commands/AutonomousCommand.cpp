@@ -206,10 +206,10 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     // See Layout and Markings Diagram page 5 https://firstfrc.blob.core.windows.net/frc2021/PlayingField/2021LayoutMarkingDiagram.pdf
 
     //                  Trench Balls
-    //     |             o    o    o     66.91" - Distance sideways from robot at centre of target   
-    //     |             122.62"   194.62"      - Distance from initiation line
-    //   > * Robot
-    //     | Initiation Line
+    //        |             o    o    o     66.91" - Distance sideways from robot at centre of target   
+    //        |             122.62"   194.62"      - Distance from initiation line
+    //   >    * Robot    
+    //        | Initiation Line
     //
     // Robot starts on the initiation line with its back bumper just over the initiation line (most
     // of the robot further way from the target).
@@ -222,8 +222,10 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     const double BALL3_DISTANCE = 194.62 * INCH;
     const double TRENCH_DISTANCE = 66.91 * INCH;
 
-    const double EXTRA_PICKUP_DISTANCE = 10 * INCH;
+    const double TRENCH_CORNER_DISTANCE_X = 86.62 * INCH;
+    const double TRENCH_CORNER_DISTANCE_Y = 39.16 * INCH;
 
+    const double EXTRA_PICKUP_DISTANCE = 10 * INCH;
 
     // Create a segment for picking up the balls
     PathSegment* pickup_segment = new PathSegment();
@@ -253,9 +255,18 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     robot_path->m_path_segments.push_back(return_segment);
 
     // Drive back to the position of the first ball to be closer to the target
+    // ChallengePaths::GetCurrent(pickup_segment, start, direction);
+    // direction = -direction;
+    // ChallengePaths::AddStraight(return_segment, BALL3_DISTANCE - BALL1_DISTANCE, start, direction);
+    // return_segment->m_mechanism_actions.push_back(MechanismAction("StopIntaking", 1.5));
+    // return_segment->m_mechanism_actions.push_back(MechanismAction("PrepareShooter", 1.6));
+
+    // Drive back to the position of the first ball to be closer to the target
     ChallengePaths::GetCurrent(pickup_segment, start, direction);
     direction = -direction;
-    ChallengePaths::AddStraight(return_segment, BALL3_DISTANCE - BALL1_DISTANCE, start, direction);
+    Point2D trench_corner(TRENCH_CORNER_DISTANCE_X, TRENCH_CORNER_DISTANCE_Y);
+    double trench_corner_heading_degrees = GetTargetHeadingDegrees(trench_corner);
+    ChallengePaths::AddSegment(pickup_segment, trench_corner, trench_corner_heading_degrees, start, direction);
     return_segment->m_mechanism_actions.push_back(MechanismAction("StopIntaking", 1.5));
     return_segment->m_mechanism_actions.push_back(MechanismAction("PrepareShooter", 1.6));
 
@@ -327,11 +338,22 @@ void AutonomousCommand::AddRotateToTargetSegment(RobotPath* robot_path) {
 void AutonomousCommand::GetStartPosition(double trench_offset_inch, Point2D& start, Point2D& direction) {
     const double INCH = 0.0254;
 
+    // const double INNER_PORT_DEPTH = 29.25 * INCH;  // 2ft. 5¼ in. ref 3.4.1.3
+    // const double INITIATION_LINE_DISTANCE = 120 * INCH;  // 10ft.  ref 3.2
+    // const double INNER_PORT_DISTANCE = INNER_PORT_DEPTH + INITIATION_LINE_DISTANCE;
+
+    start.Set(0, trench_offset_inch * INCH);
+    double start_heading_degrees = GetTargetHeadingDegrees(start);
+    // double start_heading_degrees = ::atan2(trench_offset_inch * INCH, INNER_PORT_DISTANCE) * 180 / M_PI;
+    direction = Point2D::UnitVectorDegrees(start_heading_degrees);
+}
+
+double AutonomousCommand::GetTargetHeadingDegrees(const Point2D& position) {
+    const double INCH = 0.0254;
+
     const double INNER_PORT_DEPTH = 29.25 * INCH;  // 2ft. 5¼ in. ref 3.4.1.3
     const double INITIATION_LINE_DISTANCE = 120 * INCH;  // 10ft.  ref 3.2
     const double INNER_PORT_DISTANCE = INNER_PORT_DEPTH + INITIATION_LINE_DISTANCE;
 
-    start.Set(0, trench_offset_inch * INCH);
-    double start_heading_degrees = ::atan2(trench_offset_inch * INCH, INNER_PORT_DISTANCE) * 180 / M_PI;
-    direction = Point2D::UnitVectorDegrees(start_heading_degrees);
+    return ::atan2(position.y, position.x + INNER_PORT_DISTANCE) * 180 / M_PI;
 }

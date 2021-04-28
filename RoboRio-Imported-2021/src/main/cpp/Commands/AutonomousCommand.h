@@ -95,8 +95,16 @@ namespace AutonomousCommand {
     //  trench_offset_inch - Offset of the robot from directly in front of the target.
     //      Towards the trench is positive.
     // start - Returns the starting position of the robot. Origin is directly in front of the power port
-    //      on the initiation line. Heading 0 is directly away from the power port.
+    //      on the initiation line. Heading 0 (x axis) is directly away from the power port.
     // direction - Returns the direction vector of the robot, in the same coordinates as 'start' 
     void GetStartPosition(double trench_offset_inch, Point2D& start, Point2D& direction);
+
+    // Get the heading for the robot to be pointed towards the centre of the inner port
+    //
+    // position - The position of the robot. Origin is directly in front of the power port
+    //      on the initiation line. Heading 0 (x axis) is directly away from the power port.
+    //
+    // Returns the required heading of the robot  in degrees
+    double GetTargetHeadingDegrees(const Point2D& position);
 }
 #endif  // AutonomousCommand_H
