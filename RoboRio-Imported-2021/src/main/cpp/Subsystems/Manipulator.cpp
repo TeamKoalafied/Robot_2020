@@ -345,6 +345,9 @@ void Manipulator::UpdateShootingState(bool prepare) {
         case ShootingState::BallInKicker: {
             m_indexer->ManualDriveIndexer(0); // Open loop control so we don't get weird oscillations
 
+            // If we are only preparing to shoot we stop in this state
+            if (prepare) break;
+
             // If we are on target, up to speed and there is a ball in the kicker then kick it!
             double current_shooter_wheel_rpm = m_shooter->GetShooterRPM();
             double shooter_error_percent = 100.0*fabs((current_shooter_wheel_rpm - target_shooter_wheel_rpm)/target_shooter_wheel_rpm);
@@ -468,16 +471,14 @@ void Manipulator::LeaveClimbingState() {
 }
 
 void Manipulator::UpdateClimbingState(bool climb_only) {
-    // Drive the winch with the right Y axis, applying a normal dead zone and a 50% speed limit
+    // Drive the winch with the right Y axis, applying a normal dead zone and a speed limit
     // Up on the joystick (-ve) extended the climber.
     double joystick_value = GetJoystick()->GetRawAxis(RC::kJoystickRightYAxis);
     if (fabs(joystick_value) < RC::kJoystickDeadzone) joystick_value = 0.0;
-    joystick_value *= 0.5;
+    joystick_value *= RC::kWinchSpeedFraction;
 
     // If we are only allowed to climb then do nothing if the operator is trying to extend the climber
     if (climb_only && joystick_value < 0) return;
-    // temporarily change direction - Phil
-//    frc::SmartDashboard::PutNumber("Winch Joystick", joystick_value);
 
     // Drive the climber. +ve is extending the climber so we must reverse the sign.
     m_winch->ManualDriveWinch(-joystick_value);

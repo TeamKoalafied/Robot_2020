@@ -774,13 +774,23 @@ void ChallengePaths::AddSegment(PathSegment* path_segment, const Point2D& end, d
     double distance = (end - start).Length();
     double fraction = kBezierCircleC;
 
+
     Point2D end_direction = Point2D::UnitVectorDegrees(end_heading);
+	if (path_segment->m_reverse) {
+		end_direction = -end_direction;
+	}
 
     Bezier3 path;
     path.m_point1 = start;
     path.m_point2 = start + unit_direction * (distance * fraction);
     path.m_point3 = end - end_direction * (distance * fraction);;
     path.m_point4 = end;
+
+	std::cout << "AddSegment\n";
+	std::cout << "Pt1 (" << path.m_point1.x << ", " << path.m_point1.y << ")\n";
+	std::cout << "Pt2 (" << path.m_point2.x << ", " << path.m_point2.y << ")\n";
+	std::cout << "Pt3 (" << path.m_point3.x << ", " << path.m_point3.y << ")\n";
+	std::cout << "Pt4 (" << path.m_point4.x << ", " << path.m_point4.y << ")\n";
 
     path_segment->m_path_definition.push_back(path);
 }

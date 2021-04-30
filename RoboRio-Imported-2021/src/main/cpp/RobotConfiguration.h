@@ -246,7 +246,10 @@ const int kWinchMotorPeakCurrentDurationMs = 500;
 const double kWinchDiameterInch = 2.0;
 
 // Maximum extension of the winch hook cable in inches
-const double kWinchMaximumExtensionInch = 30;
+const double kWinchMaximumExtensionInch = 26;
+
+// Maximum speed of the winch as a fraction of full speed
+const double kWinchSpeedFraction = 0.8;
 
 
 //==============================================================================

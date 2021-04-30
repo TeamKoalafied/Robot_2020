@@ -41,7 +41,7 @@ bool MechanismController2020::AreAllActionsDone() {
     if (m_shooting) {
         Manipulator& manipulator = Manipulator::GetInstance();
         bool shooting_complete = manipulator.BallShootCount() >= 3;
-        std::cout << "AreAllActionsDone(): complete" << shooting_complete << "  Count: " << manipulator.BallShootCount() << "\n";
+        //std::cout << "AreAllActionsDone(): complete" << shooting_complete << "  Count: " << manipulator.BallShootCount() << "\n";
         if (shooting_complete) {
             m_shooting = false;
             manipulator.StopShooter();

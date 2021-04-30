@@ -226,6 +226,7 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     const double TRENCH_CORNER_DISTANCE_Y = 39.16 * INCH;
 
     const double EXTRA_PICKUP_DISTANCE = 10 * INCH;
+    const double INTAKE_OFFSET_DISTANCE = 3 * INCH;
 
     // Create a segment for picking up the balls
     PathSegment* pickup_segment = new PathSegment();
@@ -237,11 +238,11 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     Point2D start;
     Point2D direction;
     GetStartPosition(trench_offset_inch, start, direction);
-    Point2D end(BALL1_DISTANCE - ROBOT_LENGTH + EXTRA_PICKUP_DISTANCE, TRENCH_DISTANCE); // End of curve is the position of the first ball
+    Point2D end(BALL1_DISTANCE - ROBOT_LENGTH + EXTRA_PICKUP_DISTANCE, TRENCH_DISTANCE + INTAKE_OFFSET_DISTANCE); // End of curve is the position of the first ball
     double end_heading = 0; // Pointing down the field along the line of balls 
     ChallengePaths::AddSegment(pickup_segment, end, end_heading, start, direction);
     ChallengePaths::AddStraight(pickup_segment, BALL3_DISTANCE - BALL1_DISTANCE);
-    pickup_segment->m_mechanism_actions.push_back(MechanismAction("StartIntaking", 0.0));
+    pickup_segment->m_mechanism_actions.push_back(MechanismAction("StartIntaking", 1.0));
 
     // Slalon left to the first ball, then forwards to pick up the three balls
     // ChallengePaths::AddSlalomLeft(pickup_segment, BALL1_DISTANCE - ROBOT_LENGTH, TRENCH_DISTANCE, SLALOM_FACTOR,
@@ -255,20 +256,20 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     robot_path->m_path_segments.push_back(return_segment);
 
     // Drive back to the position of the first ball to be closer to the target
-    // ChallengePaths::GetCurrent(pickup_segment, start, direction);
-    // direction = -direction;
-    // ChallengePaths::AddStraight(return_segment, BALL3_DISTANCE - BALL1_DISTANCE, start, direction);
-    // return_segment->m_mechanism_actions.push_back(MechanismAction("StopIntaking", 1.5));
-    // return_segment->m_mechanism_actions.push_back(MechanismAction("PrepareShooter", 1.6));
-
-    // Drive back to the position of the first ball to be closer to the target
     ChallengePaths::GetCurrent(pickup_segment, start, direction);
     direction = -direction;
-    Point2D trench_corner(TRENCH_CORNER_DISTANCE_X, TRENCH_CORNER_DISTANCE_Y);
-    double trench_corner_heading_degrees = GetTargetHeadingDegrees(trench_corner);
-    ChallengePaths::AddSegment(pickup_segment, trench_corner, trench_corner_heading_degrees, start, direction);
+    //ChallengePaths::AddStraight(return_segment, BALL3_DISTANCE - BALL1_DISTANCE, start, direction);
     return_segment->m_mechanism_actions.push_back(MechanismAction("StopIntaking", 1.5));
     return_segment->m_mechanism_actions.push_back(MechanismAction("PrepareShooter", 1.6));
+
+    // Drive back to the position of the first ball to be closer to the target
+    // ChallengePaths::GetCurrent(pickup_segment, start, direction);
+    // direction = -direction;
+    Point2D trench_corner(TRENCH_CORNER_DISTANCE_X, TRENCH_CORNER_DISTANCE_Y);
+    double trench_corner_heading_degrees = GetTargetHeadingDegrees(trench_corner);
+    ChallengePaths::AddSegment(return_segment, trench_corner, trench_corner_heading_degrees, start, direction);
+    // return_segment->m_mechanism_actions.push_back(MechanismAction("StopIntaking", 1.5));
+    // return_segment->m_mechanism_actions.push_back(MechanismAction("PrepareShooter", 1.6));
 
     // Rotate to face the target and shoot the balls
     AddRotateToTargetSegment(robot_path);

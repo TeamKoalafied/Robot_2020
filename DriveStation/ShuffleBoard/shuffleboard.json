@@ -849,6 +849,19 @@
               "_source0": "network_table:///SmartDashboard/Winch Speed RPM",
               "_title": "SmartDashboard/Winch Speed RPM"
             }
+          },
+          "5,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Winch RHardLimit",
+              "_title": "/SmartDashboard/Winch RHardLimit",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
           }
         }
       }
