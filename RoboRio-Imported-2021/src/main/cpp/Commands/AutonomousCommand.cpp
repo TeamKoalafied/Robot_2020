@@ -275,7 +275,7 @@ RobotPath* AutonomousCommand::CreateShootAndTrenchPath(double delay_s, double tr
     AddRotateToTargetSegment(robot_path);
     AddShootSegment(robot_path);
 
-	frc::SmartDashboard::PutNumber("Shooter RPM", 4000.0);
+	frc::SmartDashboard::PutNumber("Shooter RPM", 5700.0);
 
 
     return robot_path;
