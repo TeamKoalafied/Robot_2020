@@ -103,9 +103,9 @@ void DrivePathFollower::Interrupted() {
 // Dashboard Setup
 
 void DrivePathFollower::SetupDashboard() {
-    frc::SmartDashboard::PutNumber("AutoMaxV", 1.0);
+    frc::SmartDashboard::PutNumber("AutoMaxV", 2.0);
     frc::SmartDashboard::PutNumber("AutoMaxVCurve", PurePursuitFollower::kMaxVelocityCurve);
-    frc::SmartDashboard::PutNumber("AutoMaxA", 0.5);
+    frc::SmartDashboard::PutNumber("AutoMaxA", 1.5);
     frc::SmartDashboard::PutNumber("AutoP", 0.3);
     frc::SmartDashboard::PutNumber("AutoI", 0.0);
     frc::SmartDashboard::PutNumber("AutoD", 0.0);
