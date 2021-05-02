@@ -36,7 +36,7 @@ NetworkTables.addRobotConnectionListener(function(connected){
 /* Updaters */
 // Robot heading
 NetworkTables.addKeyListener('/SmartDashboard/Heading', (key, value) => {
-  setText(heading, value.toFixed(2))
+  setText(heading, `${value.toFixed(2)}°`)
 })
 // Shooter target rpm
 NetworkTables.addKeyListener('/SmartDashboard/Shooter Speed RPM', (key, value) => {
@@ -48,7 +48,7 @@ NetworkTables.addKeyListener('/SmartDashboard/Winch Position Inch', (key, value)
 })
 // Vision aim x
 NetworkTables.addKeyListener('/pivision/tx', (key, value) => {
-  setText(aimX, value.toFixed(2))
+  setText(aimX, `${value.toFixed(2)}°`)
 })
 NetworkTables.addKeyListener('/pivision/tx', (key, value) => {
   if (winchLimit) {
