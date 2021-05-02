@@ -17,6 +17,10 @@ To serve the files, run
 or run with python
 ```cd src && py -3 -m pynetworktables2js --team 6996```
 
+or use the executeable avaliable at
+https://github.com/robotpy/pynetworktables2js/releases
+and place it in the src folder.
+
 Any questions go to Lachlan 
 
 -- Lachlan
