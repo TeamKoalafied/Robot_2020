@@ -40,11 +40,11 @@ NetworkTables.addKeyListener('/SmartDashboard/Heading', (key, value) => {
 })
 // Shooter target rpm
 NetworkTables.addKeyListener('/SmartDashboard/Shooter Speed RPM', (key, value) => {
-  setText(shooterRPM, value)
+  setText(shooterRPM, `${value} RPM`)
 })
 // Shooter target rpm
 NetworkTables.addKeyListener('/SmartDashboard/Winch Position Inch', (key, value) => {
-  setText(winchPosition, value)
+  setText(winchPosition, `${value.toFixed(2)} IN`)
 })
 // Vision aim x
 NetworkTables.addKeyListener('/pivision/tx', (key, value) => {
