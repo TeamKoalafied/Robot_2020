@@ -352,7 +352,7 @@ void Manipulator::UpdateShootingState(bool prepare) {
             double current_shooter_wheel_rpm = m_shooter->GetShooterRPM();
             double shooter_error_percent = 100.0*fabs((current_shooter_wheel_rpm - target_shooter_wheel_rpm)/target_shooter_wheel_rpm);
 
-            if (shooter_error_percent < kShootErrorPercentage) {
+            if ((shooter_error_percent < kShootErrorPercentage) || ((shooter_error_percent < 10.0) && (m_shoot_timer.Get() > 5))) {
                 std::cout << "Desired Shooter RPM: " << target_shooter_wheel_rpm << std::endl;
                 std::cout << "Actual Shooter RPM: " << current_shooter_wheel_rpm << std::endl;
                 m_kicker->SetShoot();
@@ -375,6 +375,7 @@ void Manipulator::UpdateShootingState(bool prepare) {
             if (m_shoot_timer.Get() > kDriveUpTimeMaxS) {
                 m_indexer->ManualDriveIndexer(0.0);
                 m_shooting_state = ShootingState::BallInKicker;
+                m_shoot_timer.Reset();
             }
             break;
         }
@@ -383,6 +384,7 @@ void Manipulator::UpdateShootingState(bool prepare) {
             if (m_shoot_timer.Get() > kDriveBackTimeS) {
                 m_indexer->VelocityDriveIndexer(-0.065); // SHOULD BE 0 surely?
                 m_shooting_state = ShootingState::BallInKicker;
+                m_shoot_timer.Reset();
             }
             break;
         case ShootingState::KickingBall:

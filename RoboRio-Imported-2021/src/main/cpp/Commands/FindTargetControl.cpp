@@ -179,7 +179,7 @@ void FindTargetControl::SetupDashboard() {
     // frc::SmartDashboard::PutNumber("VisionTrackY", 0.0);
     // frc::SmartDashboard::PutNumber("VisionTrackHeading", 0.0);
     frc::SmartDashboard::PutNumber("VisionKp", 0.006);         // Start small and double until overshoot                                          
-    frc::SmartDashboard::PutNumber("VisionMinRotation", 0.0); // Experiments results 0.25 for wood, 0.33 carpet                                  
+    frc::SmartDashboard::PutNumber("VisionMinRotation", 0.03); // Experiments results 0.25 for wood, 0.33 carpet                                  
     frc::SmartDashboard::PutNumber("VisionMaxRotation", 0.3);  // Use to limit max speed when error is large                                      
 }
 
@@ -189,9 +189,9 @@ void FindTargetControl::SetupDashboard() {
 
 bool FindTargetControl::RotateToTarget() {
 	// See Robot.cpp for initial settings. The defaults here are 0.0 if no connection
-	float kp = frc::SmartDashboard::GetNumber("VisionKp", 0.0);						// 0.017 or higher
-	float minRotation = frc::SmartDashboard::GetNumber("VisionMinRotation", 0.0);	// 0.33 on carpet, 0.25 on wood
-	float maxRotation = frc::SmartDashboard::GetNumber("VisionMaxRotation", 0.0);	// 0.7
+	float kp = frc::SmartDashboard::GetNumber("VisionKp", 0.0);						
+	float minRotation = frc::SmartDashboard::GetNumber("VisionMinRotation", 0.0);	
+	float maxRotation = frc::SmartDashboard::GetNumber("VisionMaxRotation", 0.0);	
 
 	double current_heading = m_drive_base.GetPigeonHeading();
 
