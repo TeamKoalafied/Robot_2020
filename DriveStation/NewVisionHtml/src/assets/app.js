@@ -25,7 +25,11 @@ const winchLimit = document.getElementById('winchlimit')
 // Show toast on connect
 NetworkTables.addRobotConnectionListener(function(connected){
   displaytoast(`Robot Telemetry: ${connected}`, 3)
-  setSquareColour(telemStatus, 'green')
+  if (connected) {
+    setSquareColour(telemStatus, 'green')
+  } else {
+    setSquareColour(telemStatus, 'red')
+    }
 }, true);
 
 
