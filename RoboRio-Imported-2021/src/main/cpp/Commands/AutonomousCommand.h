@@ -40,7 +40,6 @@ namespace AutonomousCommand {
     // Returns the path
     RobotPath* CreateShootPath(double delay_s, double trench_offset_inch);
 
-
     // Create a path to shoot our initial 3 balls and move backward out of the way (towards target)
     //
     //  delay_s - Delay in seconds before the path begins
@@ -49,6 +48,15 @@ namespace AutonomousCommand {
     //
     // Returns the path
     RobotPath* CreateShootAndMoveBackwardPath(double delay_s, double trench_offset_inch);
+
+    // Create a path to shoot our initial 3 balls and move foreward out of the way (away from target)
+    //
+    //  delay_s - Delay in seconds before the path begins
+    //  trench_offset_inch - Offset of the robot from directly in front of the target.
+    //      Towards the trench is positive.
+    //
+    // Returns the path
+    RobotPath* CreateShootAndMoveForewardPath(double delay_s, double trench_offset_inch);
 
     // Create a path to shoot our initial 3 balls then get 3 balls from the trench and shoot them
     //

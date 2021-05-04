@@ -36,6 +36,7 @@ namespace {
 enum class Strategy {
     kShoot,			        // Shoot our initial 3 balls and do nothing else
     kShootAndMoveBackward,  // Shoot our initial 3 balls and move backward out of the way (towards target)
+    kShootAndMoveForeward,  // Shoot our initial 3 balls and move foreward out of the way (away from target)
     kShootAndTrench,        // Shoot our initial 3 balls then get 3 balls from the trench and shoot them
     kShootAndShield,        // Shoot our initial 3 balls then get 3 balls from under the shield generator and shoot them
 };
@@ -51,10 +52,11 @@ struct AutoModeMapping {
 
 // Define the mapping between the labels on the dashboard and the position and strategy
 const AutoModeMapping kAutoModes[] = {
-        { "Shoot",          Strategy::kShoot },
-        { "Shoot Backward", Strategy::kShootAndMoveBackward },
-        { "Shoot Trench",   Strategy::kShootAndTrench },
-        { "Shoot Shield",   Strategy::kShootAndShield },
+        { "Shoot",                  Strategy::kShoot },
+        { "Shoot Towards Target",   Strategy::kShootAndMoveBackward },
+        { "Shoot Away From Target", Strategy::kShootAndMoveForeward },
+        { "Shoot Trench",           Strategy::kShootAndTrench },
+        { "Shoot Shield",           Strategy::kShootAndShield },
 };
 
 // Compute the number of entries so we can create the string array for populating the default dashboard
@@ -101,11 +103,6 @@ void AutonomousCommand::UpdateDashboard() {
 
 frc::Command* AutonomousCommand::CreateAutonomousCommand() {
 
-    // kShoot,			        // Shoot our initial 3 balls and do nothing else
-    // kShootAndMoveBackward,  // Shoot our initial 3 balls and move backward out of the way (towards target)
-    // kShootAndTrench,        // Shoot our initial 3 balls then get 3 balls from the trench and shoot them
-    // kShootAndShield,        // Shoot our initial 3 balls then get 3 balls from under the shield generator and shoot them
-
     // Get the strategy, delay and offset from the dashboard
     Strategy strategy = ms_strategy_chooser.GetSelected();
     double delay_s = frc::SmartDashboard::GetNumber("Autonomous Delay Sec", 0.0);
@@ -122,6 +119,9 @@ frc::Command* AutonomousCommand::CreateAutonomousCommand() {
             break;
         case Strategy::kShootAndMoveBackward:
             robot_path = CreateShootAndMoveBackwardPath(delay_s, trench_offset_inch);
+            break;
+        case Strategy::kShootAndMoveForeward:
+            robot_path = CreateShootAndMoveForewardPath(delay_s, trench_offset_inch);
             break;
         case Strategy::kShootAndTrench:
             robot_path = CreateShootAndTrenchPath(delay_s, trench_offset_inch);
@@ -165,8 +165,6 @@ RobotPath* AutonomousCommand::CreateShootAndMoveBackwardPath(double delay_s, dou
     RobotPath* robot_path = new RobotPath();
     robot_path->m_name = "ShootAndMoveBackwards";
 
-// TODO This path wsa hacked during debugging.
-
     // Add the initial delay, if any, and shooting of the initial 3 balls 
    AddDelaySegment(robot_path, delay_s);
    AddShootSegment(robot_path);
@@ -180,15 +178,37 @@ RobotPath* AutonomousCommand::CreateShootAndMoveBackwardPath(double delay_s, dou
     path.m_point2.Set(-2*FOOT, 0.0);
     path.m_point3.Set(-6*FOOT, 0.0);
     path.m_point4.Set(-8*FOOT, 0.0);	
-    // path.m_point1.Set(0.0, 0.0);
-    // path.m_point2.Set(2*FOOT, 0.0);
-    // path.m_point3.Set(6*FOOT, 0.0);
-    // path.m_point4.Set(8*FOOT, 0.0);	
     PathSegment* path_segment = new PathSegment();
     path_segment->m_name = "Straight";
     path_segment->m_path_definition.push_back(path);
     path_segment->m_reverse = true;
-//     path_segment->m_reverse = false;
+    robot_path->m_path_segments.push_back(path_segment);
+
+    return robot_path;
+}
+
+RobotPath* AutonomousCommand::CreateShootAndMoveForewardPath(double delay_s, double trench_offset_inch) {
+    // Create and name the robot path
+    RobotPath* robot_path = new RobotPath();
+    robot_path->m_name = "ShootAndMoveBackwards";
+
+    // Add the initial delay, if any, and shooting of the initial 3 balls 
+   AddDelaySegment(robot_path, delay_s);
+   AddShootSegment(robot_path);
+
+    // Add a segment to move the robot forewards 8 feet. This is away from the target, which
+    // is 10 feet from the start line.
+    const double INCH = 0.0254;
+    const double FOOT = 12*INCH;
+    Bezier3 path;
+    path.m_point1.Set(0.0, 0.0);
+    path.m_point2.Set(2*FOOT, 0.0);
+    path.m_point3.Set(6*FOOT, 0.0);
+    path.m_point4.Set(8*FOOT, 0.0);	
+    PathSegment* path_segment = new PathSegment();
+    path_segment->m_name = "Straight";
+    path_segment->m_path_definition.push_back(path);
+    path_segment->m_reverse = false;
     robot_path->m_path_segments.push_back(path_segment);
 
     return robot_path;
@@ -297,15 +317,16 @@ RobotPath* AutonomousCommand::CreateShootAndShieldPath(double delay_s, double tr
     const double INCH = 0.0254;
 	const double ROBOT_LENGTH = 37 * INCH;
 
-    // Position of the first and third balls (second is half way between)
+    // Position of the first and third balls (second is half way between). Y is negative as these
+    // balls are away from the trench.
     const double BALL1_POSITION_X = 119.73 * INCH;
-    const double BALL1_POSITION_Y = 42.99 * INCH;
+    const double BALL1_POSITION_Y = -42.99 * INCH;
     const double BALL3_POSITION_X = 156.69 * INCH;
-    const double BALL3_POSITION_Y = 27.68 * INCH;
+    const double BALL3_POSITION_Y = -27.68 * INCH;
 
     // Position to shoot the balls from
     const double SHOOTING_POSITION_X = 60 * INCH;
-    const double SHOOTING_POSITION_Y = 44 * INCH;
+    const double SHOOTING_POSITION_Y = -44 * INCH;
 
     // Extra distance to go to ensure picking up the 3rd ball
     const double EXTRA_PICKUP_DISTANCE = 10 * INCH;
