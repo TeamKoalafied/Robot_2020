@@ -34,6 +34,12 @@ public:
     //==========================================================================
 
     //==========================================================================
+    // Dashboard Setup
+
+    // Setup the dashboard for vision control parameters. Called when robot is initialised.
+    static void SetupDashboard();
+
+    //==========================================================================
 	// Static Joystick Testing Control Functions
 
 	// Do joystick control of following Pathfinder paths for testing
@@ -48,11 +54,6 @@ public:
 	static PathFollower* CreatePathPointsFollower(RobotPath* robot_path);
 	static PathFollower* CreatePurePursuitFollower(RobotPath* robot_path, double max_velocity, double max_acceleration);
 private:
-
-    // NOTE: These functions are broken, but left here until I ask what they are meant to be doing - Nick
-	// static void Rotate2Target(double max_velocity, double max_acceleration);
-	// static void Rotate2Target2(double max_velocity, double max_acceleration);
-	// static void rotateForSkew(double max_velocity, double max_acceleration);
 
     //==========================================================================
     // Member Variables

@@ -62,20 +62,17 @@ void Winch::Setup() {
     // Feedback sensor
     winch_configuration.primaryPID.selectedFeedbackSensor = FeedbackDevice::CTRE_MagEncoder_Absolute;
 
-    // Soft limits
+    // Set up a soft forward limit as we do not have a limit switch to protect against extending
+    // up to fars
 	double winch_circumference_inch = RC::kWinchDiameterInch * M_PI;
 	double max_extension_revolutions = RC::kWinchMaximumExtensionInch/winch_circumference_inch;
-//    winch_configuration.forwardSoftLimitThreshold = 0;
-//    winch_configuration.reverseSoftLimitThreshold = -max_extension_revolutions * RC::kCtreEnocderCounts;
     winch_configuration.forwardSoftLimitThreshold = max_extension_revolutions * RC::kCtreEnocderCounts;
-    winch_configuration.reverseSoftLimitThreshold = 0;
     std::cout << "forwardSoftLimitThreshold = " << winch_configuration.forwardSoftLimitThreshold << "\n";
- 
-//    winch_configuration.forwardSoftLimitEnable = true;
-//    winch_configuration.reverseSoftLimitEnable = true;
+    winch_configuration.forwardSoftLimitEnable = true;
 
-    // Limit switches
- //   winch_configuration.clearPositionOnLimitF = true;
+    // Clear the encode position on the reverse limit switch, that is when the climber is full
+    // retracted. 
+    winch_configuration.clearPositionOnLimitR = true;
 
     // Do all configuration and log if it fails
     int error = m_winch_speed_controller->ConfigAllSettings(winch_configuration, RC::kTalonTimeoutMs);
@@ -83,15 +80,15 @@ void Winch::Setup() {
         std::cout << "Configuration of the winch Talon failed with code:  " << error << "\n";
     }
 
-    m_winch_speed_controller->SetInverted(InvertType::InvertMotorOutput);
-
     // Perform non-configuration setup
     m_winch_speed_controller->SetSensorPhase(false); // Not reversed
     m_winch_speed_controller->EnableCurrentLimit(true);
 	m_winch_speed_controller->SetNeutralMode(NeutralMode::Brake);
 
+    // Zeroing the encoder should not be necessary and only creates confusion. Before a match the
+    // climber should be fully retracted, which will zero the encode on the limit switch.
     // Zero the encoder so that zero is the full retracted start position
-    m_winch_speed_controller->SetSelectedSensorPosition(0, RC::kTalonPidIdx);
+//    m_winch_speed_controller->SetSelectedSensorPosition(0, RC::kTalonPidIdx);
 
     // Initialise the brake solenoid
     m_brake_solenoid = new frc::Solenoid(RC::kPneumaticsWinchBrakeSolenoidId);
@@ -103,7 +100,6 @@ void Winch::Shutdown() {
 
 void Winch::Periodic()
 {
-
     frc::SmartDashboard::PutNumber("Winch Current", m_winch_speed_controller->GetOutputCurrent());        
     frc::SmartDashboard::PutNumber("Winch Output", m_winch_speed_controller->GetMotorOutputPercent());         
     double winch_speed_native = m_winch_speed_controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
@@ -119,6 +115,8 @@ void Winch::Periodic()
 
     bool forward_limit = m_winch_speed_controller->GetSensorCollection().IsFwdLimitSwitchClosed();
     frc::SmartDashboard::PutBoolean("Winch FHardLimit", forward_limit);
+    bool reverse_limit = m_winch_speed_controller->GetSensorCollection().IsRevLimitSwitchClosed();
+    frc::SmartDashboard::PutBoolean("Winch RHardLimit", reverse_limit);
    
     frc::SmartDashboard::PutBoolean("Winch Brake", !m_brake_solenoid->Get());
 

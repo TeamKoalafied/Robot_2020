@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <string>
 class PathSegment;
 class RobotPath;
 
@@ -28,6 +29,13 @@ public:
     //
     // brake - Whether to set to brake (true) or cruise (false)
     virtual void SetBrakeMode(bool brake) = 0;
+
+    // Do an autonomous action (such as rotating to a target)
+    //
+    // action - Action to perform
+    //
+    // Returns true if the action is complete
+    virtual bool DoPathAction(const std::string& action) = 0;
 
 
     //==========================================================================

@@ -13,8 +13,7 @@ namespace frc {
 }
 
 // The Shooter mechanism is part of the Manipulator subsystem. It controls the
-// position (in, out, vertical) and roller roation of the roller intake for
-// grabbing the ball.
+// shooter wheel speed.
 class Shooter  {
 public:
     //==========================================================================
@@ -37,7 +36,6 @@ public:
     void Shutdown();
 
     // Perform periodic updates for the Shooter
-//    double shooter_speed_rpm;
     void Periodic();
 
 
@@ -45,30 +43,32 @@ public:
     //==========================================================================
     // Operations
 
-    // Manually drive the intake at a given percentage of motor output. The intake will not
-    // drive past its end limits.
+    // Drive the shooter in open loop at a given percentage of motor output
     //
-    // percentage_output - Percentage output to drive at. Positive is rotate to the
-    //      front and negative is to the back.
-    void ManualDriveShooter(double percentage_output);
+    // percentage_output - Percentage output to drive at. Positive is shooting.
+    void DriveShooterOpenLoop(double percentage_output);
 
-    void AutoDriveDashboard(double dRPM);
+    // Drive the shooter in closed loop to a given speed in rpm
+    //
+    // shooter_wheel_rpm - Target rpm for the shooter wheel shaft. Positive is shooting.
+    void DriveShooterClosedLoop(double shooter_wheel_rpm);
 
-    bool ShooterAtSpeed(double dRPM);
+    // Get the current speed of the shooter wheel shaft in rpm
+    int GetShooterRPM();
 
     // Perform testing of the intake using the joystick. This function is only for testing the
     // pivot and may use any controls of the joystick in an ad hoc fashion.
     //
     // joystick - Joystick to use
     void TestDriveShooter(frc::Joystick* joystick);
-    int getRPM();
+
 private:
 
     //==========================================================================
     // Member Variables
 
-    TalonFX* m_shooter_master_speed_controller;
-    TalonFX* m_shooter_slave_speed_controller;
+    TalonFX* m_shooter_master_speed_controller; // Motor controller for the master motor
+    TalonFX* m_shooter_slave_speed_controller;  // Motor controller for the slave motor
 };
 
 #endif  // Shooter_H

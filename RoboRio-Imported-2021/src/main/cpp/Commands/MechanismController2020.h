@@ -11,7 +11,18 @@
 class MechanismController2020 : public IMechanismController {
 public:
     //==========================================================================
+    // Construction
+
+    // Constructor
+    MechanismController2020();
+
+    //==========================================================================
     // Overrides from IMechanismController
 
     virtual void DoAction(const std::string& action);
+    virtual bool AreAllActionsDone();
+
+
+private:
+    bool m_shooting;
 };

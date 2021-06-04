@@ -5,9 +5,7 @@
 
 #include "DriveBase.h"
 
-#include "math.h"
-// #include "frc/WPILib.h"
-
+#include "Manipulator.h"
 #include "../RobotConfiguration.h"
 #include "../KoalafiedUtilities.h"
 #include "../Commands/DriveWithJoystick.h"
@@ -21,10 +19,9 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-
+#include <math.h>
 
 namespace RC = RobotConfiguration;
-
 
 
 //==============================================================================
@@ -57,6 +54,9 @@ DriveBase::DriveBase() :
     m_log_counter = 0;
 
     m_record_samples = false;
+
+    m_haptic_controller = NULL;
+    m_find_target_control = NULL;
 }
 
 DriveBase::~DriveBase() {
@@ -152,6 +152,9 @@ void DriveBase::Periodic() {
     frc::SmartDashboard::PutNumber("PositionX", m_position_x_inch*2.54);
     frc::SmartDashboard::PutNumber("PositionY", m_position_y_inch*2.54);
     frc::SmartDashboard::PutNumber("PositionHeading", position_heading_degrees);
+
+    // Update the currect heading to the target
+    m_find_target_control->UpdateTargetHeading();
 
     // Update the haptic feedback
     m_haptic_controller->Periodic();
@@ -343,6 +346,8 @@ void DriveBase::TeleopInit() {
 void DriveBase::DisabledInit() {
     WriteTestSampleToFile();
     SetupSampleRecording();
+
+    SetBrakeMode(false);
 }
 
 
@@ -358,9 +363,12 @@ void DriveBase::ResetJoystickState() {
 void DriveBase::DoCheezyDrive() {
 	// DoTuningDrive();
 	// return;
-    Sample sample;
 
-    if (m_find_target_control->DoFindTargetJoystick(m_joystick, m_haptic_controller)) {
+    // Check if the find target controller should be turning the drive base. If it returns true
+    // then we should do normal driver control.
+    Sample sample;
+    Manipulator& manipulator = Manipulator::GetInstance();
+    if (m_find_target_control->DoFindTargetJoystick(m_joystick, m_haptic_controller, manipulator.GetHapticController())) {
         // Get the movement and rotation values from the joystick, including any speed
         // limiting and response curve shaping.
         double move = 0.0;
@@ -379,7 +387,7 @@ void DriveBase::DoCheezyDrive() {
         //       to the 'master' branch.
 
         //TestCharacteriseDriveBase::DoJoystickControl(m_joystick);
-        DrivePathFollower::DoJoystickTestControl(m_joystick);
+        //DrivePathFollower::DoJoystickTestControl(m_joystick);
     }
     
     // Record the sample if required
@@ -504,6 +512,13 @@ void DriveBase::SetBrakeMode(bool brake) {
 	m_left_slave_speed_controller->SetNeutralMode(neutral_mode);
 	m_right_master_speed_controller->SetNeutralMode(neutral_mode);
 	m_right_slave_speed_controller->SetNeutralMode(neutral_mode);
+}
+
+bool DriveBase::DoPathAction(const std::string& action)  {
+    if (action == "RotateToTarget") {
+        return m_find_target_control->AutoRotateToTarget();
+    }
+    return true;
 }
 
 

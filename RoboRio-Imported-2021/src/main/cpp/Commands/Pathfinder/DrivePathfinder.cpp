@@ -133,11 +133,11 @@ void DrivePathfinder::DoJoystickTestControl(frc::Joystick* joystick)
 	int trajectory_length = 0;
 	const char* name = NULL;
 
-	static MechanismAction INTAKE_BALL[] = {
-		 { "ExtendIntake", MechanismAction::TimeSpecification::Start, 1.0, 0 },
-		 { "RunIndexForward", MechanismAction::TimeSpecification::Start, 1.0, 0 },
-		 { "RetractIntake", MechanismAction::TimeSpecification::Start, 2.0, 0 },
-	};
+	// static MechanismAction INTAKE_BALL[] = {
+	// 	 { "ExtendIntake", MechanismAction::TimeSpecification::Start, 1.0, 0 },
+	// 	 { "RunIndexForward", MechanismAction::TimeSpecification::Start, 1.0, 0 },
+	// 	 { "RetractIntake", MechanismAction::TimeSpecification::Start, 2.0, 0 },
+	// };
 
 	int pov_angle = joystick->GetPOV(0);
 	switch (pov_angle) {

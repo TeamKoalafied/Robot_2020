@@ -16,7 +16,7 @@ ctx2.fillRect(frontCanvas.width/2, 0, 2.5, frontCanvas.height);
 const RHardLimit = document.getElementById('RHardLimit')
 const telemStatus = document.getElementById('telemetry')
 const heading = document.getElementById('heading')
-const shooterTarget = document.getElementById('shootertarget')
+const shooterRPM = document.getElementById('shooterrpm')
 const winchPosition = document.getElementById('winchposition')
 const aimX = document.getElementById('aimx')
 const winchLimit = document.getElementById('winchlimit')
@@ -36,19 +36,19 @@ NetworkTables.addRobotConnectionListener(function(connected){
 /* Updaters */
 // Robot heading
 NetworkTables.addKeyListener('/SmartDashboard/Heading', (key, value) => {
-  setText(heading, value.toFixed(2))
+  setText(heading, `${value.toFixed(2)}°`)
 })
 // Shooter target rpm
-NetworkTables.addKeyListener('/SmartDashboard/Shooter Target RPM', (key, value) => {
-  setText(shooterTarget, value)
+NetworkTables.addKeyListener('/SmartDashboard/Shooter Speed RPM', (key, value) => {
+  setText(shooterRPM, `${value} RPM`)
 })
 // Shooter target rpm
 NetworkTables.addKeyListener('/SmartDashboard/Winch Position Inch', (key, value) => {
-  setText(winchPosition, value)
+  setText(winchPosition, `${value.toFixed(2)} IN`)
 })
 // Vision aim x
 NetworkTables.addKeyListener('/pivision/tx', (key, value) => {
-  setText(aimX, value.toFixed(2))
+  setText(aimX, `${value.toFixed(2)}°`)
 })
 NetworkTables.addKeyListener('/pivision/tx', (key, value) => {
   if (winchLimit) {

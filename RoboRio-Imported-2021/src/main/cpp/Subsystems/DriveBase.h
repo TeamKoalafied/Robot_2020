@@ -124,6 +124,11 @@ public:
     // brake - Whether to set to brake (true) or cruise (false)
     void SetBrakeMode(bool brake);
 
+    virtual bool DoPathAction(const std::string& action);
+
+    // Get the controller for targetting
+    const FindTargetControl* GetFindTargetControl() { return m_find_target_control; }
+
 
     //==========================================================================
     // Distance and Heading
@@ -360,8 +365,8 @@ private:
     bool m_record_samples;                          // Whether to record information during manual driving
     std::vector<Sample> m_sample_list;			    // List of data samples recorded during manual driving
 
-    HapticController* m_haptic_controller;
-    FindTargetControl* m_find_target_control;
+    HapticController* m_haptic_controller;          // Haptic controller for driver joystick
+    FindTargetControl* m_find_target_control;       // Targeting controller
 
     //==========================================================================
     // Contants

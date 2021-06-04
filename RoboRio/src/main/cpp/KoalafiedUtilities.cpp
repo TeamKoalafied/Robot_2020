@@ -56,12 +56,22 @@ void KoalafiedUtilities::CalculateAndLogF(TalonSRX* controller, double speed_sca
 }
 
 void KoalafiedUtilities::TuneDriveTalonSRX(TalonSRX* controller, const char* name, double drive, double max_rpm, bool close_loop) {
+	// Do the tuning drive assuming a TalonSRX with a CTRE magnetic encoder
+	TuneDriveTalon(controller, name, drive, max_rpm, close_loop, RC::kCtreEnocderCounts);
+}
+
+void KoalafiedUtilities::TuneDriveTalonFX(TalonFX* controller, const char* name, double drive, double max_rpm, bool close_loop) {
+	// Do the tuning drive assuming a TalonFX and its built in encoder
+	TuneDriveTalon(controller, name, drive, max_rpm, close_loop, RC::kTalonFXEnocderCounts);
+}
+
+void KoalafiedUtilities::TuneDriveTalon(BaseTalon* controller, const char* name, double drive, double max_rpm, bool close_loop, int encoder_per_rev) {
     if (close_loop) {
 		// Close loop drive
 
 		// Calculate the target RPM velocity and convert it to native units. Display both.
 		double target_velocity_rpm = max_rpm * drive;
-		double target_velocity_native = TalonSRXCtreVelocityRpmToNative(target_velocity_rpm);
+		double target_velocity_native = (target_velocity_rpm / 60.0) * encoder_per_rev * RC::kTalonTimeBaseS;
         frc::SmartDashboard::PutNumber(std::string(name) + " Target Velocity (Native)", target_velocity_native);    
         frc::SmartDashboard::PutNumber(std::string(name) + " Target Velocity (RPM)", target_velocity_rpm);    
 
@@ -70,7 +80,8 @@ void KoalafiedUtilities::TuneDriveTalonSRX(TalonSRX* controller, const char* nam
 
         // Get the close loop error and display it in native units and RPM
         double closed_loop_error_native = controller->GetClosedLoopError(RC::kTalonPidIdx);
-		double closed_loop_error_rpm = TalonSRXCtreVelocityNativeToRpm(closed_loop_error_native);
+    	double closed_loop_error_rpm = (closed_loop_error_native / (encoder_per_rev * RC::kTalonTimeBaseS)) * 60.0;
+
         frc::SmartDashboard::PutNumber(std::string(name) + " CL Error (Native)", closed_loop_error_native);    
         frc::SmartDashboard::PutNumber(std::string(name) + " CL Error (RPM)", closed_loop_error_rpm);
 
@@ -88,7 +99,7 @@ void KoalafiedUtilities::TuneDriveTalonSRX(TalonSRX* controller, const char* nam
 
 	// Get the current velocity and display it in native units and RPM
 	double current_velocity_native = controller->GetSelectedSensorVelocity(RC::kTalonPidIdx);
-	double current_velocity_rpm = TalonSRXCtreVelocityNativeToRpm(current_velocity_native);
+   	double current_velocity_rpm = (current_velocity_native / (encoder_per_rev * RC::kTalonTimeBaseS)) * 60.0;
 	frc::SmartDashboard::PutNumber(std::string(name) + " Velocity (Native)", current_velocity_native);    
 	frc::SmartDashboard::PutNumber(std::string(name) + " Velocity (RPM)", current_velocity_rpm);    
 

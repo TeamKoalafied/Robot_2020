@@ -31,5 +31,7 @@ public:
 	bool m_reverse;							// Whether the robot travels along the path in reverse
 	std::vector<MechanismAction> m_mechanism_actions;
 											// List of mechanism actions to perform
+	std::string m_drivebase_action; 		// Special action for the drivebase to perform for this path segment (only
+                                            // used if there is no path definition (list of Beziers is empty))
 };
 

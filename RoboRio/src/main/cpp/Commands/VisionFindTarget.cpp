@@ -115,7 +115,8 @@ void VisionFindTarget::Execute() {
 				rotation = -maxRotation;
 
 			std::cout << "Vision: tx " << tx << "rotation " << rotation << std::endl; //debug
-			drive_base.ArcadeDriveForVision(0.0, -rotation);
+//			drive_base.ArcadeDriveForVision(0.0, -rotation);
+			drive_base.TankDriveOpenLoop(rotation, -rotation);
 
 			// give vision pipeline 40ms TBD: Does the motor keep turning? Does it stop at timeout?
 			m_timer = 2;

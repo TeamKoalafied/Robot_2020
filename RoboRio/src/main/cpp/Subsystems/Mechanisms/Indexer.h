@@ -48,12 +48,19 @@ public:
 
     // Manually drive the indexer at a given percentage of motor output
     //
-    // percentage_output - Percentage output to drive at. Positive pulls the balls inwards.
+    // percentage_output - Percentage output to drive at. Positive moves balls up from intake to shooter.
     void ManualDriveIndexer(double percentage_output);
 
+    // Drive the indexer with close loop velocity control at a given percentage of peak
+    //
+    // percentage_speed - Percentage of peak spped to drive at. Positive moves balls up from intake to shooter.
     void VelocityDriveIndexer(double percentage_speed);
 
-    bool HasHighCurrent();
+    // Set the indexer position to zero. Allow measurements that follow to be relative.
+    void ZeroIndexerPosition();
+
+    // Get the position of the indexer in inches
+    double GetIndexerPositionInch();
 
     // Perform testing of the indexer using the joystick. This function is only for testing the
     // indexer and may use any controls of the joystick in an ad hoc fashion.

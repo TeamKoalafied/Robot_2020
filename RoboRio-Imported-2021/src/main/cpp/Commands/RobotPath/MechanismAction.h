@@ -14,6 +14,13 @@ struct MechanismAction {
 		End,			// Time is relative to the end of the path segment in seconds
 	};
 
+    MechanismAction() = default;
+
+    MechanismAction(std::string action, double time, TimeSpecification time_specification = TimeSpecification::Start) {
+        m_action = action;
+        m_time = time;
+        m_time_specification = time_specification;
+    }
 
 	std::string m_action;					// Name of the action to perform
 	TimeSpecification m_time_specification; // How the time is specified

@@ -65,6 +65,8 @@ void PurePursuitFollower::StartPath() {
 }
 
 void PurePursuitFollower::StartSegment() {
+    std::cout << "Starting Segment " << GetPathSegment().m_name << "\n";
+
 	// Get the current path segment and the current drive base distances and heading
 	PathSegment& path_segment = GetPathSegment();
 	IPathDriveBase* drive_base = GetDriveBase();
@@ -91,7 +93,11 @@ void PurePursuitFollower::StartSegment() {
 	// Calculate an offset from the gyro heading to the heading at the start of the path. This offset
 	// will be added to all gyro values to get the heading. This means that the initial angle of
 	// the robot is assumed to be correct.
-	m_gyro_heading_offset_deg = m_path_points[0].m_heading_degrees - gyro_heading_deg;
+    if (m_path_points.empty()) {
+        m_gyro_heading_offset_deg = 0;
+    } else {
+    	m_gyro_heading_offset_deg = m_path_points[0].m_heading_degrees - gyro_heading_deg;
+    }
 
 	// Initialise the counter for mechanism actions
     m_mechanism_actions_done_count = 0;
@@ -139,22 +145,34 @@ void PurePursuitFollower::FollowSegment() {
 	sample.m_right_distance_m = right_distance_m;
 	sample.m_gyro_heading_deg = gyro_heading_deg;
 
-	// Calculate the motor outputs for the left and right sides
-    double left_output;
-    double right_output;
-    CalculatePurePursuitDrive(left_output, right_output, sample);
-
-	// Drive the robot at the required speed
-    if (m_segment_finished) {
-        drive_base->Stop();
+    // If there is no segment do the drivebase action if any
+	PathSegment& path_segment = GetPathSegment();
+    if (path_segment.m_path_definition.empty()) {
+        if (drive_base->DoPathAction(path_segment.m_drivebase_action)) {
+            // If the drivebase action is complete (or undefined) then stop the drivebase 
+            // and record the segment as finished
+            drive_base->Stop();
+            m_segment_finished = true;
+        }
     } else {
-    	drive_base->TankDriveOpenLoop(left_output, right_output);
+        // Calculate the motor outputs for the left and right sides
+        double left_output;
+        double right_output;
+        CalculatePurePursuitDrive(left_output, right_output, sample);
+        sample.m_left_output = left_output;
+        sample.m_right_output = right_output;
+
+        // Drive the robot at the required speed
+        if (m_segment_finished) {
+            drive_base->Stop();
+        } else {
+            drive_base->TankDriveOpenLoop(left_output, right_output);
+        }
     }
 
     // If there are still mechanism actions remaining, check if it is the right period to perform the next ones.
     // Note that multiple actions may fire in the same period.
 	sample.m_mechanism_action = NULL;
-	PathSegment& path_segment = GetPathSegment();
     for (MechanismAction& mechanism_action : path_segment.m_mechanism_actions) {
         if (mechanism_action.m_time_period == m_period_counter) {
             // Perform the mechanism action and advance to the next one
@@ -172,8 +190,6 @@ void PurePursuitFollower::FollowSegment() {
 	double relative_right_distance_m = right_distance_m - m_path_start_right_distance_m;
     sample.m_left_distance_m = relative_left_distance_m;
     sample.m_right_distance_m = relative_right_distance_m;
-	sample.m_left_output = left_output;
-	sample.m_right_output = right_output;
 	sample.m_segment_index = GetPathSegmentIndex();
     if (GetRecordSamples()) m_sample_list.push_back(sample);			
 }
@@ -183,10 +199,13 @@ bool PurePursuitFollower::IsSegmentFinished() {
     // all the mechanism actions have been done
 	PathSegment& path_segment = GetPathSegment();
     return m_segment_finished &&
-           m_mechanism_actions_done_count >= (int)path_segment.m_mechanism_actions.size();
+           m_mechanism_actions_done_count >= (int)path_segment.m_mechanism_actions.size() &&
+           GetMechanismController()->AreAllActionsDone();
 }
 
 void PurePursuitFollower::FinishSegment() {
+    std::cout << "Finishing Segment " << GetPathSegment().m_name << "\n";
+
     // Copy all the path point from the vector for this segment to the overall vector for the
     // whole path so that they can be logged
     m_total_path_points.insert(m_total_path_points.end(), m_path_points.begin(), m_path_points.end());
@@ -196,6 +215,7 @@ void PurePursuitFollower::FinishPath() {
    	const char* const RESULT_FILENAME = "/home/lvuser/TestPathFollower.csv";
     WriteTestSampleToFile(RESULT_FILENAME);
 }
+
 
 //==========================================================================
 // Testing
@@ -207,12 +227,15 @@ void PurePursuitFollower::TestGeneratePathToFile(const char* filename)
 }
 
 
-
 //==========================================================================
 // Pure Pursuit Calculations
 
-void PurePursuitFollower::GenerateSegmentPathPoints()
-{
+void PurePursuitFollower::GenerateSegmentPathPoints() {
+    // Initialise state (even if there is no path)
+    m_closest_index = 0;
+    m_lookahead_index = 0;
+    m_segment_finished = false;
+
 	// Get the lengths of all the beziers in the current path segment
 	PathSegment& path_segment = GetPathSegment();
 	int total_beziers = path_segment.m_path_definition.size();
@@ -222,6 +245,7 @@ void PurePursuitFollower::GenerateSegmentPathPoints()
 		segment_lengths[i] = path_segment.m_path_definition[i].Length();
 		total_length += segment_lengths[i];
 	}
+    if (total_beziers == 0) return;
 
     // Calculate the total number of points for the required spacing and create space
     // for them, plus the 'extension' point.
@@ -350,14 +374,9 @@ void PurePursuitFollower::GenerateSegmentPathPoints()
             // Note: the position and max velocity stay the same
         }
     }
-
-    m_closest_index = 0;
-    m_lookahead_index = 0;
-    m_segment_finished = false;
 }
 
-void PurePursuitFollower::CalculatePurePursuitDrive(double& left_output, double& right_output, Sample &sample)
-{
+void PurePursuitFollower::CalculatePurePursuitDrive(double& left_output, double& right_output, Sample &sample) {
     // Get the current robot position and heading
 	IPathDriveBase* drive_base = GetDriveBase();
     double position_x_m;
@@ -366,6 +385,15 @@ void PurePursuitFollower::CalculatePurePursuitDrive(double& left_output, double&
     drive_base->GetPositionM(position_x_m, position_y_m, heading_degrees);
     Point2D robot_position(position_x_m, position_y_m);
     sample.m_robot_position = robot_position;
+
+    // If there is no segment then finish immediately. This allow segments where the robot is
+    // just stationary, sucha as just waiting or shooting for example.
+    if (m_path_points.empty()) {
+        m_segment_finished = true;
+        left_output = 0.0;
+        right_output = 0.0;
+        return;
+    } 
      
     // Get the closest point on the path to the robot position, and the desired
     // velocity and acceleration for that point.
@@ -579,8 +607,7 @@ Point2D PurePursuitFollower::GetClosestPoint(Point2D robot_position, double& pat
     return closest_point;
 }
 
-Point2D PurePursuitFollower::GetLookAheadPoint(Point2D robot_position, double closest_point_distance)
-{
+Point2D PurePursuitFollower::GetLookAheadPoint(Point2D robot_position, double closest_point_distance) {
     // The lookahead distance must be greater than the distance to the path or it with most likely
     // not intersect with the path. Make sure the lookahead distance is greater that the closest point
     // distance by some margin. This margin is an important parameter. If it is not large enough then

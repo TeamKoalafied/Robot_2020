@@ -185,22 +185,51 @@ const double kRotatePower = 1.0;
 // slower and more controllable.
 const double kRotateJoystickScale = 0.5;
 
-// Scaling factor applied to rotate and move when driving with the climbing arm raised
-const double kClimbingArmRaisedMovementScale = 0.5;
-
 
 //==============================================================================
 //  MANIPULATOR CONFIGURATION
 //==============================================================================
 
 //==============================================================================
-// Shooter Configuration
+// Intake Configuration
 
-// Peak current limit for the shooter motors in amps
-const int kShooterMotorPeakCurrentLimit = 50;
+// Continuous current limit for the intake motors in amps
+const int kIntakeMotorContinuousCurrentLimit = 20;
+
+// Peak current limit for the intake motors in amps
+const int kIntakeMotorPeakCurrentLimit = 30;
+
+// Peak current limit duration for the intake motors in milliseconds
+const int kIntakeMotorPeakCurrentDurationMs = 500;
+
+
+//==============================================================================
+// Indexer Configuration
+
+// Continuous current limit for the indexer motors in amps
+const int kIndexerMotorContinuousCurrentLimit = 20;
+
+// Peak current limit for the indexer motors in amps
+const int kIndexerMotorPeakCurrentLimit = 30;
+
+// Peak current limit duration for the indexer motors in milliseconds
+const int kIndexerMotorPeakCurrentDurationMs = 500;
+
+// Gear ratio of indexer pulleys compared to the indexer motor
+const double kIndexerMotorGearRatio = 1.5;
+
+// Diameter of the indexer pulley in inches (larger top pulleys)
+const double kIndexerDiameterInch = 2.0;
+
+
+//==============================================================================
+// Shooter Configuration
 
 // Continuous current limit for the shooter motors in amps
 const int kShooterMotorContinuousCurrentLimit = 40;
+
+// Peak current limit for the shooter motors in amps
+const int kShooterMotorPeakCurrentLimit = 50;
 
 // Peak current limit duration for the shooter motors in milliseconds
 const int kShooterMotorPeakCurrentDurationMs = 500;
@@ -212,11 +241,11 @@ const double kShooterMotorGearRatio = 1.5;
 //==============================================================================
 // Winch Configuration
 
-// Peak current limit for the winch motor in amps
-const int kWinchMotorPeakCurrentLimit = 50;
-
 // Continuous current limit for the winch motor in amps
 const int kWinchMotorContinuousCurrentLimit = 40;
+
+// Peak current limit for the winch motor in amps
+const int kWinchMotorPeakCurrentLimit = 50;
 
 // Peak current limit duration for the winch motor in milliseconds
 const int kWinchMotorPeakCurrentDurationMs = 500;

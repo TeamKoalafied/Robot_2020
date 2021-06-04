@@ -5,8 +5,7 @@
 
 #include "DriveBase.h"
 
-#include "math.h"
-// #include "frc/WPILib.h"
+#include "Manipulator.h"
 
 #include "../RobotConfiguration.h"
 #include "../KoalafiedUtilities.h"
@@ -19,6 +18,7 @@
 #include <frc/Solenoid.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
+#include "math.h"
 
 namespace RC = RobotConfiguration;
 
@@ -707,10 +707,10 @@ void DriveBase::GetMovementFromJoystick(double& move, double& rotate) {
 
 void DriveBase::ArcadeDrive(double move_value, double rotate_value) {
 	// Scale the rotation and movement to slow the drive base down when the
-	// lift is in a high position.
-//	double lift_scale_factor = Elevator::GetInstance().GetLiftRaiseMovementScale();
-//	move_value *= lift_scale_factor;
-//	rotate_value *= lift_scale_factor;
+	// manipulator needs us to (climber is in a high position).
+	double maniputator_scale_factor = Manipulator::GetInstance().GetDriveBaseSlowDownFactor();
+	move_value *= maniputator_scale_factor;
+	rotate_value *= maniputator_scale_factor;
 
     // For demos slow the robot done for safety
     // const double DEMO_SAFETY_FACTOR = 0;
