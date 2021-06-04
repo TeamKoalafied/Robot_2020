@@ -543,13 +543,28 @@ int main(int argc, char* argv[]) {
           double midy = 0;
           double degreetx = 0;
           double distancety = 0;
+          double cameraheight = 32.0; // 37.25;
           if (count > 0) {
             midx = tx / count;
             midy = ty / count;
             printf("Mid = (%lf,%lf)\n", midx, midy);
+#if 0
+            // For raw data collection and calculations for measuring distance
+            // see KoalafiedShare google drive under software/2020/Data collection...
             degreetx = (midx-cx) * (38.0/160.0);
             double theta = ( 18 - ((cy - 120) + midy - 25) /4.2) * (pi/180.0);
-            distancety = 46.0 / (tan (theta) );
+            distancety = (83.25 - cameraheight) / (tan (theta) );
+#else
+            // New approach because old one was not working (probably old robot):
+            // View top is 79cm above view centre when distance is 150cm, so slope = 79/150
+            // Centre is 120 pixels down from top, so we scale by height_in_pixels/120
+            // So:
+            //   slope = ((cy - midy)/120) * (79/150)
+            // If the top was the target height (h) then h/distancety = 79/150
+            degreetx = (midx-cx) * (38.0/160.0);
+            double slope = ((cy - midy)/120.0) * (79.0/150.0);
+            distancety = (83.25 - cameraheight) / slope;
+#endif
             printf("The degree from the goal is %lf\n",degreetx);
             printf("The distance when the degree is 0 is %lf\n\n",distancety);
             dashboard->PutNumber("tx", degreetx);

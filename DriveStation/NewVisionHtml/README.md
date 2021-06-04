@@ -14,6 +14,7 @@ On Linux/OSX you can execute:
 To serve the files, run 
 
 ```npm start```
+
 or run with python
 ```cd src && py -3 -m pynetworktables2js --team 6996```
 

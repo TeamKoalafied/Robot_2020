@@ -29,7 +29,7 @@ NetworkTables.addRobotConnectionListener(function(connected){
     setSquareColour(telemStatus, 'green')
   } else {
     setSquareColour(telemStatus, 'red')
-    }
+  }
 }, true);
 
 
